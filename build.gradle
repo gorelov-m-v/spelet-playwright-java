@@ -1,0 +1,132 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.5.4'
+    id 'io.spring.dependency-management' version '1.1.6'
+    id 'io.qameta.allure' version '2.12.0'
+}
+
+group = 'com.example'
+version = '1.0.0'
+
+java {
+    toolchain { languageVersion = JavaLanguageVersion.of(21) }
+}
+
+repositories { mavenCentral() }
+
+dependencies {
+    // Spring Boot
+    implementation 'org.springframework.boot:spring-boot-starter'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    // Playwright
+    implementation 'com.microsoft.playwright:playwright:1.48.0'
+    implementation 'org.json:json:20240303'
+
+    // JUnit 5
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+
+    // Allure
+    testImplementation 'io.qameta.allure:allure-junit5:2.29.0'
+    testRuntimeOnly 'org.aspectj:aspectjweaver:1.9.22.1'
+}
+
+test {
+    useJUnitPlatform()
+    systemProperties = System.getProperties() as Map<String, ?>
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat "full"
+        showStandardStreams = true
+    }
+}
+
+// --- Установка браузеров Playwright перед тестами ---
+tasks.register('playwrightInstall', JavaExec) {
+    group = 'verification'
+    description = 'Install Playwright browsers'
+    // CLI есть внутри playwright-джара
+    mainClass = 'com.microsoft.playwright.CLI'
+    classpath = sourceSets.test.runtimeClasspath
+    // Для Linux/CI можно добавить --with-deps:
+    // args 'install', '--with-deps'
+    args 'install'
+}
+test.dependsOn(playwrightInstall)
+
+// --- Allure ---
+allure {
+    version = '2.29.0'
+    adapter {
+        autoconfigure = true
+        aspectjWeaver = true
+        frameworks { junit5 { enabled = true } }
+    }
+}
+
+// ---------- удобные задачи для BrowserStack ----------
+def bsTask = { String name, Map<String,String> props ->
+    tasks.register(name, Test) {
+        useJUnitPlatform()
+        systemProperty 'spring.profiles.active', 'browserstack'
+        systemProperty 'app.remote', 'browserstack'
+        props.each { k, v -> systemProperty k, v }
+        testLogging { events "passed", "skipped", "failed" }
+        dependsOn(playwrightInstall)
+    }
+}
+
+// Desktop
+bsTask('bsWin10Chrome', [
+        'bs.os':'Windows', 'bs.osVersion':'10',
+        'bs.browser':'chrome', 'bs.browserVersion':'latest',
+        'bs.name':'Spelet Win10 Chrome'
+])
+bsTask('bsWin11Firefox', [
+        'bs.os':'Windows', 'bs.osVersion':'11',
+        'bs.browser':'playwright-firefox', 'bs.browserVersion':'latest',
+        'bs.name':'Spelet Win11 Firefox'
+])
+bsTask('bsMacChrome', [
+        'bs.os':'OS X', 'bs.osVersion':'Ventura',
+        'bs.browser':'chrome', 'bs.browserVersion':'latest',
+        'bs.name':'Spelet macOS Chrome'
+])
+bsTask('bsMacSafari', [
+        'bs.os':'OS X', 'bs.osVersion':'Ventura',
+        'bs.browser':'playwright-webkit', 'bs.browserVersion':'latest',
+        'bs.name':'Spelet macOS Safari (WebKit)'
+])
+
+// Mobile Android
+bsTask('bsSamsungS20', [
+        'bs.deviceName':'Samsung Galaxy S20', 'bs.osVersion':'10.0',
+        'bs.browser':'chrome', 'bs.name':'Spelet Galaxy S20 Chrome'
+])
+bsTask('bsHuaweiP30', [
+        'bs.deviceName':'Huawei P30', 'bs.osVersion':'9.0',
+        'bs.browser':'chrome', 'bs.name':'Spelet Huawei P30 Chrome'
+])
+bsTask('bsSamsungS25Ultra', [
+        'bs.deviceName':'Samsung Galaxy S25 Ultra', 'bs.osVersion':'15.0',
+        'bs.browser':'chrome', 'bs.name':'Spelet Galaxy S25 Ultra Chrome'
+])
+bsTask('bsSamsungS24', [
+        'bs.deviceName':'Samsung Galaxy S24', 'bs.osVersion':'14.0',
+        'bs.browser':'chrome', 'bs.name':'Spelet Galaxy S24 Chrome'
+])
+
+// Mobile iOS (Safari)
+bsTask('bsiPhone16', [
+        'bs.deviceName':'iPhone 16', 'bs.osVersion':'18.5',
+        'bs.browser':'safari', 'bs.name':'Spelet iPhone 16 Safari'
+])
+bsTask('bsiPhone15', [
+        'bs.deviceName':'iPhone 15', 'bs.osVersion':'17.0',
+        'bs.browser':'safari', 'bs.name':'Spelet iPhone 15 Safari'
+])
+bsTask('bsiPhone11', [
+        'bs.deviceName':'iPhone 11', 'bs.osVersion':'13.0',
+        'bs.browser':'safari', 'bs.name':'Spelet iPhone 11 Safari'
+])
