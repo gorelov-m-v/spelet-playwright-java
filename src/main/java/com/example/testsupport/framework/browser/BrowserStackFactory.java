@@ -1,4 +1,4 @@
-package com.example.testsupport.base;
+package com.example.testsupport.framework.browser;
 
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.Playwright;

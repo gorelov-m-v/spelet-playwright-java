@@ -1,9 +1,9 @@
-package com.example.testsupport.base;
+package com.example.testsupport.framework.browser;
 
 import com.microsoft.playwright.*;
 import com.microsoft.playwright.options.WaitUntilState;
 import com.example.testsupport.config.AppProperties;
-import com.example.testsupport.localization.LocalizationService;
+import com.example.testsupport.framework.localization.LocalizationService;
 import org.springframework.stereotype.Component;
 
 /**

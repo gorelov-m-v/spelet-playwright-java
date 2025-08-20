@@ -1,5 +1,6 @@
 package com.example.testsupport.framework.config;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.env.EnvironmentPostProcessor;
@@ -16,11 +17,12 @@ import java.util.Map;
  * Загружает JSON-файл окружения и добавляет его свойства в Spring Environment.
  */
 public class JsonConfigEnvironmentPostProcessor implements EnvironmentPostProcessor {
-    private static final String CONFIG_PROPERTY = "env.config";
+    private static final String CONFIG_PROPERTY_NAME = "env.config";
+    private static final String JSON_PROPERTY_SOURCE_NAME = "jsonConfig";
 
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
-        String configName = environment.getProperty(CONFIG_PROPERTY);
+        String configName = environment.getProperty(CONFIG_PROPERTY_NAME);
         if (configName == null || configName.isEmpty()) {
             return;
         }
@@ -33,15 +35,20 @@ public class JsonConfigEnvironmentPostProcessor implements EnvironmentPostProces
 
         try {
             ObjectMapper mapper = new ObjectMapper();
-            EnvironmentConfig config = mapper.readValue(resource.getInputStream(), EnvironmentConfig.class);
-            Map<String, Object> properties = new HashMap<>();
-            properties.put("app.baseUrl", config.getBaseUrl());
-            properties.put("app.defaultLanguage", config.getDefaultLanguage());
-            properties.put("app.languages", config.getLanguages());
-            MapPropertySource propertySource = new MapPropertySource("jsonConfig", properties);
+            Map<String, Object> jsonProperties = mapper.readValue(
+                    resource.getInputStream(), new TypeReference<Map<String, Object>>() {}
+            );
+
+            Map<String, Object> springProperties = new HashMap<>();
+            jsonProperties.forEach((key, value) -> {
+                String kebabCaseKey = key.replaceAll("([a-z])([A-Z]+)", "$1-$2").toLowerCase();
+                springProperties.put("app." + kebabCaseKey, value);
+            });
+
+            MapPropertySource propertySource = new MapPropertySource(JSON_PROPERTY_SOURCE_NAME, springProperties);
             environment.getPropertySources().addFirst(propertySource);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to read or parse environment config file: " + resourcePath, e);
+            throw new RuntimeException("Failed to process environment config: " + resourcePath, e);
         }
     }
 }

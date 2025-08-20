@@ -1,4 +1,4 @@
-package com.example.testsupport.base;
+package com.example.testsupport.framework.listeners;
 
 import com.microsoft.playwright.Page;
 import io.qameta.allure.Allure;
@@ -10,7 +10,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import com.example.testsupport.config.AppProperties;
-import com.example.testsupport.localization.LocalizationService;
+import com.example.testsupport.framework.localization.LocalizationService;
+import com.example.testsupport.framework.browser.PlaywrightManager;
 
 /**
  * Расширение JUnit 5, которое управляет жизненным циклом Playwright

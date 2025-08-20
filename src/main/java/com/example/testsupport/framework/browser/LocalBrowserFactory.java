@@ -1,4 +1,4 @@
-package com.example.testsupport.base;
+package com.example.testsupport.framework.browser;
 
 import com.example.testsupport.config.AppProperties;
 import com.microsoft.playwright.Browser;

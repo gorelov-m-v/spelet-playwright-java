@@ -1,4 +1,4 @@
-package com.example.testsupport.localization;
+package com.example.testsupport.framework.localization;
 
 import org.springframework.stereotype.Component;
 

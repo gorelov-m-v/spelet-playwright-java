@@ -1,8 +1,8 @@
 package tests;
 
 import com.example.testsupport.TestApplication;
-import com.example.testsupport.base.PlaywrightExtension;
-import com.example.testsupport.base.PlaywrightManager;
+import com.example.testsupport.framework.listeners.PlaywrightExtension;
+import com.example.testsupport.framework.browser.PlaywrightManager;
 import io.qameta.allure.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
