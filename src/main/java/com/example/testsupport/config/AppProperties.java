@@ -1,6 +1,7 @@
 package com.example.testsupport.config;
 
 import com.example.testsupport.base.BrowserName;
+import java.util.List;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "app")
@@ -13,6 +14,7 @@ public class AppProperties {
     private boolean headless = false;
     private String language = "lv";
     private String defaultLanguage = "lv";
+    private List<String> languages;
 
     public String getBaseUrl() { return baseUrl; }
     public void setBaseUrl(String baseUrl) { this.baseUrl = baseUrl; }
@@ -28,4 +30,7 @@ public class AppProperties {
 
     public String getDefaultLanguage() { return defaultLanguage; }
     public void setDefaultLanguage(String defaultLanguage) { this.defaultLanguage = defaultLanguage; }
+
+    public List<String> getLanguages() { return languages; }
+    public void setLanguages(List<String> languages) { this.languages = languages; }
 }

@@ -1,0 +1,5 @@
+{
+  "baseUrl": "https://spelet.lv",
+  "languages": ["lv", "ru", "en"],
+  "defaultLanguage": "lv"
+}
