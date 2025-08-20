@@ -1,0 +1,25 @@
+package com.example.testsupport.base;
+
+import com.microsoft.playwright.Browser;
+import com.microsoft.playwright.Playwright;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
+
+/**
+ * Factory for creating BrowserStack-connected browsers.
+ */
+@Component
+@Profile("browserstack")
+public class BrowserStackFactory implements BrowserFactory {
+
+    private final BrowserStackClient bsClient;
+
+    public BrowserStackFactory(BrowserStackClient bsClient) {
+        this.bsClient = bsClient;
+    }
+
+    @Override
+    public Browser create(Playwright playwright) {
+        return bsClient.connectBrowser(playwright);
+    }
+}

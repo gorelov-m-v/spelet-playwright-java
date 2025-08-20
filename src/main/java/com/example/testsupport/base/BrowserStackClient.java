@@ -2,6 +2,7 @@ package com.example.testsupport.base;
 
 import com.microsoft.playwright.*;
 import org.json.JSONObject;
+import org.springframework.stereotype.Component;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -9,6 +10,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
+@Component
 public class BrowserStackClient {
     private final String username = System.getenv("BROWSERSTACK_USERNAME");
     private final String accessKey = System.getenv("BROWSERSTACK_ACCESS_KEY");
