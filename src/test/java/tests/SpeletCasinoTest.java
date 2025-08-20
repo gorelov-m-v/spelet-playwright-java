@@ -8,7 +8,7 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import pages.MainPage;
+import com.example.testsupport.pages.MainPage;
 
 import static io.qameta.allure.Allure.step;
 
