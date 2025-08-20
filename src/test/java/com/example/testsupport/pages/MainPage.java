@@ -27,8 +27,11 @@ public class MainPage {
      */
     public Locator kazinoLink() {
         String kazinoText = loc.get("header.menu.casino");
-        return page.getByRole(AriaRole.LINK,
-                new Page.GetByRoleOptions().setName(kazinoText));
+        return page.getByRole(AriaRole.NAVIGATION)
+                .getByRole(AriaRole.LINK,
+                        new Locator.GetByRoleOptions()
+                                .setName(kazinoText)
+                                .setExact(true));
     }
 
     /**
