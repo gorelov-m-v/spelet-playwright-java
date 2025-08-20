@@ -1,6 +1,6 @@
 package com.example.testsupport.config;
 
-import com.example.testsupport.base.BrowserName;
+import com.example.testsupport.framework.browser.BrowserName;
 import java.util.List;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

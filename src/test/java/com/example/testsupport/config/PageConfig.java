@@ -1,6 +1,6 @@
 package com.example.testsupport.config;
 
-import com.example.testsupport.base.PlaywrightManager;
+import com.example.testsupport.framework.browser.PlaywrightManager;
 import com.microsoft.playwright.Page;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
