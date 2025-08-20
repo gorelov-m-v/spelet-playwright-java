@@ -2,6 +2,8 @@ package com.example.testsupport.base;
 
 import com.microsoft.playwright.*;
 import com.microsoft.playwright.options.WaitUntilState;
+import com.example.testsupport.config.AppProperties;
+import com.example.testsupport.localization.LocalizationService;
 import org.springframework.stereotype.Component;
 
 /**
@@ -13,6 +15,8 @@ import org.springframework.stereotype.Component;
 public class PlaywrightManager {
 
     private final BrowserFactory browserFactory;
+    private final AppProperties props;
+    private final LocalizationService ls;
 
     // ThreadLocal обеспечивает, что у каждого потока выполнения (теста) будет свой собственный экземпляр
     // Playwright, Browser и Page. Это критически важно для параллельного запуска.
@@ -22,8 +26,12 @@ public class PlaywrightManager {
     private static final ThreadLocal<Page> page = new ThreadLocal<>();
 
     // Spring автоматически внедрит сюда реализацию BrowserFactory в соответствии с активным профилем
-    public PlaywrightManager(BrowserFactory browserFactory) {
+    public PlaywrightManager(BrowserFactory browserFactory,
+                             AppProperties props,
+                             LocalizationService ls) {
         this.browserFactory = browserFactory;
+        this.props = props;
+        this.ls = ls;
     }
 
     /**
@@ -45,12 +53,26 @@ public class PlaywrightManager {
         return page.get();
     }
 
+    private String buildBaseUrlForCurrentLanguage() {
+        String lang = ls.getCurrentLangCode();
+        if (lang == null || lang.equals(props.getDefaultLanguage())) {
+            return props.getBaseUrl();
+        }
+        return props.getBaseUrl() + "/" + lang;
+    }
+
+    public void open() {
+        getPage().navigate(buildBaseUrlForCurrentLanguage(),
+                new Page.NavigateOptions().setWaitUntil(WaitUntilState.NETWORKIDLE));
+    }
+
     /**
-     * Вспомогательный метод для навигации. Скрывает детали реализации от теста.
-     * @param url URL для перехода.
+     * Navigates to a path relative to the language-aware base URL.
+     * @param path e.g. "/casino"
      */
-    public void navigate(String url) {
-        getPage().navigate(url, new Page.NavigateOptions().setWaitUntil(WaitUntilState.NETWORKIDLE));
+    public void navigate(String path) {
+        getPage().navigate(buildBaseUrlForCurrentLanguage() + path,
+                new Page.NavigateOptions().setWaitUntil(WaitUntilState.NETWORKIDLE));
     }
 
 

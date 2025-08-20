@@ -3,8 +3,6 @@ package tests;
 import com.example.testsupport.TestApplication;
 import com.example.testsupport.base.PlaywrightExtension;
 import com.example.testsupport.base.PlaywrightManager;
-import com.example.testsupport.config.AppProperties;
-import com.microsoft.playwright.Page;
 import io.qameta.allure.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,21 +22,14 @@ class SpeletCasinoTest {
     private PlaywrightManager playwrightManager;
 
     @Autowired
-    private AppProperties props;
+    private MainPage mainPage;
 
     @Story("Переход на страницу казино")
     @DisplayName("Клик по «Kazino» ведёт на /casino")
     @Test
     void navigateToCasinoFromHome() {
-        Page page = playwrightManager.getPage();
-
-        step("Открыть главную страницу: " + props.getBaseUrl(), () ->
-                playwrightManager.navigate(props.getBaseUrl())
-        );
-
-        MainPage mainPage = new MainPage(page);
+        step("Открыть главную страницу", () -> playwrightManager.open());
         step("Клик по пункту меню «Kazino»", mainPage::clickKazino);
-
         step("Проверить, что URL содержит /casino", () ->
                 mainPage.verifyUrlContains("/casino")
         );

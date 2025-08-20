@@ -9,6 +9,8 @@ public class AppProperties {
     private String remote = "local";     // local | browserstack
     private BrowserName browser = BrowserName.CHROMIUM;
     private boolean headless = false;
+    private String language = "lv";
+    private String defaultLanguage = "lv";
 
     public String getBaseUrl() { return baseUrl; }
     public void setBaseUrl(String baseUrl) { this.baseUrl = baseUrl; }
@@ -21,4 +23,10 @@ public class AppProperties {
 
     public boolean isHeadless() { return headless; }
     public void setHeadless(boolean headless) { this.headless = headless; }
+
+    public String getLanguage() { return language; }
+    public void setLanguage(String language) { this.language = language; }
+
+    public String getDefaultLanguage() { return defaultLanguage; }
+    public void setDefaultLanguage(String defaultLanguage) { this.defaultLanguage = defaultLanguage; }
 }

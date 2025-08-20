@@ -7,7 +7,10 @@ import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import com.example.testsupport.config.AppProperties;
+import com.example.testsupport.localization.LocalizationService;
 
 /**
  * JUnit 5 extension that manages Playwright lifecycle and creates useful
@@ -19,8 +22,12 @@ public class PlaywrightExtension implements BeforeEachCallback, AfterEachCallbac
 
     @Override
     public void beforeEach(ExtensionContext context) {
-        PlaywrightManager manager = SpringExtension.getApplicationContext(context)
-                .getBean(PlaywrightManager.class);
+        ApplicationContext ctx = SpringExtension.getApplicationContext(context);
+        LocalizationService ls = ctx.getBean(LocalizationService.class);
+        AppProperties props = ctx.getBean(AppProperties.class);
+        ls.loadLocale(props.getLanguage());
+
+        PlaywrightManager manager = ctx.getBean(PlaywrightManager.class);
         // Initialize Playwright resources for the current test
         manager.getPage();
     }
