@@ -1,8 +1,9 @@
 package com.example.testsupport.base;
 
-import com.example.testsupport.config.AppProperties;
 import com.microsoft.playwright.*;
 import com.microsoft.playwright.options.WaitUntilState;
+import com.example.testsupport.config.AppProperties;
+import com.example.testsupport.localization.LocalizationService;
 import org.springframework.stereotype.Component;
 
 /**
@@ -13,20 +14,21 @@ import org.springframework.stereotype.Component;
 @Component
 public class PlaywrightManager {
 
+    private final BrowserFactory browserFactory;
     private final AppProperties props;
-    private final BrowserStackClient bsClient;
+    private final LocalizationService ls;
 
-    // ThreadLocal обеспечивает, что у каждого потока выполнения (теста) будет свой собственный экземпляр
-    // Playwright, Browser и Page. Это критически важно для параллельного запуска.
     private static final ThreadLocal<Playwright> playwright = new ThreadLocal<>();
     private static final ThreadLocal<Browser> browser = new ThreadLocal<>();
     private static final ThreadLocal<BrowserContext> context = new ThreadLocal<>();
     private static final ThreadLocal<Page> page = new ThreadLocal<>();
 
-    // Spring автоматически внедрит сюда бин AppProperties при создании base.PlaywrightManager
-    public PlaywrightManager(AppProperties props) {
+    public PlaywrightManager(BrowserFactory browserFactory,
+                             AppProperties props,
+                             LocalizationService ls) {
+        this.browserFactory = browserFactory;
         this.props = props;
-        this.bsClient = new BrowserStackClient();
+        this.ls = ls;
     }
 
     /**
@@ -37,10 +39,10 @@ public class PlaywrightManager {
     public Page getPage() {
         if (page.get() == null) {
             playwright.set(Playwright.create());
-            browser.set(createBrowser());
+            browser.set(browserFactory.create(playwright.get()));
 
             Browser.NewContextOptions contextOptions = new Browser.NewContextOptions()
-                    .setViewportSize(1920, 1080); // Задаем стандартный размер окна
+                    .setViewportSize(1920, 1080);
             context.set(browser.get().newContext(contextOptions));
 
             page.set(context.get().newPage());
@@ -48,35 +50,29 @@ public class PlaywrightManager {
         return page.get();
     }
 
-    /**
-     * Вспомогательный метод для навигации. Скрывает детали реализации от теста.
-     * @param url URL для перехода.
-     */
-    public void navigate(String url) {
-        getPage().navigate(url, new Page.NavigateOptions().setWaitUntil(WaitUntilState.NETWORKIDLE));
-    }
-
-    /**
-     * Внутренний метод, который решает, какой браузер создать: локальный или в BrowserStack.
-     * @return созданный экземпляр Browser.
-     */
-    private Browser createBrowser() {
-        RunMode runMode = RunMode.fromProperty(props.getRemote());
-        String browserName = props.getBrowser().toLowerCase();
-
-        if (runMode == RunMode.BROWSERSTACK) {
-            return bsClient.connectBrowser(playwright.get());
-        } else {
-            BrowserType.LaunchOptions options = new BrowserType.LaunchOptions()
-                    .setHeadless(props.isHeadless());
-
-            return switch (browserName) {
-                case "firefox" -> playwright.get().firefox().launch(options);
-                case "webkit"  -> playwright.get().webkit().launch(options);
-                default        -> playwright.get().chromium().launch(options);
-            };
+    private String buildBaseUrlForCurrentLanguage() {
+        String lang = ls.getCurrentLangCode();
+        if (lang == null || lang.equals(props.getDefaultLanguage())) {
+            return props.getBaseUrl();
         }
+        return props.getBaseUrl() + "/" + lang;
     }
+
+    public void open() {
+        getPage().navigate(buildBaseUrlForCurrentLanguage(),
+                new Page.NavigateOptions().setWaitUntil(WaitUntilState.NETWORKIDLE));
+    }
+
+    /**
+     * Переходит по пути относительно базового URL с учетом языка.
+     *
+     * @param path например, "/casino"
+     */
+    public void navigate(String path) {
+        getPage().navigate(buildBaseUrlForCurrentLanguage() + path,
+                new Page.NavigateOptions().setWaitUntil(WaitUntilState.NETWORKIDLE));
+    }
+
 
     /**
      * Закрывает все ресурсы Playwright в правильном порядке и очищает ThreadLocal переменные.
