@@ -41,7 +41,7 @@ class MultilingualNavigationTest {
     }
 
     @Story("Переход на страницу казино для всех поддерживаемых языков")
-    @DisplayName("Навигация на страницу казино для языка: {0}")
+    @DisplayName("Навигация на страницу казино для языка:")
     @ParameterizedTest(name = "[Язык: {0}]")
     @MethodSource("languageProvider")
     void navigateToCasinoPageOnAllLanguages(String languageCode) {
@@ -60,4 +60,3 @@ class MultilingualNavigationTest {
                 () -> mainPage.verifyUrlContains(expectedPath));
     }
 }
-
