@@ -4,6 +4,9 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 /**
@@ -27,7 +30,9 @@ public class LocalizationService {
                 throw new IllegalArgumentException("Locale file not found: " + resourcePath);
             }
             Properties props = new Properties();
-            props.load(in);
+            try (Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
+                props.load(reader);
+            }
             LOCALE.set(props);
             LANG_CODE.set(languageCode);
         } catch (IOException e) {
