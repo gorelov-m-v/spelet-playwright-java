@@ -7,8 +7,8 @@ import java.io.InputStream;
 import java.util.Properties;
 
 /**
- * Provides translations for UI elements based on the current test language.
- * Locale data is stored in thread-local storage to support parallel test execution.
+ * Предоставляет переводы элементов UI на основе текущего языка теста.
+ * Данные локали хранятся в {@link ThreadLocal}, что позволяет запускать тесты параллельно.
  */
 @Component
 public class LocalizationService {
@@ -16,9 +16,9 @@ public class LocalizationService {
     private static final ThreadLocal<String> LANG_CODE = new ThreadLocal<>();
 
     /**
-     * Loads the locale properties for the given language code.
+     * Загружает свойства локали для заданного кода языка.
      *
-     * @param languageCode e.g. "lv", "ru", "en"
+     * @param languageCode например, "lv", "ru", "en"
      */
     public void loadLocale(String languageCode) {
         String resourcePath = "/locales/" + languageCode + ".properties";
@@ -36,10 +36,10 @@ public class LocalizationService {
     }
 
     /**
-     * Returns translation for the given key from the loaded locale.
+     * Возвращает перевод для указанного ключа из загруженной локали.
      *
-     * @param key translation key
-     * @return translated value
+     * @param key ключ перевода
+     * @return локализованное значение
      */
     public String get(String key) {
         Properties props = LOCALE.get();
@@ -50,7 +50,7 @@ public class LocalizationService {
     }
 
     /**
-     * @return currently loaded language code
+     * @return код текущего языка
      */
     public String getCurrentLangCode() {
         return LANG_CODE.get();

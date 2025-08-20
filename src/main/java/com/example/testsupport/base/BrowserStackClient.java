@@ -10,11 +10,20 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
+/**
+ * Клиент для подключения к BrowserStack через WebSocket API.
+ */
 @Component
 public class BrowserStackClient {
     private final String username = System.getenv("BROWSERSTACK_USERNAME");
     private final String accessKey = System.getenv("BROWSERSTACK_ACCESS_KEY");
 
+    /**
+     * Создает подключенный к BrowserStack браузер.
+     *
+     * @param playwright экземпляр Playwright
+     * @return подключенный браузер
+     */
     public Browser connectBrowser(Playwright playwright) {
         ensureCreds();
 

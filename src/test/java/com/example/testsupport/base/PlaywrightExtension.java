@@ -13,8 +13,8 @@ import com.example.testsupport.config.AppProperties;
 import com.example.testsupport.localization.LocalizationService;
 
 /**
- * JUnit 5 extension that manages Playwright lifecycle and creates useful
- * Allure attachments when a test fails.
+ * Расширение JUnit 5, которое управляет жизненным циклом Playwright
+ * и создает полезные вложения Allure при падении теста.
  */
 public class PlaywrightExtension implements BeforeEachCallback, AfterEachCallback {
 
@@ -28,7 +28,6 @@ public class PlaywrightExtension implements BeforeEachCallback, AfterEachCallbac
         ls.loadLocale(props.getLanguage());
 
         PlaywrightManager manager = ctx.getBean(PlaywrightManager.class);
-        // Initialize Playwright resources for the current test
         manager.getPage();
     }
 

@@ -25,11 +25,11 @@ class SpeletCasinoTest {
     private MainPage mainPage;
 
     @Story("Переход на страницу казино")
-    @DisplayName("Клик по «Kazino» ведёт на /casino")
+    @DisplayName("Клик по «Казино» ведёт на /casino")
     @Test
     void navigateToCasinoFromHome() {
         step("Открыть главную страницу", () -> playwrightManager.open());
-        step("Клик по пункту меню «Kazino»", mainPage::clickKazino);
+        step("Клик по пункту меню «Казино»", mainPage::clickKazino);
         step("Проверить, что URL содержит /casino", () ->
                 mainPage.verifyUrlContains("/casino")
         );

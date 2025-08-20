@@ -3,6 +3,9 @@ package com.example.testsupport.config;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Основная тестовая конфигурация, подключающая {@link AppProperties}.
+ */
 @Configuration
 @EnableConfigurationProperties(AppProperties.class)
 public class TestConfig { }

@@ -1,5 +1,4 @@
 app:
   base-url: https://spelet.lv
-  remote: local
   browser: chromium
   headless: false

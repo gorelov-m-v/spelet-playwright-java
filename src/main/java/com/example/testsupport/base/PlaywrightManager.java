@@ -18,14 +18,11 @@ public class PlaywrightManager {
     private final AppProperties props;
     private final LocalizationService ls;
 
-    // ThreadLocal обеспечивает, что у каждого потока выполнения (теста) будет свой собственный экземпляр
-    // Playwright, Browser и Page. Это критически важно для параллельного запуска.
     private static final ThreadLocal<Playwright> playwright = new ThreadLocal<>();
     private static final ThreadLocal<Browser> browser = new ThreadLocal<>();
     private static final ThreadLocal<BrowserContext> context = new ThreadLocal<>();
     private static final ThreadLocal<Page> page = new ThreadLocal<>();
 
-    // Spring автоматически внедрит сюда реализацию BrowserFactory в соответствии с активным профилем
     public PlaywrightManager(BrowserFactory browserFactory,
                              AppProperties props,
                              LocalizationService ls) {
@@ -45,7 +42,7 @@ public class PlaywrightManager {
             browser.set(browserFactory.create(playwright.get()));
 
             Browser.NewContextOptions contextOptions = new Browser.NewContextOptions()
-                    .setViewportSize(1920, 1080); // Задаем стандартный размер окна
+                    .setViewportSize(1920, 1080);
             context.set(browser.get().newContext(contextOptions));
 
             page.set(context.get().newPage());
@@ -67,8 +64,9 @@ public class PlaywrightManager {
     }
 
     /**
-     * Navigates to a path relative to the language-aware base URL.
-     * @param path e.g. "/casino"
+     * Переходит по пути относительно базового URL с учетом языка.
+     *
+     * @param path например, "/casino"
      */
     public void navigate(String path) {
         getPage().navigate(buildBaseUrlForCurrentLanguage() + path,

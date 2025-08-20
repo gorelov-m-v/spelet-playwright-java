@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 /**
- * Factory for creating local Playwright browsers.
+ * Фабрика для запуска локальных браузеров Playwright.
  */
 @Component
 @Profile("local")

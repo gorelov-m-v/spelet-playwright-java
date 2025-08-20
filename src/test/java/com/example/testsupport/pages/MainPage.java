@@ -2,6 +2,7 @@ package com.example.testsupport.pages;
 
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
+import com.microsoft.playwright.options.AriaRole;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
@@ -19,16 +20,30 @@ public class MainPage {
         this.loc = loc;
     }
 
+    /**
+     * Возвращает локатор ссылки «Казино» в меню.
+     *
+     * @return локатор ссылки
+     */
     public Locator kazinoLink() {
         String kazinoText = loc.get("header.menu.casino");
-        return page.locator("nav >> text='" + kazinoText + "'");
+        return page.getByRole(AriaRole.LINK,
+                new Page.GetByRoleOptions().setName(kazinoText));
     }
 
+    /**
+     * Переходит на страницу казино через меню.
+     */
     public void clickKazino() {
-        kazinoLink().first().click();
-        page.waitForURL("**/casino*");
+        page.waitForNavigation(() -> kazinoLink().click());
     }
 
+    /**
+     * Проверяет, что текущий URL содержит ожидаемый путь.
+     *
+     * @param expectedPath ожидаемая подстрока URL
+     * @return текущий объект {@link MainPage}
+     */
     public MainPage verifyUrlContains(String expectedPath) {
         String current = page.url();
         Assertions.assertTrue(

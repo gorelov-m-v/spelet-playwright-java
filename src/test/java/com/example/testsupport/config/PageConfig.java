@@ -7,6 +7,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 
+/**
+ * Конфигурация, предоставляющая прототип-бин {@link Page} из PlaywrightManager.
+ */
 @Configuration
 public class PageConfig {
     @Bean

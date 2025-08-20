@@ -70,7 +70,6 @@ def bsTask = { String name, Map<String,String> props ->
     tasks.register(name, Test) {
         useJUnitPlatform()
         systemProperty 'spring.profiles.active', 'browserstack'
-        systemProperty 'app.remote', 'browserstack'
         props.each { k, v -> systemProperty k, v }
         testLogging { events "passed", "skipped", "failed" }
         dependsOn(playwrightInstall)
