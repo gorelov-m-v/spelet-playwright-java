@@ -25,11 +25,11 @@ public class LocalBrowserFactory implements BrowserFactory {
         BrowserType.LaunchOptions options = new BrowserType.LaunchOptions()
                 .setHeadless(props.isHeadless());
 
-        String browserName = props.getBrowser().toLowerCase();
+        BrowserName browserName = props.getBrowser();
         return switch (browserName) {
-            case "firefox" -> playwright.firefox().launch(options);
-            case "webkit" -> playwright.webkit().launch(options);
-            default -> playwright.chromium().launch(options);
+            case FIREFOX -> playwright.firefox().launch(options);
+            case WEBKIT -> playwright.webkit().launch(options);
+            case CHROMIUM -> playwright.chromium().launch(options);
         };
     }
 }

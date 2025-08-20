@@ -13,7 +13,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import pages.MainPage;
 
 import static io.qameta.allure.Allure.step;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Epic("Spelet.lv")
 @Feature("Навигация по шапке")
@@ -37,15 +36,11 @@ class SpeletCasinoTest {
                 playwrightManager.navigate(props.getBaseUrl())
         );
 
-        step("Клик по пункту меню «Kazino»", () -> {
-            MainPage mainPage = new MainPage(page);
-            mainPage.clickKazino();
-        });
+        MainPage mainPage = new MainPage(page);
+        step("Клик по пункту меню «Kazino»", mainPage::clickKazino);
 
-        step("Проверить, что URL содержит /casino", () -> {
-            String current = page.url();
-            assertTrue(current.contains("/casino"),
-                    "Ожидали переход на страницу /casino, фактический: " + current);
-        });
+        step("Проверить, что URL содержит /casino", () ->
+                mainPage.verifyUrlContains("/casino")
+        );
     }
 }
