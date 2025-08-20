@@ -25,20 +25,20 @@ public class MainPage {
      *
      * @return локатор ссылки
      */
-    public Locator kazinoLink() {
-        String kazinoText = loc.get("header.menu.casino");
+    public Locator casinoLink() {
+        String casinoText = loc.get("header.menu.casino");
         return page.getByRole(AriaRole.NAVIGATION)
                 .getByRole(AriaRole.LINK,
                         new Locator.GetByRoleOptions()
-                                .setName(kazinoText)
+                                .setName(casinoText)
                                 .setExact(true));
     }
 
     /**
      * Переходит на страницу казино через меню.
      */
-    public void clickKazino() {
-        page.waitForNavigation(() -> kazinoLink().click());
+    public void clickCasino() {
+        page.waitForNavigation(() -> casinoLink().click());
     }
 
     /**

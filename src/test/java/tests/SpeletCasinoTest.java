@@ -29,7 +29,7 @@ class SpeletCasinoTest {
     @Test
     void navigateToCasinoFromHome() {
         step("Открыть главную страницу", () -> playwrightManager.open());
-        step("Клик по пункту меню «Казино»", mainPage::clickKazino);
+        step("Клик по пункту меню «Казино»", mainPage::clickCasino);
         step("Проверить, что URL содержит /casino", () ->
                 mainPage.verifyUrlContains("/casino")
         );
