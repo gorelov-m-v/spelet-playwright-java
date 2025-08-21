@@ -4,8 +4,9 @@ import com.example.testsupport.TestApplication;
 import com.example.testsupport.config.AppProperties;
 import com.example.testsupport.framework.browser.PlaywrightManager;
 import com.example.testsupport.framework.listeners.PlaywrightExtension;
-import com.example.testsupport.framework.localization.LocalizationService;
-import com.example.testsupport.pages.MainPage;
+import com.example.testsupport.framework.routing.PageAsserter;
+import com.example.testsupport.ui.pages.CasinoPage;
+import com.example.testsupport.ui.pages.MainPage;
 import io.qameta.allure.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,7 +35,7 @@ class MultilingualNavigationTest {
     private AppProperties props;
 
     @Autowired
-    private LocalizationService ls;
+    private PageAsserter asserter;
 
     static Stream<String> languageProvider() {
         return Stream.of("lv", "ru", "en");
@@ -45,18 +46,13 @@ class MultilingualNavigationTest {
     @ParameterizedTest(name = "[Язык: {0}]")
     @MethodSource("languageProvider")
     void navigateToCasinoPageOnAllLanguages(String languageCode) {
-        step("Установить язык теста: " + languageCode, () -> {
-            props.setLanguage(languageCode);
-            ls.loadLocale(languageCode);
-        });
+        step("Установить язык теста: " + languageCode,
+                () -> props.setLanguage(languageCode));
 
-        step("Открыть главную страницу", () -> playwrightManager.open());
+        step("Открыть главную страницу", () -> playwrightManager.open(MainPage.class));
         step("Переход на страницу казино", mainPage::clickCasino);
 
-        String expectedPath = languageCode.equals(props.getDefaultLanguage())
-                ? "/casino"
-                : "/" + languageCode + "/casino";
-        step("Проверить, что URL содержит " + expectedPath,
-                () -> mainPage.verifyUrlContains(expectedPath));
+        step("Проверить, что мы находимся на странице казино",
+                () -> asserter.amOn(CasinoPage.class));
     }
 }

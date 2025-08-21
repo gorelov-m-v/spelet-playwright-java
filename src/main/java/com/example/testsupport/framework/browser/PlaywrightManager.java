@@ -2,8 +2,9 @@ package com.example.testsupport.framework.browser;
 
 import com.microsoft.playwright.*;
 import com.microsoft.playwright.options.WaitUntilState;
-import com.example.testsupport.config.AppProperties;
-import com.example.testsupport.framework.localization.LocalizationService;
+import com.example.testsupport.framework.routing.UrlBuilder;
+import java.util.Collections;
+import java.util.Map;
 import org.springframework.stereotype.Component;
 
 /**
@@ -15,8 +16,7 @@ import org.springframework.stereotype.Component;
 public class PlaywrightManager {
 
     private final BrowserFactory browserFactory;
-    private final AppProperties props;
-    private final LocalizationService ls;
+    private final UrlBuilder urlBuilder;
 
     private static final ThreadLocal<Playwright> playwright = new ThreadLocal<>();
     private static final ThreadLocal<Browser> browser = new ThreadLocal<>();
@@ -24,11 +24,9 @@ public class PlaywrightManager {
     private static final ThreadLocal<Page> page = new ThreadLocal<>();
 
     public PlaywrightManager(BrowserFactory browserFactory,
-                             AppProperties props,
-                             LocalizationService ls) {
+                             UrlBuilder urlBuilder) {
         this.browserFactory = browserFactory;
-        this.props = props;
-        this.ls = ls;
+        this.urlBuilder = urlBuilder;
     }
 
     /**
@@ -50,27 +48,29 @@ public class PlaywrightManager {
         return page.get();
     }
 
-    private String buildBaseUrlForCurrentLanguage() {
-        String lang = ls.getCurrentLangCode();
-        if (lang == null || lang.equals(props.getDefaultLanguage())) {
-            return props.getBaseUrl();
-        }
-        return props.getBaseUrl() + "/" + lang;
-    }
-
     public void open() {
-        getPage().navigate(buildBaseUrlForCurrentLanguage(),
+        getPage().navigate(urlBuilder.getBaseUrl(),
                 new Page.NavigateOptions().setWaitUntil(WaitUntilState.LOAD));
     }
 
     /**
-     * Переходит по пути относительно базового URL с учетом языка.
+     * Открывает страницу, соответствующую указанному классу Page Object.
      *
-     * @param path например, "/casino"
+     * @param pageClass класс PO, помеченный @PagePath
      */
-    public void navigate(String path) {
-        getPage().navigate(buildBaseUrlForCurrentLanguage() + path,
-                new Page.NavigateOptions().setWaitUntil(WaitUntilState.NETWORKIDLE));
+    public void open(Class<?> pageClass) {
+        open(pageClass, Collections.emptyMap());
+    }
+
+    /**
+     * Открывает страницу, соответствующую указанному классу Page Object, с query-параметрами.
+     *
+     * @param pageClass   класс PO, помеченный @PagePath
+     * @param queryParams карта query-параметров
+     */
+    public void open(Class<?> pageClass, Map<String, String> queryParams) {
+        getPage().navigate(urlBuilder.getPageUrl(pageClass, queryParams),
+                new Page.NavigateOptions().setWaitUntil(WaitUntilState.LOAD));
     }
 
 

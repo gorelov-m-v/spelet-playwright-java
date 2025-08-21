@@ -1,14 +1,16 @@
-package com.example.testsupport.pages;
+package com.example.testsupport.ui.pages;
 
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
-import org.junit.jupiter.api.Assertions;
+import org.assertj.core.api.Assertions;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import com.example.testsupport.framework.localization.LocalizationService;
+import com.example.testsupport.framework.routing.PagePath;
 
+@PagePath("/")
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class MainPage {
@@ -36,9 +38,12 @@ public class MainPage {
 
     /**
      * Переходит на страницу казино через меню.
+     *
+     * @return объект {@link CasinoPage} после навигации
      */
-    public void clickCasino() {
+    public CasinoPage clickCasino() {
         page.waitForNavigation(() -> casinoLink().click());
+        return new CasinoPage(page);
     }
 
     /**
@@ -48,11 +53,19 @@ public class MainPage {
      * @return текущий объект {@link MainPage}
      */
     public MainPage verifyUrlContains(String expectedPath) {
-        String current = page.url();
-        Assertions.assertTrue(
-                current.contains(expectedPath),
-                String.format("Ожидалось, что URL содержит '%s', но фактический URL '%s'", expectedPath, current)
-        );
+        Assertions.assertThat(page.url()).contains(expectedPath);
+        return this;
+    }
+
+    /**
+     * Проверяет, что текущий URL равен ожидаемому URL.
+     *
+     * @param expectedUrl полный ожидаемый URL
+     * @return текущий объект {@link MainPage}
+     */
+    public MainPage verifyUrlIs(String expectedUrl) {
+        page.waitForURL(expectedUrl);
+        Assertions.assertThat(page.url()).isEqualTo(expectedUrl);
         return this;
     }
 }

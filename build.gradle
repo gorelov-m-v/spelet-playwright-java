@@ -17,6 +17,7 @@ repositories { mavenCentral() }
     dependencies {
         // Spring Boot
         implementation 'org.springframework.boot:spring-boot-starter'
+        implementation 'org.springframework.boot:spring-boot-starter-web'
         testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
         // Playwright
@@ -28,6 +29,8 @@ repositories { mavenCentral() }
     // JUnit 5
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+
+    implementation 'org.assertj:assertj-core'
 
     // Allure
     testImplementation 'io.qameta.allure:allure-junit5:2.29.0'
