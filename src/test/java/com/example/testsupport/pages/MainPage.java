@@ -3,7 +3,7 @@ package com.example.testsupport.pages;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
-import org.junit.jupiter.api.Assertions;
+import org.assertj.core.api.Assertions;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -48,11 +48,19 @@ public class MainPage {
      * @return текущий объект {@link MainPage}
      */
     public MainPage verifyUrlContains(String expectedPath) {
-        String current = page.url();
-        Assertions.assertTrue(
-                current.contains(expectedPath),
-                String.format("Ожидалось, что URL содержит '%s', но фактический URL '%s'", expectedPath, current)
-        );
+        Assertions.assertThat(page.url()).contains(expectedPath);
+        return this;
+    }
+
+    /**
+     * Проверяет, что текущий URL равен ожидаемому URL.
+     *
+     * @param expectedUrl полный ожидаемый URL
+     * @return текущий объект {@link MainPage}
+     */
+    public MainPage verifyUrlIs(String expectedUrl) {
+        page.waitForURL(expectedUrl);
+        Assertions.assertThat(page.url()).isEqualTo(expectedUrl);
         return this;
     }
 }

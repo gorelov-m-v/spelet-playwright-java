@@ -5,6 +5,7 @@ import com.example.testsupport.config.AppProperties;
 import com.example.testsupport.framework.browser.PlaywrightManager;
 import com.example.testsupport.framework.listeners.PlaywrightExtension;
 import com.example.testsupport.framework.localization.LocalizationService;
+import com.example.testsupport.framework.routing.UrlBuilder;
 import com.example.testsupport.pages.MainPage;
 import io.qameta.allure.*;
 import org.junit.jupiter.api.*;
@@ -36,6 +37,9 @@ class MultilingualNavigationTest {
     @Autowired
     private LocalizationService ls;
 
+    @Autowired
+    private UrlBuilder urlBuilder;
+
     static Stream<String> languageProvider() {
         return Stream.of("lv", "ru", "en");
     }
@@ -45,18 +49,15 @@ class MultilingualNavigationTest {
     @ParameterizedTest(name = "[Язык: {0}]")
     @MethodSource("languageProvider")
     void navigateToCasinoPageOnAllLanguages(String languageCode) {
-        step("Установить язык теста: " + languageCode, () -> {
-            props.setLanguage(languageCode);
-            ls.loadLocale(languageCode);
-        });
+        step("Установить язык теста: " + languageCode,
+                () -> props.setLanguage(languageCode));
 
         step("Открыть главную страницу", () -> playwrightManager.open());
         step("Переход на страницу казино", mainPage::clickCasino);
 
-        String expectedPath = languageCode.equals(props.getDefaultLanguage())
-                ? "/casino"
-                : "/" + languageCode + "/casino";
-        step("Проверить, что URL содержит " + expectedPath,
-                () -> mainPage.verifyUrlContains(expectedPath));
+        String expectedUrl = urlBuilder.getPageUrl("/casino");
+
+        step("Проверить, что URL " + expectedUrl,
+                () -> mainPage.verifyUrlIs(expectedUrl));
     }
 }
