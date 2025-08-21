@@ -3,6 +3,8 @@ package com.example.testsupport.framework.browser;
 import com.microsoft.playwright.*;
 import com.microsoft.playwright.options.WaitUntilState;
 import com.example.testsupport.framework.routing.UrlBuilder;
+import java.util.Collections;
+import java.util.Map;
 import org.springframework.stereotype.Component;
 
 /**
@@ -57,7 +59,17 @@ public class PlaywrightManager {
      * @param pageClass класс PO, помеченный @PagePath
      */
     public void open(Class<?> pageClass) {
-        getPage().navigate(urlBuilder.getPageUrl(pageClass),
+        open(pageClass, Collections.emptyMap());
+    }
+
+    /**
+     * Открывает страницу, соответствующую указанному классу Page Object, с query-параметрами.
+     *
+     * @param pageClass   класс PO, помеченный @PagePath
+     * @param queryParams карта query-параметров
+     */
+    public void open(Class<?> pageClass, Map<String, String> queryParams) {
+        getPage().navigate(urlBuilder.getPageUrl(pageClass, queryParams),
                 new Page.NavigateOptions().setWaitUntil(WaitUntilState.LOAD));
     }
 
