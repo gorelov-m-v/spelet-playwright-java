@@ -52,12 +52,12 @@ public class PlaywrightManager {
     }
 
     /**
-     * Переходит по пути относительно базового URL с учетом языка.
+     * Открывает страницу, соответствующую указанному классу Page Object.
      *
-     * @param path например, "/casino"
+     * @param pageClass класс PO, помеченный @PagePath
      */
-    public void navigate(String path) {
-        getPage().navigate(urlBuilder.getPageUrl(path),
+    public void open(Class<?> pageClass) {
+        getPage().navigate(urlBuilder.getPageUrl(pageClass),
                 new Page.NavigateOptions().setWaitUntil(WaitUntilState.LOAD));
     }
 

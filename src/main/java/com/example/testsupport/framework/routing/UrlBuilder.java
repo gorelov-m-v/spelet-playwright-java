@@ -4,6 +4,8 @@ import com.example.testsupport.config.AppProperties;
 import com.example.testsupport.framework.localization.LocalizationService;
 import org.springframework.stereotype.Component;
 
+import java.util.Objects;
+
 /**
  * Сервис для построения URL-адресов страниц с учетом текущего языка.
  * Является единым источником правды для генерации URL.
@@ -33,14 +35,19 @@ public class UrlBuilder {
     }
 
     /**
-     * Возвращает полный URL для указанного относительного пути.
-     * @param path Относительный путь, например, "/casino"
-     * @return Полный URL, например, "https://spelet.lv/ru/casino"
+     * Возвращает полный URL для класса страницы, помеченного аннотацией {@link PagePath}.
+     *
+     * @param pageClass класс Page Object (например, {@code CasinoPage.class})
+     * @return полный URL для этой страницы с учетом языка
      */
-    public String getPageUrl(String path) {
-        if (path == null || path.isEmpty()) {
-            return getBaseUrl();
+    public String getPageUrl(Class<?> pageClass) {
+        PagePath pathAnnotation = pageClass.getAnnotation(PagePath.class);
+        if (pathAnnotation == null) {
+            throw new IllegalArgumentException(
+                "Класс " + pageClass.getSimpleName() + " не имеет аннотации @PagePath");
         }
-        return getBaseUrl() + (path.startsWith("/") ? path : "/" + path);
+        String path = Objects.requireNonNull(pathAnnotation.value(),
+                "Path in @PagePath cannot be null");
+        return getBaseUrl() + path;
     }
 }

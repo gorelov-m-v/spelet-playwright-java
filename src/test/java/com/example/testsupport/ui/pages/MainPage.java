@@ -1,4 +1,4 @@
-package com.example.testsupport.pages;
+package com.example.testsupport.ui.pages;
 
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
@@ -8,7 +8,9 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import com.example.testsupport.framework.localization.LocalizationService;
+import com.example.testsupport.framework.routing.PagePath;
 
+@PagePath("/")
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class MainPage {
@@ -36,9 +38,12 @@ public class MainPage {
 
     /**
      * Переходит на страницу казино через меню.
+     *
+     * @return объект {@link CasinoPage} после навигации
      */
-    public void clickCasino() {
+    public CasinoPage clickCasino() {
         page.waitForNavigation(() -> casinoLink().click());
+        return new CasinoPage(page);
     }
 
     /**
