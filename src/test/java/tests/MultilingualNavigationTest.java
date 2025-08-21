@@ -5,6 +5,7 @@ import com.example.testsupport.config.AppProperties;
 import com.example.testsupport.framework.browser.PlaywrightManager;
 import com.example.testsupport.framework.listeners.PlaywrightExtension;
 import com.example.testsupport.framework.localization.LocalizationService;
+import com.example.testsupport.pages.CasinoPage;
 import com.example.testsupport.pages.MainPage;
 import io.qameta.allure.*;
 import org.junit.jupiter.api.*;
@@ -36,6 +37,9 @@ class MultilingualNavigationTest {
     @Autowired
     private LocalizationService ls;
 
+    @Autowired
+    private CasinoPage casinoPage;
+
     static Stream<String> languageProvider() {
         return Stream.of("lv", "ru", "en");
     }
@@ -52,11 +56,7 @@ class MultilingualNavigationTest {
 
         step("Открыть главную страницу", () -> playwrightManager.open());
         step("Переход на страницу казино", mainPage::clickCasino);
-
-        String expectedPath = languageCode.equals(props.getDefaultLanguage())
-                ? "/casino"
-                : "/" + languageCode + "/casino";
-        step("Проверить, что URL содержит " + expectedPath,
-                () -> mainPage.verifyUrlContains(expectedPath));
+        step("Проверить, что URL содержит " + casinoPage.getExpectedPath(),
+                casinoPage::verifyUrl);
     }
 }
