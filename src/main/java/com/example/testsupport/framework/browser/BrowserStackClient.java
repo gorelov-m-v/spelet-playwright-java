@@ -76,23 +76,11 @@ public class BrowserStackClient {
     private Browser connect(Playwright playwright, String browser, JSONObject caps) {
         String ws = "wss://cdp.browserstack.com/playwright?caps=" + urlEncode(caps.toString());
 
-        BrowserType type;
-        switch (browser.toLowerCase()) {
-            case "firefox":
-            case "playwright-firefox":
-                type = playwright.firefox();
-                break;
-            case "safari":
-            case "playwright-webkit":
-                type = playwright.webkit();
-                break;
-            case "chrome":
-            case "edge":
-            case "playwright-chromium":
-            default:
-                type = playwright.chromium();
-                break;
-        }
+        BrowserType type = switch (browser.toLowerCase()) {
+            case "firefox", "playwright-firefox" -> playwright.firefox();
+            case "safari", "playwright-webkit" -> playwright.webkit();
+            default -> playwright.chromium();
+        };
         return type.connect(ws);
     }
 
