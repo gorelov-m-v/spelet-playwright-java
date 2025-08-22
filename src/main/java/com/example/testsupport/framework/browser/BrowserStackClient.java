@@ -78,11 +78,6 @@ public class BrowserStackClient {
 
         BrowserType type;
         switch (browser.toLowerCase()) {
-            case "chrome":
-            case "edge":
-            case "playwright-chromium":
-                type = playwright.chromium();
-                break;
             case "firefox":
             case "playwright-firefox":
                 type = playwright.firefox();
@@ -91,8 +86,12 @@ public class BrowserStackClient {
             case "playwright-webkit":
                 type = playwright.webkit();
                 break;
+            case "chrome":
+            case "edge":
+            case "playwright-chromium":
             default:
                 type = playwright.chromium();
+                break;
         }
         return type.connect(ws);
     }
