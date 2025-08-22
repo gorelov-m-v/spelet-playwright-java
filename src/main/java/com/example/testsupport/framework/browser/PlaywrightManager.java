@@ -60,7 +60,7 @@ public class PlaywrightManager {
 
     public void open() {
         getPage().navigate(buildBaseUrlForCurrentLanguage(),
-                new Page.NavigateOptions().setWaitUntil(WaitUntilState.LOAD));
+                new Page.NavigateOptions().setWaitUntil(WaitUntilState.NETWORKIDLE));
     }
 
     /**

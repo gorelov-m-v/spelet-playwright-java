@@ -5,6 +5,7 @@ import com.example.testsupport.config.AppProperties;
 import com.example.testsupport.framework.browser.PlaywrightManager;
 import com.example.testsupport.framework.listeners.PlaywrightExtension;
 import com.example.testsupport.framework.localization.LocalizationService;
+import com.example.testsupport.pages.CasinoPage;
 import com.example.testsupport.pages.MainPage;
 import io.qameta.allure.*;
 import org.junit.jupiter.api.*;
@@ -23,18 +24,11 @@ import static io.qameta.allure.Allure.step;
 @SpringBootTest(classes = TestApplication.class)
 @ExtendWith(PlaywrightExtension.class)
 class MultilingualNavigationTest {
-
-    @Autowired
-    private PlaywrightManager playwrightManager;
-
-    @Autowired
-    private MainPage mainPage;
-
-    @Autowired
-    private AppProperties props;
-
-    @Autowired
-    private LocalizationService ls;
+    @Autowired private MainPage mainPage;
+    @Autowired private CasinoPage casinoPage;
+    @Autowired private AppProperties props;
+    @Autowired private PlaywrightManager playwrightManager;
+    @Autowired private LocalizationService ls;
 
     static Stream<String> languageProvider() {
         return Stream.of("lv", "ru", "en");
@@ -45,18 +39,23 @@ class MultilingualNavigationTest {
     @ParameterizedTest(name = "[Язык: {0}]")
     @MethodSource("languageProvider")
     void navigateToCasinoPageOnAllLanguages(String languageCode) {
+
         step("Установить язык теста: " + languageCode, () -> {
             props.setLanguage(languageCode);
             ls.loadLocale(languageCode);
         });
 
-        step("Открыть главную страницу", () -> playwrightManager.open());
-        step("Переход на страницу казино", mainPage::clickCasino);
+        step("Открыть главную страницу", () -> {
+            playwrightManager.open();
+        });
 
-        String expectedPath = languageCode.equals(props.getDefaultLanguage())
-                ? "/casino"
-                : "/" + languageCode + "/casino";
-        step("Проверить, что URL содержит " + expectedPath,
-                () -> mainPage.verifyUrlContains(expectedPath));
+        step("Переход на страницу казино", () -> {
+            mainPage.clickCasino();
+        });
+
+        step("Проверить, что URL содержит " + casinoPage.getExpectedPath(), () -> {
+            casinoPage.verifyUrl();
+        });
+
     }
 }
