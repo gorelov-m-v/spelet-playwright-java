@@ -1,7 +1,6 @@
 package tests;
 
 import com.example.testsupport.TestApplication;
-import com.example.testsupport.config.AppProperties;
 import com.example.testsupport.framework.browser.PlaywrightManager;
 import com.example.testsupport.framework.listeners.PlaywrightExtension;
 import com.example.testsupport.framework.localization.LocalizationService;
@@ -26,7 +25,6 @@ import static io.qameta.allure.Allure.step;
 class MultilingualNavigationTest {
     @Autowired private MainPage mainPage;
     @Autowired private CasinoPage casinoPage;
-    @Autowired private AppProperties props;
     @Autowired private PlaywrightManager playwrightManager;
     @Autowired private LocalizationService ls;
 
@@ -40,8 +38,7 @@ class MultilingualNavigationTest {
     @MethodSource("languageProvider")
     void navigateToCasinoPageOnAllLanguages(String languageCode) {
 
-        step("Установить язык теста: " + languageCode, () -> {
-            props.setLanguage(languageCode);
+        step("Устанавливаем язык теста", () -> {
             ls.loadLocale(languageCode);
         });
 
@@ -53,7 +50,7 @@ class MultilingualNavigationTest {
             mainPage.clickCasino();
         });
 
-        step("Проверить, что URL содержит " + casinoPage.getExpectedPath(), () -> {
+        step("Проверяем URL страницы 'Казино'", () -> {
             casinoPage.verifyUrl();
         });
 

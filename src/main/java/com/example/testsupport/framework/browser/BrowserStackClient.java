@@ -38,42 +38,49 @@ public class BrowserStackClient {
         caps.put("browserstack.console", "errors");
         caps.put("browserstack.networkLogs", "true");
         caps.put("browserstack.debug", "true");
+        String deviceName = System.getProperty("bs.deviceName");
+        if (deviceName != null && !deviceName.isEmpty()) {
+            buildMobileCapabilities(caps);
+        } else {
+            buildDesktopCapabilities(caps);
+        }
 
+        String browser = System.getProperty("bs.browser", "chrome");
+        return connect(playwright, browser, caps);
+    }
+
+    private void buildDesktopCapabilities(JSONObject caps) {
+        String browser = System.getProperty("bs.browser", "chrome");
+        String os = System.getProperty("bs.os", "Windows");
+        String osVer = System.getProperty("bs.osVersion", "10");
+        String browserVersion = System.getProperty("bs.browserVersion", "latest");
+
+        caps.put("os", os);
+        caps.put("osVersion", osVer);
+        caps.put("browserName", browser);
+        caps.put("browserVersion", browserVersion);
+    }
+
+    private void buildMobileCapabilities(JSONObject caps) {
         String browser = System.getProperty("bs.browser", "chrome");
         String deviceName = System.getProperty("bs.deviceName");
         String osVersion = System.getProperty("bs.osVersion");
 
-        if (deviceName != null && !deviceName.isEmpty()) {
-            caps.put("deviceName", deviceName);
-            if (osVersion != null) caps.put("osVersion", osVersion);
-            caps.put("browserName", browser);
-            return connect(playwright, browser, caps);
-        } else {
-            String os = System.getProperty("bs.os", "Windows");
-            String osVer = System.getProperty("bs.osVersion", "10");
-            String browserVersion = System.getProperty("bs.browserVersion", "latest");
-
-            caps.put("os", os);
-            caps.put("osVersion", osVer);
-            caps.put("browserName", browser);
-            caps.put("browserVersion", browserVersion);
-            return connect(playwright, browser, caps);
+        caps.put("deviceName", deviceName);
+        if (osVersion != null) {
+            caps.put("osVersion", osVersion);
         }
+        caps.put("browserName", browser);
     }
 
     private Browser connect(Playwright playwright, String browser, JSONObject caps) {
         String ws = "wss://cdp.browserstack.com/playwright?caps=" + urlEncode(caps.toString());
 
-        BrowserType type;
-        if (browser.equalsIgnoreCase("chrome") || browser.equalsIgnoreCase("edge") || browser.equalsIgnoreCase("playwright-chromium")) {
-            type = playwright.chromium();
-        } else if (browser.equalsIgnoreCase("firefox") || browser.equalsIgnoreCase("playwright-firefox")) {
-            type = playwright.firefox();
-        } else if (browser.equalsIgnoreCase("safari") || browser.equalsIgnoreCase("playwright-webkit")) {
-            type = playwright.webkit();
-        } else {
-            type = playwright.chromium();
-        }
+        BrowserType type = switch (browser.toLowerCase()) {
+            case "firefox", "playwright-firefox" -> playwright.firefox();
+            case "safari", "playwright-webkit" -> playwright.webkit();
+            default -> playwright.chromium();
+        };
         return type.connect(ws);
     }
 
