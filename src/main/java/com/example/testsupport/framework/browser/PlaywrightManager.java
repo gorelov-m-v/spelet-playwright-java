@@ -32,21 +32,33 @@ public class PlaywrightManager {
     }
 
     /**
-     * Главный метод. Предоставляет готовый к работе объект Page.
-     * Если для текущего потока он еще не создан - инициализирует всю цепочку Playwright.
-     * @return экземпляр Page для текущего теста.
+     * Инициализирует движок Playwright и создает браузер.
+     * Метод безопасен для повторного вызова в одном потоке.
+     */
+    public void initializeBrowser() {
+        if (playwright.get() == null) {
+            playwright.set(Playwright.create());
+        }
+        if (browser.get() == null) {
+            browser.set(browserFactory.create(playwright.get()));
+        }
+    }
+
+    /**
+     * Создает новый контекст и страницу в ранее созданном браузере.
+     * Предполагается, что {@link #initializeBrowser()} уже был вызван.
+     */
+    public void createContextAndPage() {
+        Browser.NewContextOptions contextOptions = new Browser.NewContextOptions()
+                .setViewportSize(1920, 1080);
+        context.set(browser.get().newContext(contextOptions));
+        page.set(context.get().newPage());
+    }
+
+    /**
+     * Возвращает текущую страницу Playwright.
      */
     public Page getPage() {
-        if (page.get() == null) {
-            playwright.set(Playwright.create());
-            browser.set(browserFactory.create(playwright.get()));
-
-            Browser.NewContextOptions contextOptions = new Browser.NewContextOptions()
-                    .setViewportSize(1920, 1080);
-            context.set(browser.get().newContext(contextOptions));
-
-            page.set(context.get().newPage());
-        }
         return page.get();
     }
 
@@ -75,10 +87,9 @@ public class PlaywrightManager {
 
 
     /**
-     * Закрывает все ресурсы Playwright в правильном порядке и очищает ThreadLocal переменные.
-     * Важно вызывать после каждого теста, чтобы не оставлять "висящих" процессов.
+     * Закрывает страницу и контекст, очищая связанные ресурсы.
      */
-    public void close() {
+    public void closeContext() {
         if (page.get() != null) {
             page.get().close();
             page.remove();
@@ -87,6 +98,12 @@ public class PlaywrightManager {
             context.get().close();
             context.remove();
         }
+    }
+
+    /**
+     * Закрывает браузер и движок Playwright.
+     */
+    public void closeBrowser() {
         if (browser.get() != null) {
             browser.get().close();
             browser.remove();
@@ -95,5 +112,13 @@ public class PlaywrightManager {
             playwright.get().close();
             playwright.remove();
         }
+    }
+
+    /**
+     * Полностью закрывает все ресурсы Playwright.
+     */
+    public void closeAll() {
+        closeContext();
+        closeBrowser();
     }
 }
