@@ -3,7 +3,6 @@ package com.example.testsupport.pages;
 import com.example.testsupport.config.AppProperties;
 import com.example.testsupport.framework.localization.LocalizationService;
 import com.microsoft.playwright.Page;
-import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -14,15 +13,12 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class CasinoPage {
-    private final Page page;
+public class CasinoPage extends BasePage {
     private final AppProperties props;
-    private final LocalizationService ls;
 
     public CasinoPage(Page page, AppProperties props, LocalizationService ls) {
-        this.page = page;
+        super(page, ls);
         this.props = props;
-        this.ls = ls;
     }
 
     /**
@@ -43,13 +39,7 @@ public class CasinoPage {
      *
      * @return current page object
      */
-    public CasinoPage verifyUrl() {
-        String expected = getExpectedPath();
-        String current = page.url();
-        Assertions.assertTrue(
-                current.contains(expected),
-                String.format("Ожидалось, что URL содержит '%s', но фактический URL '%s'", expected, current)
-        );
-        return this;
+    public void verifyUrl() {
+        verifyUrlContains(getExpectedPath());
     }
 }
