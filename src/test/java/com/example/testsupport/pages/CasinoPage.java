@@ -3,6 +3,7 @@ package com.example.testsupport.pages;
 import com.example.testsupport.config.AppProperties;
 import com.example.testsupport.framework.localization.LocalizationService;
 import com.microsoft.playwright.Page;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -16,7 +17,7 @@ import org.springframework.stereotype.Component;
 public class CasinoPage extends BasePage {
     private final AppProperties props;
 
-    public CasinoPage(Page page, AppProperties props, LocalizationService ls) {
+    public CasinoPage(ObjectProvider<Page> page, AppProperties props, LocalizationService ls) {
         super(page, ls);
         this.props = props;
     }
