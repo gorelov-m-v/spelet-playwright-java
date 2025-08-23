@@ -18,6 +18,7 @@ public abstract class BasePage {
     private final Supplier<HeaderComponent> header;
     private final Supplier<TabBarComponent> tabBar;
 
+    @SuppressWarnings("resource")
     protected BasePage(ObjectProvider<Page> pageProvider, LocalizationService ls) {
         this.pageProvider = pageProvider;
         this.ls = ls;
