@@ -6,6 +6,10 @@ import com.example.testsupport.config.AppProperties;
 import com.example.testsupport.framework.localization.LocalizationService;
 import org.springframework.stereotype.Component;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 /**
  * Central class managing the Playwright lifecycle.
  * Registered as a Spring bean and provides a ready-to-use {@link Page} instance.
@@ -48,6 +52,11 @@ public class PlaywrightManager {
         Browser.NewContextOptions contextOptions = new Browser.NewContextOptions()
                 .setViewportSize(1920, 1080);
         context.set(browser.get().newContext(contextOptions));
+        context.get().tracing().start(new Tracing.StartOptions()
+                .setTitle("trace")
+                .setScreenshots(true)
+                .setSnapshots(true)
+                .setSources(true));
         page.set(context.get().newPage());
     }
 
@@ -89,6 +98,15 @@ public class PlaywrightManager {
             page.remove();
         }
         if (context.get() != null) {
+            try {
+                Path tracesDir = Paths.get("build", "traces");
+                Files.createDirectories(tracesDir);
+                String traceName = "trace-" + Thread.currentThread().getId() + "-" + System.nanoTime() + ".zip";
+                context.get().tracing().stop(new Tracing.StopOptions()
+                        .setPath(tracesDir.resolve(traceName)));
+            } catch (Exception ignored) {
+                // ignore failures during trace saving
+            }
             context.get().close();
             context.remove();
         }

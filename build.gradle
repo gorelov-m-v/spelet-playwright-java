@@ -47,6 +47,15 @@ tasks.register('playwrightInstall', JavaExec) {
     args 'install'
 }
 test.dependsOn(playwrightInstall)
+tasks.register('generatePlaywrightReport', JavaExec) {
+    group = 'verification'
+    description = 'Generates and opens the Playwright HTML report'
+    mainClass = 'com.microsoft.playwright.CLI'
+    classpath = sourceSets.test.runtimeClasspath
+    args 'show-report', 'build/test-results'
+    ignoreExitValue = true
+}
+test.finalizedBy(generatePlaywrightReport)
 allure {
     version = '2.29.0'
     adapter {
