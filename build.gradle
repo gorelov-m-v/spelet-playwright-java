@@ -52,7 +52,7 @@ tasks.register('generatePlaywrightReport', JavaExec) {
     description = 'Generates the Playwright HTML report'
     mainClass = 'com.microsoft.playwright.CLI'
     classpath = sourceSets.test.runtimeClasspath
-    args 'generate-report', 'build/test-results'
+    args 'show-report', 'build/test-results'
     ignoreExitValue = true
 }
 test.finalizedBy(generatePlaywrightReport)
