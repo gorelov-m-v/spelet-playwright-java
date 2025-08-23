@@ -7,7 +7,6 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -26,15 +25,16 @@ public class MainPage extends BasePage {
     /**
      * Переходит на страницу казино через меню, адаптируясь под размер экрана.
      */
+    @SuppressWarnings("resource") // Подавляем ложное предупреждение, т.к. Page управляется централизованно
     public CasinoPage navigateToCasino() {
-        page().waitForNavigation(() -> {
-            int currentWidth = page().viewportSize().width;
-            if (currentWidth < MOBILE_BREAKPOINT) {
-                tabBar().clickCasino();
-            } else {
-                header().clickCasino();
-            }
-        });
+        int currentWidth = page().viewportSize().width;
+        if (currentWidth < MOBILE_BREAKPOINT) {
+            tabBar().clickCasino();
+        } else {
+            header().clickCasino();
+        }
+        // Используем современный API ожидания перехода по URL
+        page().waitForURL("**/casino");
         return casinoPageProvider.getObject();
     }
 
@@ -44,7 +44,7 @@ public class MainPage extends BasePage {
      * @return текущий объект страницы
      */
     public MainPage verifyIsLoaded() {
-        assertThat(header().getLogo()).isVisible();
+        header().verifyLogoVisible();
         verifyUrlContains("/");
         return this;
     }

@@ -3,6 +3,7 @@ package com.example.testsupport.pages.components;
 import com.example.testsupport.framework.localization.LocalizationService;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.options.AriaRole;
+import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
 /**
  * Компонент хедера для десктопной версии.
@@ -27,9 +28,9 @@ public class HeaderComponent extends BaseComponent {
     }
 
     /**
-     * Возвращает локатор логотипа.
+     * Проверяет, что логотип виден.
      */
-    public Locator getLogo() {
-        return root.locator("a.logo");
+    public void verifyLogoVisible() {
+        assertThat(root.locator("a.logo")).isVisible();
     }
 }
