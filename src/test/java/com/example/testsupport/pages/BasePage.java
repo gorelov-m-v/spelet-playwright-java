@@ -6,6 +6,7 @@ import com.example.testsupport.pages.components.TabBarComponent;
 import com.microsoft.playwright.Page;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.factory.ObjectProvider;
+import java.util.function.Supplier;
 
 /**
  * Базовый Page Object с общей логикой.
@@ -13,14 +14,14 @@ import org.springframework.beans.factory.ObjectProvider;
 public abstract class BasePage {
     private final ObjectProvider<Page> pageProvider;
     protected final LocalizationService ls;
-    private final HeaderComponent header;
-    private final TabBarComponent tabBar;
+    private final Supplier<HeaderComponent> header;
+    private final Supplier<TabBarComponent> tabBar;
 
     protected BasePage(ObjectProvider<Page> pageProvider, LocalizationService ls) {
         this.pageProvider = pageProvider;
         this.ls = ls;
-        this.header = new HeaderComponent(page().locator("header[role='banner']"), ls);
-        this.tabBar = new TabBarComponent(page().locator("div.tab-bar__list"), ls);
+        this.header = memoize(() -> new HeaderComponent(page().locator("header[role='banner']"), ls));
+        this.tabBar = memoize(() -> new TabBarComponent(page().locator("div.tab-bar__list"), ls));
     }
 
     protected Page page() {
@@ -28,11 +29,24 @@ public abstract class BasePage {
     }
 
     public HeaderComponent header() {
-        return header;
+        return header.get();
     }
 
     public TabBarComponent tabBar() {
-        return tabBar;
+        return tabBar.get();
+    }
+
+    private static <T> Supplier<T> memoize(Supplier<T> supplier) {
+        return new Supplier<>() {
+            private T value;
+            @Override
+            public T get() {
+                if (value == null) {
+                    value = supplier.get();
+                }
+                return value;
+            }
+        };
     }
 
     /**
