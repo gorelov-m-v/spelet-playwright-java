@@ -20,11 +20,10 @@ public class HeaderComponent extends BaseComponent {
      */
     public void clickCasino() {
         String casinoText = ls.get("header.menu.casino");
-        root.getByRole(AriaRole.NAVIGATION)
-                .getByRole(AriaRole.LINK, new Locator.GetByRoleOptions()
-                        .setName(casinoText)
-                        .setExact(true))
-                .click();
+        root.getByRole(AriaRole.LINK, new Locator.GetByRoleOptions()
+                .setName(casinoText)
+                .setExact(true))
+            .click();
     }
 
     /**
