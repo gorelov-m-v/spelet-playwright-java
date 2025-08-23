@@ -54,9 +54,12 @@ class MultilingualNavigationTest {
         step("Устанавливаем язык теста", () -> {
             ls.loadLocale(languageCode);
         });
-        step("Открываем главную страницу и переходим на страницу 'Казино'", () -> {
-            mainPage.open()
-                    .navigateToCasino()
+        step("Открываем главную страницу", () -> {
+            mainPage.open();
+        });
+
+        step("Переходим на страницу 'Казино'", () -> {
+            mainPage.navigateToCasino()
                     .verifyUrl();
         });
 
