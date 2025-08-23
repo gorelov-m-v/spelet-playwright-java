@@ -3,6 +3,7 @@ package com.example.testsupport.pages;
 import com.example.testsupport.config.AppProperties;
 import com.example.testsupport.framework.localization.LocalizationService;
 import com.microsoft.playwright.Page;
+import com.microsoft.playwright.options.AriaRole;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
@@ -53,7 +54,10 @@ public class CasinoPage extends BasePage {
      * @return текущий объект страницы
      */
     public CasinoPage verifyIsLoaded() {
-        assertThat(page().locator("h1:has-text('Kazino')")).isVisible();
+        String title = ls.get("page.casino.title");
+        assertThat(page().getByRole(AriaRole.HEADING, new Page.GetByRoleOptions()
+                .setName(title)
+                .setExact(true))).isVisible();
         verifyUrl();
         return this;
     }
