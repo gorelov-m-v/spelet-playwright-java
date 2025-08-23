@@ -19,7 +19,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static io.qameta.allure.Allure.step;
+import static com.example.testsupport.framework.utils.AllureHelper.step;
 
 @Epic("Spelet.lv")
 @Feature("Навигация по шапке")

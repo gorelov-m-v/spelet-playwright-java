@@ -6,6 +6,7 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import static com.example.testsupport.framework.utils.AllureHelper.step;
 
 
 @Component
@@ -27,14 +28,18 @@ public class MainPage extends BasePage {
      */
     @SuppressWarnings("resource")
     public CasinoPage navigateToCasino() {
-        int currentWidth = page().viewportSize().width;
-        if (currentWidth < MOBILE_BREAKPOINT) {
-            tabBar().clickCasino();
-        } else {
-            header().clickCasino();
-        }
-        page().waitForURL("**/casino");
-        return casinoPageProvider.getObject();
+        return step("Навигация на страницу 'Казино'", () -> {
+            int currentWidth = page().viewportSize().width;
+            if (currentWidth < MOBILE_BREAKPOINT) {
+                tabBar().clickCasino();
+            } else {
+                header().clickCasino();
+            }
+            step("Ожидание URL страницы 'Казино'", () -> {
+                page().waitForURL("**/casino");
+            });
+            return casinoPageProvider.getObject();
+        });
     }
 
     /**
@@ -43,8 +48,10 @@ public class MainPage extends BasePage {
      * @return current page object
      */
     public MainPage verifyIsLoaded() {
-        header().verifyLogoVisible();
-        verifyUrlContains("/");
-        return this;
+        return step("Проверка загрузки главной страницы", () -> {
+            header().verifyLogoVisible();
+            verifyUrlContains("/");
+            return this;
+        });
     }
 }

@@ -11,6 +11,9 @@ import org.slf4j.LoggerFactory;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Central class managing the Playwright lifecycle.
@@ -30,6 +33,7 @@ public class PlaywrightManager {
     private static final ThreadLocal<Browser> browser = new ThreadLocal<>();
     private static final ThreadLocal<BrowserContext> context = new ThreadLocal<>();
     private static final ThreadLocal<Page> page = new ThreadLocal<>();
+    private static final ThreadLocal<List<String>> consoleMessages = ThreadLocal.withInitial(ArrayList::new);
 
     public PlaywrightManager(BrowserFactory browserFactory,
                              AppProperties props,
@@ -62,6 +66,7 @@ public class PlaywrightManager {
                 .setSnapshots(true)
                 .setSources(true));
         page.set(context.get().newPage());
+        page.get().onConsoleMessage(msg -> consoleMessages.get().add("[" + msg.type() + "] " + msg.text()));
     }
 
     /**
@@ -69,6 +74,14 @@ public class PlaywrightManager {
      */
     public Page getPage() {
         return page.get();
+    }
+
+    public void clearConsoleMessages() {
+        consoleMessages.get().clear();
+    }
+
+    public List<String> getConsoleMessages() {
+        return Collections.unmodifiableList(consoleMessages.get());
     }
 
     private String buildBaseUrlForCurrentLanguage() {
