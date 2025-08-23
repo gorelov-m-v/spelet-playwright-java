@@ -55,13 +55,9 @@ class MultilingualNavigationTest {
             ls.loadLocale(languageCode);
         });
 
-        step("Открыть главную страницу", () -> {
-            playwrightManager.open();
-        });
-
-        step("Перейти на страницу казино и проверить URL", () -> {
-            mainPage.navigateToCasino().verifyUrl();
-        });
+        mainPage.open()
+                .navigateToCasino()
+                .verifyUrl();
 
     }
 }
