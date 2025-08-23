@@ -1,7 +1,7 @@
 package com.example.testsupport.framework.lifecycle;
 
 /**
- * Стратегия управления жизненным циклом Playwright для различных профилей запуска.
+ * Playwright lifecycle strategy for different run profiles.
  */
 public interface PlaywrightLifecycleStrategy {
 

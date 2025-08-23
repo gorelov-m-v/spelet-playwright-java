@@ -15,21 +15,17 @@ java {
 repositories { mavenCentral() }
 
     dependencies {
-        // Spring Boot
         implementation 'org.springframework.boot:spring-boot-starter'
         testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
-        // Playwright
         implementation 'com.microsoft.playwright:playwright:1.48.0'
         implementation 'org.json:json:20240303'
         implementation 'com.fasterxml.jackson.core:jackson-databind'
         implementation 'com.fasterxml.jackson.core:jackson-core'
 
-    // JUnit 5
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
 
-    // Allure
     testImplementation 'io.qameta.allure:allure-junit5:2.29.0'
     testRuntimeOnly 'org.aspectj:aspectjweaver:1.9.22.1'
 }
@@ -43,21 +39,14 @@ test {
         showStandardStreams = true
     }
 }
-
-// --- Установка браузеров Playwright перед тестами ---
 tasks.register('playwrightInstall', JavaExec) {
     group = 'verification'
     description = 'Install Playwright browsers'
-    // CLI есть внутри playwright-джара
     mainClass = 'com.microsoft.playwright.CLI'
     classpath = sourceSets.test.runtimeClasspath
-    // Для Linux/CI можно добавить --with-deps:
-    // args 'install', '--with-deps'
     args 'install'
 }
 test.dependsOn(playwrightInstall)
-
-// --- Allure ---
 allure {
     version = '2.29.0'
     adapter {
@@ -67,7 +56,6 @@ allure {
     }
 }
 
-    // ---------- удобные задачи для BrowserStack ----------
 def bsTask = { String name, Map<String,String> props ->
     tasks.register(name, Test) {
         useJUnitPlatform()
@@ -78,7 +66,6 @@ def bsTask = { String name, Map<String,String> props ->
     }
 }
 
-// Desktop
 bsTask('bsWin10Chrome', [
         'bs.os':'Windows', 'bs.osVersion':'10',
         'bs.browser':'chrome', 'bs.browserVersion':'latest',
@@ -100,7 +87,6 @@ bsTask('bsMacSafari', [
         'bs.name':'Spelet macOS Safari (WebKit)'
 ])
 
-// Mobile Android
 bsTask('bsSamsungS20', [
         'bs.deviceName':'Samsung Galaxy S20', 'bs.osVersion':'10.0',
         'bs.browser':'chrome', 'bs.name':'Spelet Galaxy S20 Chrome'
@@ -118,7 +104,6 @@ bsTask('bsSamsungS24', [
         'bs.browser':'chrome', 'bs.name':'Spelet Galaxy S24 Chrome'
 ])
 
-// Mobile iOS (Safari)
 bsTask('bsiPhone16', [
         'bs.deviceName':'iPhone 16', 'bs.osVersion':'18.5',
         'bs.browser':'safari', 'bs.name':'Spelet iPhone 16 Safari'
@@ -131,8 +116,6 @@ bsTask('bsiPhone11', [
         'bs.deviceName':'iPhone 11', 'bs.osVersion':'13.0',
         'bs.browser':'safari', 'bs.name':'Spelet iPhone 11 Safari'
 ])
-
-// --- задачи для запуска против различных окружений ---
 tasks.register('speletProd', Test) {
     group = 'verification'
     description = 'Runs tests against PROD environment'
@@ -141,7 +124,6 @@ tasks.register('speletProd', Test) {
     testLogging { events "passed", "skipped", "failed" }
     dependsOn(playwrightInstall)
 }
-
 tasks.register('speletDemo', Test) {
     group = 'verification'
     description = 'Runs tests against DEMO environment'

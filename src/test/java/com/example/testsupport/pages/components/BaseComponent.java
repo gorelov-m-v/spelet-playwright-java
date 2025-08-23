@@ -3,8 +3,8 @@ package com.example.testsupport.pages.components;
 import com.microsoft.playwright.Locator;
 
 /**
- * Базовый класс для всех UI-компонентов.
- * Каждый компонент ограничивается своим корневым локатором.
+ * Base class for all UI components.
+ * Each component is scoped by its root locator.
  */
 public abstract class BaseComponent {
     protected final Locator root;

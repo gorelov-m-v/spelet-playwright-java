@@ -10,7 +10,7 @@ import org.springframework.beans.factory.ObjectProvider;
 import java.util.function.Supplier;
 
 /**
- * Базовый Page Object с общей логикой.
+ * Base Page Object with shared logic.
  */
 public abstract class BasePage {
     private final ObjectProvider<Page> pageProvider;
@@ -52,15 +52,15 @@ public abstract class BasePage {
     }
 
     /**
-     * Проверяет, что текущий URL содержит ожидаемый путь.
+     * Checks that the current URL contains the expected path.
      *
-     * @param expectedPath ожидаемая подстрока URL
+     * @param expectedPath expected URL substring
      */
     public void verifyUrlContains(String expectedPath) {
         String current = page().url();
         Assertions.assertTrue(
                 current.contains(expectedPath),
-                String.format("Ожидалось, что URL содержит '%s', но фактический URL '%s'", expectedPath, current)
+                String.format("Expected URL to contain '%s' but was '%s'", expectedPath, current)
         );
     }
 }

@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 /**
- * Фабрика, создающая браузеры, подключенные к BrowserStack.
+ * Factory that creates browsers connected to BrowserStack.
  */
 @Component
 @Profile("browserstack")

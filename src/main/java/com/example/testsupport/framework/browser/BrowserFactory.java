@@ -4,14 +4,14 @@ import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.Playwright;
 
 /**
- * Фабричный интерфейс для создания экземпляров {@link Browser} Playwright.
+ * Factory interface for creating Playwright {@link Browser} instances.
  */
 public interface BrowserFactory {
     /**
-     * Создает браузер, используя переданный движок Playwright.
+     * Creates a browser using the provided Playwright engine.
      *
-     * @param playwright инициализированный экземпляр Playwright
-     * @return созданный браузер
+     * @param playwright initialized Playwright instance
+     * @return created browser
      */
     Browser create(Playwright playwright);
 }

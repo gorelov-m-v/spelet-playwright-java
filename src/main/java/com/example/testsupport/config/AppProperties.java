@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "app")
 /**
- * Настройки приложения, считываемые из конфигурационных файлов.
+ * Application settings read from configuration files.
  */
 public class AppProperties {
     private String baseUrl = "https://spelet.lv";
