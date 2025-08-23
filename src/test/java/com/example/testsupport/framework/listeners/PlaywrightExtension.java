@@ -11,6 +11,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * JUnit 5 extension that manages the Playwright lifecycle
@@ -45,20 +48,34 @@ public class PlaywrightExtension implements BeforeAllCallback, BeforeEachCallbac
     public void afterEach(ExtensionContext context) {
         ApplicationContext ctx = SpringExtension.getApplicationContext(context);
         PlaywrightManager manager = ctx.getBean(PlaywrightManager.class);
-        try {
-            if (context.getExecutionException().isPresent()) {
-                Page page = manager.getPage();
-                try {
-                    Allure.addAttachment("Current URL", "text/plain", page.url());
-                    byte[] screenshot = page.screenshot(new Page.ScreenshotOptions().setFullPage(true));
-                    Allure.getLifecycle().addAttachment("Screenshot", "image/png", "png", screenshot);
-                } catch (Throwable e) {
-                    log.error("Failed to create allure attachments", e);
+
+        // Check for test failure BEFORE closing the context
+        if (context.getExecutionException().isPresent()) {
+            log.info("Test {} failed. Capturing failure artifacts...", context.getDisplayName());
+            Page page = manager.getPage();
+            try {
+                // 1. Attach URL and Screenshot
+                Allure.addAttachment("Current URL", "text/plain", page.url());
+                byte[] screenshot = page.screenshot(new Page.ScreenshotOptions().setFullPage(true));
+                Allure.getLifecycle().addAttachment("Screenshot", "image/png", "png", screenshot);
+
+                // 2. Save and attach Playwright Trace
+                Path tracePath = manager.saveTrace(context.getDisplayName());
+                if (tracePath != null && Files.exists(tracePath)) {
+                    try (InputStream traceStream = Files.newInputStream(tracePath)) {
+                        Allure.addAttachment("Playwright Trace", "application/zip", traceStream, "zip");
+                    }
+                } else {
+                    log.warn("Trace file was not created for failed test: {}", context.getDisplayName());
                 }
+
+            } catch (Throwable e) {
+                log.error("Critical error while creating Allure attachments for failed test.", e);
             }
-        } finally {
-            lifecycle.afterEach();
         }
+
+        // Finally, always run the lifecycle cleanup
+        lifecycle.afterEach();
     }
 
     @Override
