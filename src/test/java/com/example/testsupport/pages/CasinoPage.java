@@ -37,12 +37,9 @@ public class CasinoPage extends BasePage {
 
     /**
      * Verifies that current URL contains expected path.
-     *
-     * @return current page object
      */
-    public CasinoPage verifyUrl() {
+    public void verifyUrl() {
         verifyUrlContains(getExpectedPath());
-        return this;
     }
 
     // Метод verifyIsLoaded был удалён: пока проверяем загрузку только по URL
