@@ -45,13 +45,5 @@ public class CasinoPage extends BasePage {
         return this;
     }
 
-    /**
-     * Проверяет, что страница казино загружена и готова к работе.
-     *
-     * @return текущий объект страницы
-     */
-    public CasinoPage verifyIsLoaded() {
-        verifyUrl();
-        return this;
-    }
+    // Метод verifyIsLoaded был удалён: пока проверяем загрузку только по URL
 }

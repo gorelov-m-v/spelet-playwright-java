@@ -5,7 +5,6 @@ import com.example.testsupport.framework.browser.PlaywrightManager;
 import com.example.testsupport.framework.device.Device;
 import com.example.testsupport.framework.listeners.PlaywrightExtension;
 import com.example.testsupport.framework.localization.LocalizationService;
-import com.example.testsupport.pages.CasinoPage;
 import com.example.testsupport.pages.MainPage;
 import io.qameta.allure.*;
 import org.junit.jupiter.api.*;
@@ -60,9 +59,8 @@ class MultilingualNavigationTest {
             playwrightManager.open();
         });
 
-        step("Перейти на страницу казино и убедиться, что она загружена", () -> {
-            CasinoPage casinoPage = mainPage.navigateToCasino();
-            casinoPage.verifyIsLoaded();
+        step("Перейти на страницу казино и проверить URL", () -> {
+            mainPage.navigateToCasino().verifyUrl();
         });
 
     }
