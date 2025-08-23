@@ -5,6 +5,12 @@ import com.microsoft.playwright.options.WaitUntilState;
 import com.example.testsupport.config.AppProperties;
 import com.example.testsupport.framework.localization.LocalizationService;
 import org.springframework.stereotype.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * Central class managing the Playwright lifecycle.
@@ -17,6 +23,8 @@ public class PlaywrightManager {
     private final BrowserFactory browserFactory;
     private final AppProperties props;
     private final LocalizationService ls;
+
+    private static final Logger log = LoggerFactory.getLogger(PlaywrightManager.class);
 
     private static final ThreadLocal<Playwright> playwright = new ThreadLocal<>();
     private static final ThreadLocal<Browser> browser = new ThreadLocal<>();
@@ -48,6 +56,11 @@ public class PlaywrightManager {
         Browser.NewContextOptions contextOptions = new Browser.NewContextOptions()
                 .setViewportSize(1920, 1080);
         context.set(browser.get().newContext(contextOptions));
+        context.get().tracing().start(new Tracing.StartOptions()
+                .setTitle("trace")
+                .setScreenshots(true)
+                .setSnapshots(true)
+                .setSources(true));
         page.set(context.get().newPage());
     }
 
@@ -92,6 +105,33 @@ public class PlaywrightManager {
             context.get().close();
             context.remove();
         }
+    }
+
+    /**
+     * Stops tracing and saves the trace file for a failed test.
+     *
+     * @param testName The display name of the test, used for the filename.
+     * @return The path to the saved trace file, or {@code null} if saving failed.
+     */
+    public Path saveTrace(String testName) {
+        String sanitizedTestName = testName
+                .replaceAll("[^a-zA-Z0-9.-]", "_")
+                .replaceAll("\\s+", "_");
+
+        String traceName = "trace-" + sanitizedTestName + ".zip";
+        Path tracePath = Paths.get("build", "traces", traceName);
+
+        if (context.get() != null) {
+            try {
+                Files.createDirectories(tracePath.getParent());
+                context.get().tracing().stop(new Tracing.StopOptions().setPath(tracePath));
+                log.info("Playwright trace saved to: {}", tracePath);
+                return tracePath;
+            } catch (Exception e) {
+                log.warn("Failed to save Playwright trace file for test: {}", testName, e);
+            }
+        }
+        return null;
     }
 
     /**
