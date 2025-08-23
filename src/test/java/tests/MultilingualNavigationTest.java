@@ -54,10 +54,11 @@ class MultilingualNavigationTest {
         step("Устанавливаем язык теста", () -> {
             ls.loadLocale(languageCode);
         });
-
-        mainPage.open()
-                .navigateToCasino()
-                .verifyUrl();
+        step("Открываем главную страницу и переходим на страницу 'Казино'", () -> {
+            mainPage.open()
+                    .navigateToCasino()
+                    .verifyUrl();
+        });
 
     }
 }
