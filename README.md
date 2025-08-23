@@ -11,9 +11,9 @@ screenshots.
 ```bash
 ./gradlew clean test
 ```
-After the test run finishes, Gradle will automatically attempt to open the
-Playwright HTML report in your default browser. The generated files are located
-under `playwright-report/index.html`.
+After the test run finishes, the Playwright HTML report will be generated under
+`playwright-report/index.html`. Open this file in a browser to explore the
+results.
 
 ### Analysing a failed test
 1. Open the HTML report and locate a test marked as **FAILED**.
