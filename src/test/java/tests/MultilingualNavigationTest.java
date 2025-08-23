@@ -28,7 +28,6 @@ import static io.qameta.allure.Allure.step;
 @ExtendWith(PlaywrightExtension.class)
 class MultilingualNavigationTest {
     @Autowired private MainPage mainPage;
-    @Autowired private CasinoPage casinoPage;
     @Autowired private PlaywrightManager playwrightManager;
     @Autowired private LocalizationService ls;
 
@@ -61,12 +60,9 @@ class MultilingualNavigationTest {
             playwrightManager.open();
         });
 
-        step("Переход на страницу казино", () -> {
-            mainPage.navigateToCasino();
-        });
-
-        step("Проверяем URL страницы 'Казино'", () -> {
-            casinoPage.verifyUrl();
+        step("Перейти на страницу казино и убедиться, что она загружена", () -> {
+            CasinoPage casinoPage = mainPage.navigateToCasino();
+            casinoPage.verifyIsLoaded();
         });
 
     }

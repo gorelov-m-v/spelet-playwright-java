@@ -8,6 +8,8 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
+
 /**
  * Page object for the casino page.
  * Knows its own URL depending on current language.
@@ -40,7 +42,19 @@ public class CasinoPage extends BasePage {
      *
      * @return current page object
      */
-    public void verifyUrl() {
+    public CasinoPage verifyUrl() {
         verifyUrlContains(getExpectedPath());
+        return this;
+    }
+
+    /**
+     * Проверяет, что страница казино загружена и готова к работе.
+     *
+     * @return текущий объект страницы
+     */
+    public CasinoPage verifyIsLoaded() {
+        assertThat(page().locator("h1:has-text('Kazino')")).isVisible();
+        verifyUrl();
+        return this;
     }
 }
