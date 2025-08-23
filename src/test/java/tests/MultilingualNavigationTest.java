@@ -62,7 +62,7 @@ class MultilingualNavigationTest {
         });
 
         step("Переход на страницу казино", () -> {
-            mainPage.clickCasino();
+            mainPage.navigateToCasino();
         });
 
         step("Проверяем URL страницы 'Казино'", () -> {
