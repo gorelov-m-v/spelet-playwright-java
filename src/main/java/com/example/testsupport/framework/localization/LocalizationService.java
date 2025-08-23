@@ -10,8 +10,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 /**
- * Предоставляет переводы элементов UI на основе текущего языка теста.
- * Данные локали хранятся в {@link ThreadLocal}, что позволяет запускать тесты параллельно.
+ * Provides UI element translations based on the current test language.
+ * Locale data is stored in a {@link ThreadLocal} enabling parallel test execution.
  */
 @Component
 public class LocalizationService {
@@ -19,9 +19,9 @@ public class LocalizationService {
     private static final ThreadLocal<String> LANG_CODE = new ThreadLocal<>();
 
     /**
-     * Загружает свойства локали для заданного кода языка.
+     * Loads locale properties for the given language code.
      *
-     * @param languageCode например, "lv", "ru", "en"
+     * @param languageCode e.g., "lv", "ru", "en"
      */
     public void loadLocale(String languageCode) {
         String resourcePath = "/locales/" + languageCode + ".properties";
@@ -41,10 +41,10 @@ public class LocalizationService {
     }
 
     /**
-     * Возвращает перевод для указанного ключа из загруженной локали.
+     * Returns a translation for the specified key from the loaded locale.
      *
-     * @param key ключ перевода
-     * @return локализованное значение
+     * @param key translation key
+     * @return localized value
      */
     public String get(String key) {
         Properties props = LOCALE.get();
@@ -55,7 +55,7 @@ public class LocalizationService {
     }
 
     /**
-     * @return код текущего языка
+     * @return current language code
      */
     public String getCurrentLangCode() {
         return LANG_CODE.get();

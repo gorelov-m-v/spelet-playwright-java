@@ -1,7 +1,7 @@
 package com.example.testsupport.framework.browser;
 
 /**
- * Допустимые названия браузеров для запуска тестов.
+ * Allowed browser names for running tests.
  */
 public enum BrowserName {
     CHROMIUM,

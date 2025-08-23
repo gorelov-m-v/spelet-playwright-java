@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 /**
- * Стратегия для BrowserStack: новый браузер и контекст на каждый тест.
+ * Strategy for BrowserStack: new browser and context for each test.
  */
 @Component
 @Profile("browserstack")
@@ -18,9 +18,7 @@ public class BrowserStackPlaywrightLifecycle implements PlaywrightLifecycleStrat
     }
 
     @Override
-    public void beforeAll() {
-        // no-op
-    }
+    public void beforeAll() { }
 
     @Override
     public void beforeEach() {
@@ -35,8 +33,6 @@ public class BrowserStackPlaywrightLifecycle implements PlaywrightLifecycleStrat
     }
 
     @Override
-    public void afterAll() {
-        // no-op
-    }
+    public void afterAll() { }
 }
 

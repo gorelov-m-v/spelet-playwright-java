@@ -7,9 +7,9 @@ import com.example.testsupport.framework.localization.LocalizationService;
 import org.springframework.stereotype.Component;
 
 /**
- * Центральный класс для управления жизненным циклом Playwright.
- * Является Spring-бином и предоставляет готовый к использованию объект Page.
- * Обеспечивает изоляцию потоков для будущего параллельного запуска.
+ * Central class managing the Playwright lifecycle.
+ * Registered as a Spring bean and provides a ready-to-use {@link Page} instance.
+ * Ensures thread isolation for future parallel runs.
  */
 @Component
 public class PlaywrightManager {
@@ -32,7 +32,7 @@ public class PlaywrightManager {
     }
 
     /**
-     * Инициализирует движок Playwright и браузер один раз на поток.
+     * Initializes the Playwright engine and browser once per thread.
      */
     public void initializeBrowser() {
         if (playwright.get() == null) {
@@ -42,7 +42,7 @@ public class PlaywrightManager {
     }
 
     /**
-     * Создает новый контекст браузера и страницу для текущего теста.
+     * Creates a new browser context and page for the current test.
      */
     public void createContextAndPage() {
         Browser.NewContextOptions contextOptions = new Browser.NewContextOptions()
@@ -52,7 +52,7 @@ public class PlaywrightManager {
     }
 
     /**
-     * Возвращает текущую страницу.
+     * Returns the current page.
      */
     public Page getPage() {
         return page.get();
@@ -72,16 +72,16 @@ public class PlaywrightManager {
     }
 
     /**
-     * Переходит по пути относительно базового URL с учетом языка.
+     * Navigates to a path relative to the base URL considering the language.
      *
-     * @param path например, "/casino"
+     * @param path e.g., "/casino"
      */
     public void navigate(String path) {
         getPage().navigate(buildBaseUrlForCurrentLanguage() + path,
                 new Page.NavigateOptions().setWaitUntil(WaitUntilState.NETWORKIDLE));
     }
     /**
-     * Закрывает страницу и контекст.
+     * Closes the page and context.
      */
     public void closeContextAndPage() {
         if (page.get() != null) {
@@ -95,7 +95,7 @@ public class PlaywrightManager {
     }
 
     /**
-     * Закрывает браузер и движок Playwright.
+     * Closes the browser and Playwright engine.
      */
     public void closeBrowser() {
         if (browser.get() != null) {
@@ -109,7 +109,7 @@ public class PlaywrightManager {
     }
 
     /**
-     * Закрывает все ресурсы Playwright. Сохранено для обратной совместимости.
+     * Closes all Playwright resources. Kept for backward compatibility.
      */
     public void close() {
         closeContextAndPage();

@@ -23,9 +23,9 @@ public class MainPage extends BasePage {
     private static final int MOBILE_BREAKPOINT = 960;
 
     /**
-     * Переходит на страницу казино через меню, адаптируясь под размер экрана.
+     * Navigates to the casino page through the menu, adapting to screen size.
      */
-    @SuppressWarnings("resource") // Подавляем ложное предупреждение, т.к. Page управляется централизованно
+    @SuppressWarnings("resource")
     public CasinoPage navigateToCasino() {
         int currentWidth = page().viewportSize().width;
         if (currentWidth < MOBILE_BREAKPOINT) {
@@ -33,15 +33,14 @@ public class MainPage extends BasePage {
         } else {
             header().clickCasino();
         }
-        // Используем современный API ожидания перехода по URL
         page().waitForURL("**/casino");
         return casinoPageProvider.getObject();
     }
 
     /**
-     * Проверяет, что главная страница загружена.
+     * Verifies that the main page is loaded.
      *
-     * @return текущий объект страницы
+     * @return current page object
      */
     public MainPage verifyIsLoaded() {
         header().verifyLogoVisible();

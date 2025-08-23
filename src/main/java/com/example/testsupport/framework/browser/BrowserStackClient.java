@@ -11,7 +11,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 /**
- * Клиент для подключения к BrowserStack через WebSocket API.
+ * Client for connecting to BrowserStack via the WebSocket API.
  */
 @Component
 public class BrowserStackClient {
@@ -19,10 +19,10 @@ public class BrowserStackClient {
     private final String accessKey = System.getenv("BROWSERSTACK_ACCESS_KEY");
 
     /**
-     * Создает подключенный к BrowserStack браузер.
+     * Creates a browser connected to BrowserStack.
      *
-     * @param playwright экземпляр Playwright
-     * @return подключенный браузер
+     * @param playwright Playwright instance
+     * @return connected browser
      */
     public Browser connectBrowser(Playwright playwright) {
         ensureCreds();

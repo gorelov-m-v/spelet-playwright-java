@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Загружает JSON-файл окружения и добавляет его свойства в Spring Environment.
+ * Loads an environment JSON file and adds its properties to the Spring Environment.
  */
 public class JsonConfigEnvironmentPostProcessor implements EnvironmentPostProcessor {
     private static final String CONFIG_PROPERTY_NAME = "env.config";

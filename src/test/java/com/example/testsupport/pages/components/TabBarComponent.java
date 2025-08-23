@@ -5,7 +5,7 @@ import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.options.AriaRole;
 
 /**
- * Компонент таббара для мобильной версии.
+ * Tab bar component for the mobile version.
  */
 public class TabBarComponent extends BaseComponent {
     private final LocalizationService ls;
@@ -16,7 +16,7 @@ public class TabBarComponent extends BaseComponent {
     }
 
     /**
-     * Кликает по вкладке «Казино» в таббаре.
+     * Clicks the "Casino" tab.
      */
     public void clickCasino() {
         String casinoText = ls.get("header.menu.casino");
@@ -27,7 +27,7 @@ public class TabBarComponent extends BaseComponent {
     }
 
     /**
-     * Открывает профиль пользователя.
+     * Opens the user profile.
      */
     public void openProfile() {
         root.getByRole(AriaRole.TAB, new Locator.GetByRoleOptions()

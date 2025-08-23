@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 /**
- * Локальная стратегия: один браузер на класс, новый контекст на каждый тест.
+ * Local strategy: one browser per class, new context for each test.
  */
 @Component
 @Profile("local")

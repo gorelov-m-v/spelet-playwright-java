@@ -6,7 +6,7 @@ import com.microsoft.playwright.options.AriaRole;
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
 /**
- * Компонент хедера для десктопной версии.
+ * Header component for the desktop version.
  */
 public class HeaderComponent extends BaseComponent {
     private final LocalizationService ls;
@@ -17,7 +17,7 @@ public class HeaderComponent extends BaseComponent {
     }
 
     /**
-     * Кликает по ссылке «Казино» в хедере.
+     * Clicks the "Casino" link in the header.
      */
     public void clickCasino() {
         String casinoText = ls.get("header.menu.casino");
@@ -28,7 +28,7 @@ public class HeaderComponent extends BaseComponent {
     }
 
     /**
-     * Проверяет, что логотип виден.
+     * Verifies that the logo is visible.
      */
     public void verifyLogoVisible() {
         assertThat(root.locator("a.logo")).isVisible();

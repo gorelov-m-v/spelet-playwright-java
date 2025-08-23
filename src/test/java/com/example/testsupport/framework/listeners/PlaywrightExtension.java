@@ -13,8 +13,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 /**
- * Расширение JUnit 5, которое управляет жизненным циклом Playwright
- * и создает полезные вложения Allure при падении теста.
+ * JUnit 5 extension that manages the Playwright lifecycle
+ * and creates helpful Allure attachments when a test fails.
  */
 public class PlaywrightExtension implements BeforeAllCallback, BeforeEachCallback, AfterEachCallback, AfterAllCallback {
 

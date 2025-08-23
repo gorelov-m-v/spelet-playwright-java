@@ -41,6 +41,4 @@ public class CasinoPage extends BasePage {
     public void verifyUrl() {
         verifyUrlContains(getExpectedPath());
     }
-
-    // Метод verifyIsLoaded был удалён: пока проверяем загрузку только по URL
 }
