@@ -34,6 +34,9 @@ public class HeaderComponent extends BaseComponent {
      * Verifies that the logo is visible.
      */
     public void verifyLogoVisible() {
-        step("Проверка видимости логотипа", () -> assertThat(root.locator("a.logo")).isVisible());
+        step("Проверка видимости логотипа", () -> {
+            assertThat(root.getByRole(AriaRole.LINK, new Locator.GetByRoleOptions()
+                .setName("Spelet"))).isVisible();
+        });
     }
 }
