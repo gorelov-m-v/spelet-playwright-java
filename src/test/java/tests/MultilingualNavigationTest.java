@@ -39,14 +39,15 @@ class MultilingualNavigationTest {
         step("Устанавливаем язык теста", () -> {
             ls.loadLocale(languageCode);
         });
+
         step("Открываем главную страницу", () -> {
-            mainPage.open();
+            mainPage.open()
+                    .verifyIsLoaded();
         });
 
         step("Переходим на страницу 'Казино'", () -> {
             mainPage.navigateToCasino()
                     .verifyIsLoaded();
         });
-
     }
 }
