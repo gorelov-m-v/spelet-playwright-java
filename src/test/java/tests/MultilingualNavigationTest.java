@@ -48,7 +48,10 @@ class MultilingualNavigationTest {
     void navigateToCasinoPageOnAllLanguagesAndDevices(Device device, String languageCode) {
 
         step("Устанавливаем размер окна просмотра", () -> {
-            playwrightManager.getPage().setViewportSize(device.width(), device.height());
+            boolean isRealBsDevice = System.getProperty("bs.deviceName") != null;
+            if (!isRealBsDevice) {
+                playwrightManager.getPage().setViewportSize(device.width(), device.height());
+            }
         });
 
         step("Устанавливаем язык теста", () -> {

@@ -34,10 +34,25 @@ public class BrowserStackClient {
         caps.put("build", "spelet-lv-" + ZonedDateTime.now()
                 .format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmm")));
         caps.put("name", System.getProperty("bs.name", "Spelet test"));
+        // Версии клиента/сервера Playwright
         caps.put("browserstack.playwrightVersion", "1.latest");
-        caps.put("browserstack.console", "errors");
-        caps.put("browserstack.networkLogs", "true");
-        caps.put("browserstack.debug", "true");
+        caps.put("client.playwrightVersion", "1.48.0");
+
+        // Диагностика
+        caps.put("browserstack.console", System.getProperty("bs.console", "info"));
+        caps.put("browserstack.networkLogs", System.getProperty("bs.networkLogs", "true"));
+        caps.put("browserstack.video", System.getProperty("bs.video", "true"));
+        caps.put("browserstack.debug", System.getProperty("bs.debug", "true"));
+        caps.put("browserstack.maskCommands", "setValues, getValues, setCookies, getCookies");
+
+        // (опционально) локальный туннель
+        if ("true".equalsIgnoreCase(System.getProperty("bs.local"))) {
+            caps.put("browserstack.local", "true");
+            String localId = System.getProperty("bs.localIdentifier");
+            if (localId != null && !localId.isBlank()) {
+                caps.put("browserstack.localIdentifier", localId);
+            }
+        }
         String deviceName = System.getProperty("bs.deviceName");
         if (deviceName != null && !deviceName.isEmpty()) {
             buildMobileCapabilities(caps);

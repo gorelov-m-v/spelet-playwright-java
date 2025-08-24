@@ -87,6 +87,14 @@ bsTask('bsMacSafari', [
         'bs.name':'Spelet macOS Safari (WebKit)'
 ])
 
+bsTask('bsWin11ChromeLocal', [
+        'bs.os':'Windows', 'bs.osVersion':'11',
+        'bs.browser':'chrome', 'bs.browserVersion':'latest',
+        'bs.name':'Spelet Win11 Chrome (Local)',
+        'bs.local':'true',
+        'bs.localIdentifier': (System.getenv('BS_LOCAL_ID') ?: 'spelet-local') as String
+])
+
 bsTask('bsSamsungS20', [
         'bs.deviceName':'Samsung Galaxy S20', 'bs.osVersion':'10.0',
         'bs.browser':'chrome', 'bs.name':'Spelet Galaxy S20 Chrome'

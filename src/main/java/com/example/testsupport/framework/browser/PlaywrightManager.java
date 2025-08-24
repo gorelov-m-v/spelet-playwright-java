@@ -59,6 +59,10 @@ public class PlaywrightManager {
     public void createContextAndPage() {
         Browser.NewContextOptions contextOptions = new Browser.NewContextOptions()
                 .setViewportSize(1920, 1080);
+        String lang = ls.getCurrentLangCode();
+        if (lang != null && !lang.isBlank()) {
+            contextOptions.setLocale(lang).setTimezoneId("Europe/Riga");
+        }
         context.set(browser.get().newContext(contextOptions));
         context.get().tracing().start(new Tracing.StartOptions()
                 .setTitle("trace")

@@ -52,45 +52,67 @@ public class PlaywrightExtension implements BeforeAllCallback, BeforeEachCallbac
         ApplicationContext ctx = SpringExtension.getApplicationContext(context);
         PlaywrightManager manager = ctx.getBean(PlaywrightManager.class);
 
-        // Check for test failure BEFORE closing the context
-        if (context.getExecutionException().isPresent()) {
-            log.info("Test {} failed. Capturing failure artifacts...", context.getDisplayName());
-            Page page = manager.getPage();
-            try {
-                // 1. Attach URL and Screenshot
-                Allure.addAttachment("Current URL", "text/plain", page.url());
-                byte[] screenshot = page.screenshot(new Page.ScreenshotOptions().setFullPage(true));
-                Allure.getLifecycle().addAttachment("Screenshot", "image/png", "png", screenshot);
+        try {
+            // Check for test failure BEFORE closing the context
+            if (context.getExecutionException().isPresent()) {
+                log.info("Test {} failed. Capturing failure artifacts...", context.getDisplayName());
+                Page page = manager.getPage();
+                try {
+                    // 1. Attach URL and Screenshot
+                    Allure.addAttachment("Current URL", "text/plain", page.url());
+                    byte[] screenshot = page.screenshot(new Page.ScreenshotOptions().setFullPage(true));
+                    Allure.getLifecycle().addAttachment("Screenshot", "image/png", "png", screenshot);
 
-                // 2. Attach browser console logs
-                String consoleLog = String.join(System.lineSeparator(), manager.getConsoleMessages());
-                if (!consoleLog.isEmpty()) {
-                    Allure.addAttachment("Browser Console Logs", "text/plain", consoleLog);
-                }
-
-                // 3. Save and attach Playwright Trace
-                Path tracePath = manager.saveTrace(context.getDisplayName());
-                if (tracePath != null && Files.exists(tracePath)) {
-                    try (InputStream traceStream = Files.newInputStream(tracePath)) {
-                        Allure.addAttachment("Playwright Trace", "application/zip", traceStream, "zip");
+                    // 2. Attach browser console logs
+                    String consoleLog = String.join(System.lineSeparator(), manager.getConsoleMessages());
+                    if (!consoleLog.isEmpty()) {
+                        Allure.addAttachment("Browser Console Logs", "text/plain", consoleLog);
                     }
-                } else {
-                    log.warn("Trace file was not created for failed test: {}", context.getDisplayName());
+
+                    // 3. Save and attach Playwright Trace
+                    Path tracePath = manager.saveTrace(context.getDisplayName());
+                    if (tracePath != null && Files.exists(tracePath)) {
+                        try (InputStream traceStream = Files.newInputStream(tracePath)) {
+                            Allure.addAttachment("Playwright Trace", "application/zip", traceStream, "zip");
+                        }
+                    } else {
+                        log.warn("Trace file was not created for failed test: {}", context.getDisplayName());
+                    }
+
+                } catch (Throwable e) {
+                    log.error("Critical error while creating Allure attachments for failed test.", e);
                 }
-
-            } catch (Throwable e) {
-                log.error("Critical error while creating Allure attachments for failed test.", e);
             }
+        } finally {
+            // Помечаем статус сессии на BrowserStack (если запущено там)
+            try {
+                Page page = manager.getPage();
+                boolean failed = context.getExecutionException().isPresent();
+                String status = failed ? "failed" : "passed";
+                String reason = failed
+                        ? context.getExecutionException().map(Throwable::getMessage).orElse("Test failed")
+                        : "All checks passed";
+                markBsStatus(page, status, reason);
+            } catch (Throwable ignore) {}
+            // Finally, always run the lifecycle cleanup
+            lifecycle.afterEach();
         }
-
-        // Finally, always run the lifecycle cleanup
-        lifecycle.afterEach();
     }
 
     @Override
     public void afterAll(ExtensionContext context) {
         if (lifecycle != null) {
             lifecycle.afterAll();
+        }
+    }
+
+    private static void markBsStatus(Page page, String status, String reason) {
+        try {
+            String payload = "browserstack_executor: {\"action\":\"setSessionStatus\",\"arguments\":"
+                    + "{\"status\":\"" + status + "\",\"reason\":\"" + reason.replace("\"","'") + "\"}}";
+            page.evaluate("_ => {}", payload);
+        } catch (Throwable ignore) {
+            // не BS среда — игнорируем
         }
     }
 }

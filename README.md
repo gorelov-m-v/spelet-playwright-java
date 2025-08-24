@@ -42,3 +42,33 @@ When a test fails, open it in Allure and inspect the following attachments:
    This provides an interactive timeline for step-by-step debugging.
 
 Only failed tests include console logs and trace attachments to keep reports lightweight.
+
+## Запуск на BrowserStack
+
+### Переменные окружения
+Перед запуском экспортируйте креды:
+```bash
+export BROWSERSTACK_USERNAME=your_username
+export BROWSERSTACK_ACCESS_KEY=your_access_key
+```
+
+### Примеры команд
+Десктопы:
+```bash
+./gradlew bsWin10Chrome
+./gradlew bsMacSafari
+```
+Мобильные устройства:
+```bash
+./gradlew bsSamsungS24
+./gradlew bsiPhone16
+```
+
+### BrowserStack Local
+Для доступа к приватным стендам:
+```bash
+./gradlew bsWin11ChromeLocal -Dbs.local=true
+```
+
+### Результаты
+Видео, network и console логи доступны в [BrowserStack Automate Dashboard](https://automate.browserstack.com/dashboard).
