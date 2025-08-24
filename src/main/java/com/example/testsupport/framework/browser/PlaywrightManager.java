@@ -65,7 +65,6 @@ public class PlaywrightManager {
         }
         context.set(browser.get().newContext(contextOptions));
         context.get().tracing().start(new Tracing.StartOptions()
-                .setTitle("trace")
                 .setScreenshots(true)
                 .setSnapshots(true)
                 .setSources(true));

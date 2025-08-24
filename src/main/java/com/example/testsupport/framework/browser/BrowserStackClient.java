@@ -30,9 +30,11 @@ public class BrowserStackClient {
         JSONObject caps = new JSONObject();
         caps.put("browserstack.username", username);
         caps.put("browserstack.accessKey", accessKey);
-        caps.put("project", "Spelet LV");
-        caps.put("build", "spelet-lv-" + ZonedDateTime.now()
-                .format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmm")));
+        caps.put("project", System.getProperty("bs.project", "Spelet LV"));
+        caps.put("build", System.getProperty("bs.build",
+                System.getenv().getOrDefault("BS_BUILD_NAME",
+                        "spelet-lv-" + ZonedDateTime.now()
+                                .format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmm")))));
         caps.put("name", System.getProperty("bs.name", "Spelet test"));
         // Версии клиента/сервера Playwright
         caps.put("browserstack.playwrightVersion", "1.latest");

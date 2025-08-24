@@ -52,11 +52,17 @@ public class PlaywrightExtension implements BeforeAllCallback, BeforeEachCallbac
         ApplicationContext ctx = SpringExtension.getApplicationContext(context);
         PlaywrightManager manager = ctx.getBean(PlaywrightManager.class);
 
+        Page page = null;
         try {
+            try {
+                page = manager.getPage();
+            } catch (Throwable ignore) {
+                // page might not be created yet
+            }
+
             // Check for test failure BEFORE closing the context
-            if (context.getExecutionException().isPresent()) {
+            if (context.getExecutionException().isPresent() && page != null) {
                 log.info("Test {} failed. Capturing failure artifacts...", context.getDisplayName());
-                Page page = manager.getPage();
                 try {
                     // 1. Attach URL and Screenshot
                     Allure.addAttachment("Current URL", "text/plain", page.url());
@@ -86,13 +92,14 @@ public class PlaywrightExtension implements BeforeAllCallback, BeforeEachCallbac
         } finally {
             // Помечаем статус сессии на BrowserStack (если запущено там)
             try {
-                Page page = manager.getPage();
-                boolean failed = context.getExecutionException().isPresent();
-                String status = failed ? "failed" : "passed";
-                String reason = failed
-                        ? context.getExecutionException().map(Throwable::getMessage).orElse("Test failed")
-                        : "All checks passed";
-                markBsStatus(page, status, reason);
+                if (page != null) {
+                    boolean failed = context.getExecutionException().isPresent();
+                    String status = failed ? "failed" : "passed";
+                    String reason = failed
+                            ? context.getExecutionException().map(Throwable::getMessage).orElse("Test failed")
+                            : "All checks passed";
+                    markBsStatus(page, status, reason);
+                }
             } catch (Throwable ignore) {}
             // Finally, always run the lifecycle cleanup
             lifecycle.afterEach();
@@ -110,7 +117,7 @@ public class PlaywrightExtension implements BeforeAllCallback, BeforeEachCallbac
         try {
             String payload = "browserstack_executor: {\"action\":\"setSessionStatus\",\"arguments\":"
                     + "{\"status\":\"" + status + "\",\"reason\":\"" + reason.replace("\"","'") + "\"}}";
-            page.evaluate("_ => {}", payload);
+            page.evaluate("arg => arg", payload);
         } catch (Throwable ignore) {
             // не BS среда — игнорируем
         }
