@@ -39,7 +39,23 @@ public class CasinoPage extends BasePage {
     /**
      * Verifies that current URL contains expected path.
      */
-    public void verifyUrl() {
-        step("Проверка URL страницы 'Казино'", () -> verifyUrlContains(getExpectedPath()));
+    public CasinoPage verifyUrl() {
+        return step("Проверка URL страницы 'Казино'", () -> {
+            verifyUrlContains(getExpectedPath());
+            return this;
+        });
+    }
+
+    /**
+     * Verifies that the casino page is loaded.
+     *
+     * @return current page object
+     */
+    public CasinoPage verifyIsLoaded() {
+        return step("Проверка загрузки страницы 'Казино'", () -> {
+            header().verifyLogoVisible();
+            verifyUrlContains(getExpectedPath());
+            return this;
+        });
     }
 }
