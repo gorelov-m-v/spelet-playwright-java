@@ -1,0 +1,43 @@
+# Список устройств для тестирования адаптивной верстки.
+# Используется для локальной эмуляции и может быть отфильтрован
+# через системное свойство -Dtest.devices="name1,name2"
+
+test-devices:
+  # Этот список будет загружен в приложение
+  platforms:
+    - name: "Desktop FullHD"
+      width: 1920
+      height: 1080
+    - name: "MacBook Pro"
+      width: 1440
+      height: 900
+    - name: "iPhone 16 (Pro Max)"
+      width: 430
+      height: 932
+    - name: "iPhone 15"
+      width: 393
+      height: 852
+    - name: "iPhone 11"
+      width: 414
+      height: 896
+    - name: "Samsung S25 Ultra"
+      width: 384
+      height: 854
+    - name: "Samsung S24"
+      width: 360
+      height: 800
+    - name: "Samsung S20"
+      width: 360
+      height: 800
+    - name: "Huawei P30"
+      width: 360
+      height: 780
+    - name: "iPad Pro 11"
+      width: 834
+      height: 1194
+    - name: "iPad Air 6"
+      width: 820
+      height: 1180
+    - name: "iPad Mini"
+      width: 744
+      height: 1133
