@@ -19,7 +19,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static io.qameta.allure.Allure.step;
+import static com.example.testsupport.framework.utils.AllureHelper.step;
 
 @Epic("Spelet.lv")
 @Feature("Навигация по шапке")
@@ -54,13 +54,13 @@ class MultilingualNavigationTest {
         step("Устанавливаем язык теста", () -> {
             ls.loadLocale(languageCode);
         });
-
-        step("Открыть главную страницу", () -> {
-            playwrightManager.open();
+        step("Открываем главную страницу", () -> {
+            mainPage.open();
         });
 
-        step("Перейти на страницу казино и проверить URL", () -> {
-            mainPage.navigateToCasino().verifyUrl();
+        step("Переходим на страницу 'Казино'", () -> {
+            mainPage.navigateToCasino()
+                    .verifyUrl();
         });
 
     }

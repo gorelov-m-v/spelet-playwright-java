@@ -7,6 +7,7 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import static com.example.testsupport.framework.utils.AllureHelper.step;
 
 /**
  * Page object for the casino page.
@@ -39,6 +40,6 @@ public class CasinoPage extends BasePage {
      * Verifies that current URL contains expected path.
      */
     public void verifyUrl() {
-        verifyUrlContains(getExpectedPath());
+        step("Проверка URL страницы 'Казино'", () -> verifyUrlContains(getExpectedPath()));
     }
 }

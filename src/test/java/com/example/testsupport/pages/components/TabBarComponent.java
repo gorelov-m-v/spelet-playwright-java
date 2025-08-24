@@ -3,6 +3,7 @@ package com.example.testsupport.pages.components;
 import com.example.testsupport.framework.localization.LocalizationService;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.options.AriaRole;
+import static com.example.testsupport.framework.utils.AllureHelper.step;
 
 /**
  * Tab bar component for the mobile version.
@@ -19,19 +20,23 @@ public class TabBarComponent extends BaseComponent {
      * Clicks the "Casino" tab.
      */
     public void clickCasino() {
-        String casinoText = ls.get("header.menu.casino");
-        root.getByRole(AriaRole.TAB, new Locator.GetByRoleOptions()
-                .setName(casinoText)
-                .setExact(true))
-                .click();
+        step("Клик по табу 'Казино'", () -> {
+            String casinoText = ls.get("header.menu.casino");
+            root.getByRole(AriaRole.TAB, new Locator.GetByRoleOptions()
+                    .setName(casinoText)
+                    .setExact(true))
+                    .click();
+        });
     }
 
     /**
      * Opens the user profile.
      */
     public void openProfile() {
-        root.getByRole(AriaRole.TAB, new Locator.GetByRoleOptions()
-                .setName("Profile"))
-                .click();
+        step("Открытие профиля пользователя", () ->
+            root.getByRole(AriaRole.TAB, new Locator.GetByRoleOptions()
+                    .setName("Profile"))
+                    .click()
+        );
     }
 }

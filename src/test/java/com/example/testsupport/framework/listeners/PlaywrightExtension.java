@@ -41,6 +41,9 @@ public class PlaywrightExtension implements BeforeAllCallback, BeforeEachCallbac
         AppProperties props = ctx.getBean(AppProperties.class);
         ls.loadLocale(props.getLanguage());
 
+        PlaywrightManager manager = ctx.getBean(PlaywrightManager.class);
+        manager.clearConsoleMessages();
+
         lifecycle.beforeEach();
     }
 
@@ -59,7 +62,13 @@ public class PlaywrightExtension implements BeforeAllCallback, BeforeEachCallbac
                 byte[] screenshot = page.screenshot(new Page.ScreenshotOptions().setFullPage(true));
                 Allure.getLifecycle().addAttachment("Screenshot", "image/png", "png", screenshot);
 
-                // 2. Save and attach Playwright Trace
+                // 2. Attach browser console logs
+                String consoleLog = String.join(System.lineSeparator(), manager.getConsoleMessages());
+                if (!consoleLog.isEmpty()) {
+                    Allure.addAttachment("Browser Console Logs", "text/plain", consoleLog);
+                }
+
+                // 3. Save and attach Playwright Trace
                 Path tracePath = manager.saveTrace(context.getDisplayName());
                 if (tracePath != null && Files.exists(tracePath)) {
                     try (InputStream traceStream = Files.newInputStream(tracePath)) {

@@ -1,11 +1,13 @@
 package com.example.testsupport.pages;
 
+import com.example.testsupport.framework.browser.PlaywrightManager;
 import com.example.testsupport.framework.localization.LocalizationService;
 import com.microsoft.playwright.Page;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import static com.example.testsupport.framework.utils.AllureHelper.step;
 
 
 @Component
@@ -13,11 +15,14 @@ import org.springframework.stereotype.Component;
 public class MainPage extends BasePage {
 
     private final ObjectProvider<CasinoPage> casinoPageProvider;
+    private final PlaywrightManager playwrightManager;
 
     public MainPage(ObjectProvider<Page> page, LocalizationService ls,
-                    ObjectProvider<CasinoPage> casinoPageProvider) {
+                    ObjectProvider<CasinoPage> casinoPageProvider,
+                    PlaywrightManager playwrightManager) {
         super(page, ls);
         this.casinoPageProvider = casinoPageProvider;
+        this.playwrightManager = playwrightManager;
     }
 
     private static final int MOBILE_BREAKPOINT = 960;
@@ -27,14 +32,18 @@ public class MainPage extends BasePage {
      */
     @SuppressWarnings("resource")
     public CasinoPage navigateToCasino() {
-        int currentWidth = page().viewportSize().width;
-        if (currentWidth < MOBILE_BREAKPOINT) {
-            tabBar().clickCasino();
-        } else {
-            header().clickCasino();
-        }
-        page().waitForURL("**/casino");
-        return casinoPageProvider.getObject();
+        return step("Навигация на страницу 'Казино'", () -> {
+            int currentWidth = page().viewportSize().width;
+            if (currentWidth < MOBILE_BREAKPOINT) {
+                tabBar().clickCasino();
+            } else {
+                header().clickCasino();
+            }
+            step("Ожидание URL страницы 'Казино'", () -> {
+                page().waitForURL("**/casino");
+            });
+            return casinoPageProvider.getObject();
+        });
     }
 
     /**
@@ -43,8 +52,22 @@ public class MainPage extends BasePage {
      * @return current page object
      */
     public MainPage verifyIsLoaded() {
-        header().verifyLogoVisible();
-        verifyUrlContains("/");
-        return this;
+        return step("Проверка загрузки главной страницы", () -> {
+            header().verifyLogoVisible();
+            verifyUrlContains("/");
+            return this;
+        });
+    }
+
+    /**
+     * Opens the main page using the Playwright manager and verifies it's loaded.
+     *
+     * @return current page object
+     */
+    public MainPage open() {
+        return step("Открыть главную страницу", () -> {
+            playwrightManager.open();
+            return verifyIsLoaded();
+        });
     }
 }
