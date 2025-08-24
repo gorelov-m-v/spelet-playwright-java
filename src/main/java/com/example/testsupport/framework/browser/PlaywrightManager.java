@@ -45,11 +45,18 @@ public class PlaywrightManager {
 
     /**
      * Initializes the Playwright engine and browser once per thread.
+     * For BrowserStack runs, the test name is used to label the session.
+     *
+     * @param testName display name of the current test
      */
-    public void initializeBrowser() {
+    public void initializeBrowser(String testName) {
         if (playwright.get() == null) {
             playwright.set(Playwright.create());
-            browser.set(browserFactory.create(playwright.get()));
+            if (browserFactory instanceof BrowserStackFactory bsFactory) {
+                browser.set(bsFactory.create(playwright.get(), testName));
+            } else {
+                browser.set(browserFactory.create(playwright.get()));
+            }
         }
     }
 

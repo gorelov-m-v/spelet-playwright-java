@@ -23,6 +23,8 @@ repositories { mavenCentral() }
         implementation 'com.fasterxml.jackson.core:jackson-databind'
         implementation 'com.fasterxml.jackson.core:jackson-core'
 
+        testImplementation 'com.browserstack:browserstack-java-sdk:1.15.0'
+
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
 

@@ -1,43 +1,37 @@
 package com.example.testsupport.framework.browser;
 
-import com.microsoft.playwright.*;
+import com.microsoft.playwright.Browser;
+import com.microsoft.playwright.BrowserType;
+import com.microsoft.playwright.Playwright;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Objects;
 
 /**
  * Client for connecting to BrowserStack via the WebSocket API.
  */
 @Component
 public class BrowserStackClient {
-    private final String username = System.getenv("BROWSERSTACK_USERNAME");
-    private final String accessKey = System.getenv("BROWSERSTACK_ACCESS_KEY");
+
+    private final BrowserStackSessionManager sessionManager;
+
+    public BrowserStackClient(BrowserStackSessionManager sessionManager) {
+        this.sessionManager = sessionManager;
+    }
 
     /**
      * Creates a browser connected to BrowserStack.
      *
      * @param playwright Playwright instance
+     * @param testName   name of the running test
      * @return connected browser
      */
-    public Browser connectBrowser(Playwright playwright) {
-        ensureCreds();
-
+    public Browser connectBrowser(Playwright playwright, String testName) {
         JSONObject caps = new JSONObject();
-        caps.put("browserstack.username", username);
-        caps.put("browserstack.accessKey", accessKey);
-        caps.put("project", "Spelet LV");
-        caps.put("build", "spelet-lv-" + ZonedDateTime.now()
-                .format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmm")));
-        caps.put("name", System.getProperty("bs.name", "Spelet test"));
-        caps.put("browserstack.playwrightVersion", "1.latest");
-        caps.put("browserstack.console", "errors");
-        caps.put("browserstack.networkLogs", "true");
-        caps.put("browserstack.debug", "true");
+        caps.put("browserstack.sessionName", testName);
+
         String deviceName = System.getProperty("bs.deviceName");
         if (deviceName != null && !deviceName.isEmpty()) {
             buildMobileCapabilities(caps);
@@ -81,13 +75,21 @@ public class BrowserStackClient {
             case "safari", "playwright-webkit" -> playwright.webkit();
             default -> playwright.chromium();
         };
-        return type.connect(ws);
-    }
-
-    private void ensureCreds() {
-        if (Objects.isNull(username) || Objects.isNull(accessKey) || username.isEmpty() || accessKey.isEmpty()) {
-            throw new IllegalStateException("BROWSERSTACK_USERNAME / BROWSERSTACK_ACCESS_KEY are not set");
+        Browser browserInstance = type.connectOverCDP(ws);
+        try {
+            JSONObject details = new JSONObject(browserInstance.version());
+            if (details.has("browserstack")) {
+                JSONObject bs = details.getJSONObject("browserstack");
+                if (bs.has("sessionId")) {
+                    sessionManager.setSessionId(bs.getString("sessionId"));
+                }
+                if (bs.has("dashboardUrl")) {
+                    System.out.println("BrowserStack dashboard: " + bs.getString("dashboardUrl"));
+                }
+            }
+        } catch (Exception ignored) {
         }
+        return browserInstance;
     }
 
     private static String urlEncode(String s) {
@@ -98,3 +100,4 @@ public class BrowserStackClient {
         }
     }
 }
+

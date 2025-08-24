@@ -19,7 +19,7 @@ public class LocalPlaywrightLifecycle implements PlaywrightLifecycleStrategy {
 
     @Override
     public void beforeAll() {
-        pm.initializeBrowser();
+        pm.initializeBrowser(null);
     }
 
     @Override

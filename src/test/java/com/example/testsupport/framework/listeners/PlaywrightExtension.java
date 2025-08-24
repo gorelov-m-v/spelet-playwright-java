@@ -2,7 +2,10 @@ package com.example.testsupport.framework.listeners;
 
 import com.example.testsupport.config.AppProperties;
 import com.example.testsupport.framework.browser.PlaywrightManager;
+import com.example.testsupport.framework.browser.BrowserStackSessionManager;
+import com.example.testsupport.framework.browser.BrowserStackTestReporter;
 import com.example.testsupport.framework.localization.LocalizationService;
+import com.example.testsupport.framework.lifecycle.BrowserStackPlaywrightLifecycle;
 import com.example.testsupport.framework.lifecycle.PlaywrightLifecycleStrategy;
 import com.microsoft.playwright.Page;
 import io.qameta.allure.Allure;
@@ -23,12 +26,15 @@ public class PlaywrightExtension implements BeforeAllCallback, BeforeEachCallbac
 
     private static final Logger log = LoggerFactory.getLogger(PlaywrightExtension.class);
     private PlaywrightLifecycleStrategy lifecycle;
+    private BrowserStackSessionManager sessionManager;
+    private static BrowserStackTestReporter reporter;
 
     @Override
     public void beforeAll(ExtensionContext context) {
         ApplicationContext ctx = SpringExtension.getApplicationContext(context);
         lifecycle = ctx.getBean(PlaywrightLifecycleStrategy.class);
         lifecycle.beforeAll();
+        reporter = new BrowserStackTestReporter();
     }
 
     @Override
@@ -37,14 +43,21 @@ public class PlaywrightExtension implements BeforeAllCallback, BeforeEachCallbac
         if (lifecycle == null) {
             lifecycle = ctx.getBean(PlaywrightLifecycleStrategy.class);
         }
+        sessionManager = ctx.getBean(BrowserStackSessionManager.class);
         LocalizationService ls = ctx.getBean(LocalizationService.class);
         AppProperties props = ctx.getBean(AppProperties.class);
         ls.loadLocale(props.getLanguage());
 
         PlaywrightManager manager = ctx.getBean(PlaywrightManager.class);
         manager.clearConsoleMessages();
+        String testName = context.getDisplayName();
+        manager.initializeBrowser(testName);
 
-        lifecycle.beforeEach();
+        if (lifecycle instanceof BrowserStackPlaywrightLifecycle) {
+            manager.createContextAndPage();
+        } else {
+            lifecycle.beforeEach();
+        }
     }
 
     @Override
@@ -83,8 +96,26 @@ public class PlaywrightExtension implements BeforeAllCallback, BeforeEachCallbac
             }
         }
 
+        String sessionId = sessionManager.getSessionId();
+        if (sessionId != null) {
+            try {
+                if (context.getExecutionException().isPresent()) {
+                    String reason = context.getExecutionException().get().getMessage();
+                    reporter.testFailed(sessionId, reason);
+                } else {
+                    reporter.testPassed(sessionId);
+                }
+            } catch (Exception e) {
+                log.warn("Could not send status to BrowserStack", e);
+            }
+        }
+
         // Finally, always run the lifecycle cleanup
-        lifecycle.afterEach();
+        try {
+            lifecycle.afterEach();
+        } finally {
+            sessionManager.clear();
+        }
     }
 
     @Override
