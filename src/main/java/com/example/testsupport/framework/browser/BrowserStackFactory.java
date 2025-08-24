@@ -20,6 +20,10 @@ public class BrowserStackFactory implements BrowserFactory {
 
     @Override
     public Browser create(Playwright playwright) {
-        return bsClient.connectBrowser(playwright);
+        return bsClient.connectBrowser(playwright, "Unnamed test");
+    }
+
+    public Browser create(Playwright playwright, String testName) {
+        return bsClient.connectBrowser(playwright, testName);
     }
 }

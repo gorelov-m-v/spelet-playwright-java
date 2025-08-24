@@ -24,7 +24,6 @@ public class LocalPlaywrightLifecycle implements PlaywrightLifecycleStrategy {
 
     @Override
     public void beforeEach() {
-        pm.createContextAndPage();
     }
 
     @Override

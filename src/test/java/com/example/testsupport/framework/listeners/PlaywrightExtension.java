@@ -2,6 +2,8 @@ package com.example.testsupport.framework.listeners;
 
 import com.example.testsupport.config.AppProperties;
 import com.example.testsupport.framework.browser.PlaywrightManager;
+import com.example.testsupport.framework.browser.BrowserStackSessionManager;
+import com.example.testsupport.framework.browser.BrowserStackTestReporter;
 import com.example.testsupport.framework.localization.LocalizationService;
 import com.example.testsupport.framework.lifecycle.PlaywrightLifecycleStrategy;
 import com.microsoft.playwright.Page;
@@ -23,12 +25,15 @@ public class PlaywrightExtension implements BeforeAllCallback, BeforeEachCallbac
 
     private static final Logger log = LoggerFactory.getLogger(PlaywrightExtension.class);
     private PlaywrightLifecycleStrategy lifecycle;
+    private BrowserStackSessionManager sessionManager;
+    private static BrowserStackTestReporter reporter;
 
     @Override
     public void beforeAll(ExtensionContext context) {
         ApplicationContext ctx = SpringExtension.getApplicationContext(context);
         lifecycle = ctx.getBean(PlaywrightLifecycleStrategy.class);
         lifecycle.beforeAll();
+        reporter = new BrowserStackTestReporter();
     }
 
     @Override
@@ -41,10 +46,16 @@ public class PlaywrightExtension implements BeforeAllCallback, BeforeEachCallbac
         AppProperties props = ctx.getBean(AppProperties.class);
         ls.loadLocale(props.getLanguage());
 
+        if (sessionManager == null) {
+            sessionManager = ctx.getBean(BrowserStackSessionManager.class);
+        }
+
         PlaywrightManager manager = ctx.getBean(PlaywrightManager.class);
         manager.clearConsoleMessages();
 
-        lifecycle.beforeEach();
+        String testName = context.getDisplayName();
+        manager.initializeBrowser(testName);
+        manager.createContextAndPage();
     }
 
     @Override
@@ -83,8 +94,24 @@ public class PlaywrightExtension implements BeforeAllCallback, BeforeEachCallbac
             }
         }
 
+        String sessionId = sessionManager != null ? sessionManager.getSessionId() : null;
+        if (sessionId != null) {
+            if (context.getExecutionException().isPresent()) {
+                String reason = context.getExecutionException().get().getMessage();
+                reporter.testFailed(sessionId, reason);
+            } else {
+                reporter.testPassed(sessionId);
+            }
+        }
+
         // Finally, always run the lifecycle cleanup
-        lifecycle.afterEach();
+        try {
+            lifecycle.afterEach();
+        } finally {
+            if (sessionManager != null) {
+                sessionManager.clear();
+            }
+        }
     }
 
     @Override

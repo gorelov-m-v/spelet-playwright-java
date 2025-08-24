@@ -22,8 +22,6 @@ public class BrowserStackPlaywrightLifecycle implements PlaywrightLifecycleStrat
 
     @Override
     public void beforeEach() {
-        pm.initializeBrowser();
-        pm.createContextAndPage();
     }
 
     @Override

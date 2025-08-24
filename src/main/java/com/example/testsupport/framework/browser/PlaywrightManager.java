@@ -45,12 +45,26 @@ public class PlaywrightManager {
 
     /**
      * Initializes the Playwright engine and browser once per thread.
+     *
+     * @param testName name of the running test for BrowserStack sessions
      */
-    public void initializeBrowser() {
+    public void initializeBrowser(String testName) {
         if (playwright.get() == null) {
             playwright.set(Playwright.create());
-            browser.set(browserFactory.create(playwright.get()));
+            if (browserFactory instanceof BrowserStackFactory bsFactory) {
+                browser.set(bsFactory.create(playwright.get(), testName));
+            } else {
+                browser.set(browserFactory.create(playwright.get()));
+            }
         }
+    }
+
+    /**
+     * Initializes browser without specifying test name (backward compatibility).
+     */
+    @Deprecated
+    public void initializeBrowser() {
+        initializeBrowser("Local");
     }
 
     /**

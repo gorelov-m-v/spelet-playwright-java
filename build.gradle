@@ -26,9 +26,10 @@ repositories { mavenCentral() }
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
 
-    testImplementation 'io.qameta.allure:allure-junit5:2.29.0'
-    testRuntimeOnly 'org.aspectj:aspectjweaver:1.9.22.1'
-}
+      testImplementation 'io.qameta.allure:allure-junit5:2.29.0'
+      testImplementation 'com.browserstack:browserstack-java-sdk:1.15.0'
+      testRuntimeOnly 'org.aspectj:aspectjweaver:1.9.22.1'
+  }
 
 test {
     useJUnitPlatform()

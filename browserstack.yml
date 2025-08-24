@@ -1,0 +1,10 @@
+userName: ${BROWSERSTACK_USERNAME}
+accessKey: ${BROWSERSTACK_ACCESS_KEY}
+
+projectName: "Spelet LV"
+buildName: "spelet-lv-playwright-${BUILD_NUMBER:-local-build}"
+
+browserstack.playwrightVersion: "1.latest"
+browserstack.console: "errors"
+browserstack.networkLogs: "true"
+browserstack.debug: "true"
