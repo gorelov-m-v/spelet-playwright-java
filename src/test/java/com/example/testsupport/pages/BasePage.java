@@ -11,7 +11,7 @@ import java.util.function.Supplier;
 /**
  * Base Page Object with shared logic.
  */
-public abstract class BasePage {
+public abstract class BasePage<T extends BasePage<T>> {
     private final ObjectProvider<Page> pageProvider;
     protected final LocalizationService ls;
     private final Supplier<HeaderComponent> header;
@@ -35,6 +35,11 @@ public abstract class BasePage {
 
     public TabBarComponent tabBar() {
         return tabBar.get();
+    }
+
+    @SuppressWarnings("unchecked")
+    protected T self() {
+        return (T) this;
     }
 
     private static <T> Supplier<T> memoize(Supplier<T> supplier) {
@@ -62,4 +67,6 @@ public abstract class BasePage {
                 String.format("Expected URL to contain '%s' but was '%s'", expectedPath, current)
         );
     }
+
+    public abstract T verifyIsLoaded();
 }

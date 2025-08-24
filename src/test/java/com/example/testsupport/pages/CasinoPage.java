@@ -15,7 +15,7 @@ import static com.example.testsupport.framework.utils.AllureHelper.step;
  */
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class CasinoPage extends BasePage {
+public class CasinoPage extends BasePage<CasinoPage> {
     private final AppProperties props;
 
     public CasinoPage(ObjectProvider<Page> page, AppProperties props, LocalizationService ls) {
@@ -51,6 +51,7 @@ public class CasinoPage extends BasePage {
      *
      * @return current page object
      */
+    @Override
     public CasinoPage verifyIsLoaded() {
         return step("Проверка загрузки страницы 'Казино'", () -> {
             header().verifyLogoVisible();

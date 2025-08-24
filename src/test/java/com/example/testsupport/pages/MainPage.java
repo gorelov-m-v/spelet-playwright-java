@@ -12,7 +12,7 @@ import static com.example.testsupport.framework.utils.AllureHelper.step;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class MainPage extends BasePage {
+public class MainPage extends BasePage<MainPage> {
 
     private final ObjectProvider<CasinoPage> casinoPageProvider;
     private final PlaywrightManager playwrightManager;
@@ -42,7 +42,7 @@ public class MainPage extends BasePage {
             step("Ожидание URL страницы 'Казино'", () -> {
                 page().waitForURL("**/casino");
             });
-            return casinoPageProvider.getObject();
+            return casinoPageProvider.getObject().verifyIsLoaded();
         });
     }
 
@@ -51,6 +51,7 @@ public class MainPage extends BasePage {
      *
      * @return current page object
      */
+    @Override
     public MainPage verifyIsLoaded() {
         return step("Проверка загрузки главной страницы", () -> {
             header().verifyLogoVisible();
