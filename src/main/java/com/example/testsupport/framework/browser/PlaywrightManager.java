@@ -1,7 +1,7 @@
 package com.example.testsupport.framework.browser;
 
 import com.microsoft.playwright.*;
-import com.microsoft.playwright.options.WaitUntilState;
+import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import com.example.testsupport.config.AppProperties;
 import com.example.testsupport.framework.localization.LocalizationService;
 import org.springframework.stereotype.Component;
@@ -69,6 +69,8 @@ public class PlaywrightManager {
                 .setSnapshots(true)
                 .setSources(true));
         page.set(context.get().newPage());
+        page.get().setDefaultTimeout(20_000);
+        page.get().setDefaultNavigationTimeout(45_000);
         page.get().onConsoleMessage(msg -> consoleMessages.get().add("[" + msg.type() + "] " + msg.text()));
     }
 
@@ -96,8 +98,9 @@ public class PlaywrightManager {
     }
 
     public void open() {
-        getPage().navigate(buildBaseUrlForCurrentLanguage(),
-                new Page.NavigateOptions().setWaitUntil(WaitUntilState.NETWORKIDLE));
+        String url = buildBaseUrlForCurrentLanguage();
+        getPage().navigate(url);
+        assertThat(getPage()).hasURL(url + "**");
     }
 
     /**
@@ -106,8 +109,9 @@ public class PlaywrightManager {
      * @param path e.g., "/casino"
      */
     public void navigate(String path) {
-        getPage().navigate(buildBaseUrlForCurrentLanguage() + path,
-                new Page.NavigateOptions().setWaitUntil(WaitUntilState.NETWORKIDLE));
+        String target = buildBaseUrlForCurrentLanguage() + path;
+        getPage().navigate(target);
+        assertThat(getPage()).hasURL(target + "**");
     }
     /**
      * Closes the page and context.

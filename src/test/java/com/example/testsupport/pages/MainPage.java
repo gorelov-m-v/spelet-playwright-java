@@ -40,7 +40,8 @@ public class MainPage extends BasePage {
                 header().clickCasino();
             }
             step("Ожидание URL страницы 'Казино'", () -> {
-                page().waitForURL("**/casino");
+                com.microsoft.playwright.assertions.PlaywrightAssertions
+                    .assertThat(page()).hasURL("**/casino");
             });
             return casinoPageProvider.getObject();
         });
