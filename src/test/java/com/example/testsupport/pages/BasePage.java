@@ -4,7 +4,6 @@ import com.example.testsupport.framework.localization.LocalizationService;
 import com.example.testsupport.pages.components.HeaderComponent;
 import com.example.testsupport.pages.components.TabBarComponent;
 import com.microsoft.playwright.Page;
-import com.microsoft.playwright.options.AriaRole;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.factory.ObjectProvider;
 import java.util.function.Supplier;
@@ -22,7 +21,7 @@ public abstract class BasePage {
     protected BasePage(ObjectProvider<Page> pageProvider, LocalizationService ls) {
         this.pageProvider = pageProvider;
         this.ls = ls;
-        this.header = memoize(() -> new HeaderComponent(page().getByRole(AriaRole.NAVIGATION), ls));
+        this.header = memoize(() -> new HeaderComponent(page().locator("header"), ls));
         this.tabBar = memoize(() -> new TabBarComponent(page().locator("div.tab-bar__list"), ls));
     }
 
