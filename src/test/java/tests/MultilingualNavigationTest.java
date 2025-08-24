@@ -45,7 +45,7 @@ class MultilingualNavigationTest {
 
         step("Переходим на страницу 'Казино'", () -> {
             mainPage.navigateToCasino()
-                    .verifyUrl();
+                    .verifyIsLoaded();
         });
 
     }
