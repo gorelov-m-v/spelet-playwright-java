@@ -1,8 +1,10 @@
 package tests;
 
 import com.example.testsupport.framework.device.Device;
-import com.example.testsupport.pages.MainPage;
 import com.example.testsupport.framework.device.DeviceProvider;
+import com.example.testsupport.pages.MainPage;
+import com.example.testsupport.pages.CasinoPage;
+import com.example.testsupport.pages.components.FilterDrawerComponent;
 import io.qameta.allure.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -22,6 +24,12 @@ class MultilingualNavigationTest extends BaseTest {
     @ArgumentsSource(DeviceProvider.class)
     void navigateToCasinoPageOnAllLanguagesAndDevices(Device device, String languageCode) {
 
+        final class TestContext {
+            CasinoPage casinoPage;
+            FilterDrawerComponent filterDrawer;
+        }
+        final TestContext ctx = new TestContext();
+
         step(String.format("Подготовка тестового окружения [Устройство: %s, Язык: %s]", device, languageCode), () -> {
             setupTestEnvironment(device, languageCode);
         });
@@ -32,8 +40,13 @@ class MultilingualNavigationTest extends BaseTest {
         });
 
         step("Переходим на страницу 'Казино'", () -> {
-            mainPage.navigateToCasino()
+            ctx.casinoPage = mainPage.navigateToCasino()
                     .verifyIsLoaded();
+        });
+
+        step("Открываем дровер фильтров", () -> {
+            ctx.filterDrawer = ctx.casinoPage.openFilters()
+                    .verifyIsVisible();
         });
     }
 }
