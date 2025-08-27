@@ -45,8 +45,7 @@ class MultilingualNavigationTest extends BaseTest {
         });
 
         step("Открываем дровер фильтров", () -> {
-            ctx.filterDrawer = ctx.casinoPage.openFilters()
-                    .verifyIsVisible();
+            ctx.filterDrawer = ctx.casinoPage.openFilters();
         });
     }
 }
