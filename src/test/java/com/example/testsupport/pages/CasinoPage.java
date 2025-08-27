@@ -82,7 +82,8 @@ public class CasinoPage extends BasePage<CasinoPage> {
                         .setExact(true));
             }
             button.click();
-            return new FilterDrawerComponent(page().locator("div.drawer__headerWrapper"), ls);
+            Locator drawer = page().locator("div.drawer__headerWrapper").locator("..");
+            return new FilterDrawerComponent(drawer, ls);
         });
     }
 }

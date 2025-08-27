@@ -48,5 +48,14 @@ class MultilingualNavigationTest extends BaseTest {
             ctx.filterDrawer = ctx.casinoPage.openFilters()
                     .verifyIsLoaded();
         });
+
+        step("Выбираем провайдера 'Play'n Go'", () -> {
+            ctx.filterDrawer.selectProvider("Play'n Go");
+        });
+
+        step("Применяем фильтры", () -> {
+            ctx.filterDrawer.clickShow();
+            ctx.casinoPage.verifyIsLoaded();
+        });
     }
 }

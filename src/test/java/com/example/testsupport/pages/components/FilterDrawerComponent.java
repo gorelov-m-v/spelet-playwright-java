@@ -33,5 +33,34 @@ public class FilterDrawerComponent extends BaseComponent {
             return this;
         });
     }
+
+    /**
+     * Selects a provider within the drawer by its visible name.
+     *
+     * @param providerName provider label as displayed in UI
+     * @return current component instance
+     */
+    public FilterDrawerComponent selectProvider(String providerName) {
+        return step(String.format("Выбор провайдера '%s'", providerName), () -> {
+            root.getByRole(AriaRole.ROW, new Locator.GetByRoleOptions()
+                    .setName(providerName)
+                    .setExact(true))
+                .click();
+            return this;
+        });
+    }
+
+    /**
+     * Applies the selected filters by clicking the translated "Show" button.
+     */
+    public void clickShow() {
+        step("Применение фильтров", () -> {
+            String showText = ls.get("casino.filters.show");
+            root.getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions()
+                    .setName(showText)
+                    .setExact(true))
+                .click();
+        });
+    }
 }
 
