@@ -21,9 +21,10 @@ class MultilingualNavigationTest extends BaseTest {
     @ParameterizedTest(name = "[Устройство: {0}, Язык: {1}]")
     @ArgumentsSource(DeviceProvider.class)
     void navigateToCasinoPageOnAllLanguagesAndDevices(Device device, String languageCode) {
-        step(String.format("Подготовка тестового окружения [Устройство: %s, Язык: %s]",
-                device, languageCode),
-            () -> setupTestEnvironment(device, languageCode));
+
+        step(String.format("Подготовка тестового окружения [Устройство: %s, Язык: %s]", device, languageCode), () -> {
+            setupTestEnvironment(device, languageCode);
+        });
 
         step("Открываем главную страницу", () -> {
             mainPage.open()
