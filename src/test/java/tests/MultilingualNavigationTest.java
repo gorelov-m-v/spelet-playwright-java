@@ -1,30 +1,20 @@
 package tests;
 
-import com.example.testsupport.TestApplication;
-import com.example.testsupport.framework.browser.PlaywrightManager;
 import com.example.testsupport.framework.device.Device;
-import com.example.testsupport.framework.listeners.PlaywrightExtension;
-import com.example.testsupport.framework.localization.LocalizationService;
 import com.example.testsupport.pages.MainPage;
 import com.example.testsupport.framework.device.DeviceProvider;
 import io.qameta.allure.*;
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import static com.example.testsupport.framework.utils.AllureHelper.step;
 
 @Epic("Spelet.lv")
 @Feature("Навигация по шапке")
-@SpringBootTest(classes = TestApplication.class)
-@ExtendWith(PlaywrightExtension.class)
-class MultilingualNavigationTest {
+class MultilingualNavigationTest extends BaseTest {
     @Autowired private MainPage mainPage;
-    @Autowired private PlaywrightManager playwrightManager;
-    @Autowired private LocalizationService ls;
 
     @Story("Переход на страницу казино для всех поддерживаемых языков и устройств")
     @DisplayName("Навигация на страницу казино")
@@ -32,12 +22,8 @@ class MultilingualNavigationTest {
     @ArgumentsSource(DeviceProvider.class)
     void navigateToCasinoPageOnAllLanguagesAndDevices(Device device, String languageCode) {
 
-        step("Устанавливаем размер окна просмотра", () -> {
-            playwrightManager.getPage().setViewportSize(device.width(), device.height());
-        });
-
-        step("Устанавливаем язык теста", () -> {
-            ls.loadLocale(languageCode);
+        step(String.format("Подготовка тестового окружения [Устройство: %s, Язык: %s]", device, languageCode), () -> {
+            setupTestEnvironment(device, languageCode);
         });
 
         step("Открываем главную страницу", () -> {
