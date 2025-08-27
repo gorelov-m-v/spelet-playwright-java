@@ -20,12 +20,12 @@ public class FilterDrawerComponent extends BaseComponent {
     }
 
     /**
-     * Verifies that the filter drawer is visible by checking its title.
+     * Verifies that the filter drawer is loaded by checking its translated title.
      *
      * @return current component instance
      */
-    public FilterDrawerComponent verifyIsVisible() {
-        return step("Проверка видимости дровера фильтров", () -> {
+    public FilterDrawerComponent verifyIsLoaded() {
+        return step("Проверка загрузки дровера фильтров", () -> {
             String title = ls.get("casino.filters.title");
             assertThat(root.getByRole(AriaRole.HEADING, new Locator.GetByRoleOptions()
                     .setName(title)

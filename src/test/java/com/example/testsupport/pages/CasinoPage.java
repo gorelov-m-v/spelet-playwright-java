@@ -80,8 +80,7 @@ public class CasinoPage extends BasePage<CasinoPage> {
                         .setExact(true))
                         .click();
             }
-            return new FilterDrawerComponent(page().locator("div.drawer__headerWrapper"), ls)
-                    .verifyIsVisible();
+            return new FilterDrawerComponent(page().locator("div.drawer__headerWrapper"), ls);
         });
     }
 }
