@@ -2,7 +2,9 @@ package com.example.testsupport.pages;
 
 import com.example.testsupport.config.AppProperties;
 import com.example.testsupport.framework.localization.LocalizationService;
+import com.example.testsupport.framework.utils.Breakpoints;
 import com.example.testsupport.pages.components.FilterDrawerComponent;
+import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
 import org.springframework.beans.factory.ObjectProvider;
@@ -69,11 +71,17 @@ public class CasinoPage extends BasePage<CasinoPage> {
      */
     public FilterDrawerComponent openFilters() {
         return step("Открытие панели фильтров", () -> {
-            String buttonText = ls.get("casino.filters.button");
-            page().getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions()
-                    .setName(buttonText)
-                    .setExact(true))
-                    .click();
+            Locator button;
+            int width = page().viewportSize() != null ? page().viewportSize().width : Integer.MAX_VALUE;
+            if (width < Breakpoints.TABLET) {
+                button = page().locator("div.d_block.pos_relative.w768\\:d_none > button");
+            } else {
+                String buttonText = ls.get("casino.filters.button");
+                button = page().getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions()
+                        .setName(buttonText)
+                        .setExact(true));
+            }
+            button.click();
             return new FilterDrawerComponent(page().locator("div.drawer__headerWrapper"), ls);
         });
     }
