@@ -132,7 +132,9 @@ public class CasinoPage extends BasePage<CasinoPage> {
             Locator card = page().locator(".GameCard__root").filter(new Locator.FilterOptions()
                     .setHasText(gameName)).first();
             card.getByRole(AriaRole.BUTTON).click();
-            Locator dialog = page().locator("div[role='dialog']");
+            String promptTitle = ls.get("casino.play.prompt");
+            Locator dialog = page().getByText(promptTitle, new Page.GetByTextOptions()
+                    .setExact(true)).locator("..");
             return new AuthModalComponent(dialog, ls);
         });
     }

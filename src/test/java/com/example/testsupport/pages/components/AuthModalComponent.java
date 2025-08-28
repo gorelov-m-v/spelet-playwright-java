@@ -2,7 +2,6 @@ package com.example.testsupport.pages.components;
 
 import com.example.testsupport.framework.localization.LocalizationService;
 import com.microsoft.playwright.Locator;
-import com.microsoft.playwright.options.AriaRole;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static com.example.testsupport.framework.utils.AllureHelper.step;
@@ -28,8 +27,7 @@ public class AuthModalComponent extends BaseComponent {
     public AuthModalComponent verifyIsLoaded() {
         return step("Проверяем отображение модального окна авторизации", () -> {
             String title = ls.get("casino.play.prompt");
-            assertThat(root.getByRole(AriaRole.HEADING, new Locator.GetByRoleOptions()
-                    .setName(title)
+            assertThat(root.getByText(title, new Locator.GetByTextOptions()
                     .setExact(true))).isVisible();
             return this;
         });
