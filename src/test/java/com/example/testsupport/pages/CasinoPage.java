@@ -2,7 +2,12 @@ package com.example.testsupport.pages;
 
 import com.example.testsupport.config.AppProperties;
 import com.example.testsupport.framework.localization.LocalizationService;
+import com.example.testsupport.framework.utils.Breakpoints;
+import com.example.testsupport.pages.components.FilterDrawerComponent;
+import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
+import com.microsoft.playwright.options.AriaRole;
+import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
@@ -56,6 +61,61 @@ public class CasinoPage extends BasePage<CasinoPage> {
         return step("Проверка загрузки страницы 'Казино'", () -> {
             header().verifyLogoVisible();
             verifyUrlContains(getExpectedPath());
+            return this;
+        });
+    }
+
+    /**
+     * Opens the filter drawer by clicking the corresponding button.
+     *
+     * @return filter drawer component
+     */
+    public FilterDrawerComponent openFilters() {
+        return step("Открытие панели фильтров", () -> {
+            Locator button;
+            int width = page().viewportSize() != null ? page().viewportSize().width : Integer.MAX_VALUE;
+            if (width < Breakpoints.TABLET) {
+                button = page().locator("div.d_block.pos_relative.w768\\:d_none > button");
+            } else {
+                String buttonText = ls.get("casino.filters.button");
+                button = page().getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions()
+                        .setName(buttonText)
+                        .setExact(true));
+            }
+            button.click();
+            Locator drawer = page().locator("div.drawer__headerWrapper").locator("..");
+            return new FilterDrawerComponent(drawer, ls, this);
+        });
+    }
+
+    /**
+     * Types the given query into the casino search field.
+     *
+     * @param query game name or part of it
+     * @return current page object
+     */
+    public CasinoPage typeInSearch(String query) {
+        return step(String.format("Вводим в поле поиска '%s'", query), () -> {
+            String searchLabel = ls.get("casino.search.input");
+            page().getByRole(AriaRole.SEARCHBOX, new Page.GetByRoleOptions()
+                    .setName(searchLabel)
+                    .setExact(true))
+                .fill(query);
+            return this;
+        });
+    }
+
+    /**
+     * Waits for a game card with the specified name to become visible.
+     *
+     * @param gameName expected game title
+     * @return current page object
+     */
+    public CasinoPage waitForGameVisible(String gameName) {
+        return step(String.format("Ожидаем отображения игры '%s'", gameName), () -> {
+            Locator card = page().locator(".GameCard__root").filter(new Locator.FilterOptions()
+                    .setHasText(gameName));
+            assertThat(card.first()).isVisible();
             return this;
         });
     }

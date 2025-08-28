@@ -8,6 +8,7 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import static com.example.testsupport.framework.utils.AllureHelper.step;
+import static com.example.testsupport.framework.utils.Breakpoints.MOBILE;
 
 
 @Component
@@ -25,8 +26,6 @@ public class MainPage extends BasePage<MainPage> {
         this.playwrightManager = playwrightManager;
     }
 
-    private static final int MOBILE_BREAKPOINT = 960;
-
     /**
      * Navigates to the casino page through the menu, adapting to screen size.
      */
@@ -34,7 +33,7 @@ public class MainPage extends BasePage<MainPage> {
     public CasinoPage navigateToCasino() {
         return step("Навигация на страницу 'Казино'", () -> {
             int currentWidth = page().viewportSize().width;
-            if (currentWidth < MOBILE_BREAKPOINT) {
+            if (currentWidth < MOBILE) {
                 tabBar().clickCasino();
             } else {
                 header().clickCasino();
