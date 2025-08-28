@@ -4,6 +4,7 @@ import com.example.testsupport.config.AppProperties;
 import com.example.testsupport.framework.localization.LocalizationService;
 import com.example.testsupport.framework.utils.Breakpoints;
 import com.example.testsupport.pages.components.FilterDrawerComponent;
+import com.example.testsupport.pages.components.AuthModalComponent;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
@@ -117,6 +118,22 @@ public class CasinoPage extends BasePage<CasinoPage> {
                     .setHasText(gameName));
             assertThat(card.first()).isVisible();
             return this;
+        });
+    }
+
+    /**
+     * Clicks the play button for the specified game and returns the auth prompt modal.
+     *
+     * @param gameName name of the game whose play button should be clicked
+     * @return authorization modal component
+     */
+    public AuthModalComponent clickPlay(String gameName) {
+        return step(String.format("Запускаем игру '%s'", gameName), () -> {
+            Locator card = page().locator(".GameCard__root").filter(new Locator.FilterOptions()
+                    .setHasText(gameName)).first();
+            card.getByRole(AriaRole.BUTTON).click();
+            Locator dialog = page().locator("div[role='dialog']");
+            return new AuthModalComponent(dialog, ls);
         });
     }
 }
