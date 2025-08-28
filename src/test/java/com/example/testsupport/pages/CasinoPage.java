@@ -83,7 +83,7 @@ public class CasinoPage extends BasePage<CasinoPage> {
             }
             button.click();
             Locator drawer = page().locator("div.drawer__headerWrapper").locator("..");
-            return new FilterDrawerComponent(drawer, ls);
+            return new FilterDrawerComponent(drawer, ls, this);
         });
     }
 }

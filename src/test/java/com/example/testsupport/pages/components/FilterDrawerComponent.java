@@ -1,6 +1,7 @@
 package com.example.testsupport.pages.components;
 
 import com.example.testsupport.framework.localization.LocalizationService;
+import com.example.testsupport.pages.CasinoPage;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.options.AriaRole;
 
@@ -13,10 +14,12 @@ import static com.example.testsupport.framework.utils.AllureHelper.step;
 public class FilterDrawerComponent extends BaseComponent {
 
     private final LocalizationService ls;
+    private final CasinoPage casinoPage;
 
-    public FilterDrawerComponent(Locator root, LocalizationService ls) {
+    public FilterDrawerComponent(Locator root, LocalizationService ls, CasinoPage casinoPage) {
         super(root);
         this.ls = ls;
+        this.casinoPage = casinoPage;
     }
 
     /**
@@ -53,13 +56,14 @@ public class FilterDrawerComponent extends BaseComponent {
     /**
      * Applies the selected filters by clicking the translated "Show" button.
      */
-    public void clickShow() {
-        step("Применение фильтров", () -> {
+    public CasinoPage clickShow() {
+        return step("Применение фильтров", () -> {
             String showText = ls.get("casino.filters.show");
             root.getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions()
                     .setName(showText)
                     .setExact(true))
                 .click();
+            return casinoPage;
         });
     }
 }
