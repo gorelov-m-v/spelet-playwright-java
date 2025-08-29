@@ -28,15 +28,4 @@ public class TabBarComponent extends BaseComponent {
                     .click();
         });
     }
-
-    /**
-     * Opens the user profile.
-     */
-    public void openProfile() {
-        step("Открытие профиля пользователя", () ->
-            root.getByRole(AriaRole.TAB, new Locator.GetByRoleOptions()
-                    .setName("Profile"))
-                    .click()
-        );
-    }
 }
