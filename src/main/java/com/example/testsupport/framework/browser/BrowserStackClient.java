@@ -1,13 +1,16 @@
 package com.example.testsupport.framework.browser;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.playwright.*;
-import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -15,8 +18,13 @@ import java.util.Objects;
  */
 @Component
 public class BrowserStackClient {
+    private final ObjectMapper objectMapper;
     private final String username = System.getenv("BROWSERSTACK_USERNAME");
     private final String accessKey = System.getenv("BROWSERSTACK_ACCESS_KEY");
+
+    public BrowserStackClient(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
     /**
      * Creates a browser connected to BrowserStack.
@@ -27,7 +35,7 @@ public class BrowserStackClient {
     public Browser connectBrowser(Playwright playwright) {
         ensureCreds();
 
-        JSONObject caps = new JSONObject();
+        Map<String, Object> caps = new HashMap<>();
         caps.put("browserstack.username", username);
         caps.put("browserstack.accessKey", accessKey);
         caps.put("project", "Spelet LV");
@@ -49,7 +57,7 @@ public class BrowserStackClient {
         return connect(playwright, browser, caps);
     }
 
-    private void buildDesktopCapabilities(JSONObject caps) {
+    private void buildDesktopCapabilities(Map<String, Object> caps) {
         String browser = System.getProperty("bs.browser", "chrome");
         String os = System.getProperty("bs.os", "Windows");
         String osVer = System.getProperty("bs.osVersion", "10");
@@ -61,7 +69,7 @@ public class BrowserStackClient {
         caps.put("browserVersion", browserVersion);
     }
 
-    private void buildMobileCapabilities(JSONObject caps) {
+    private void buildMobileCapabilities(Map<String, Object> caps) {
         String browser = System.getProperty("bs.browser", "chrome");
         String deviceName = System.getProperty("bs.deviceName");
         String osVersion = System.getProperty("bs.osVersion");
@@ -73,8 +81,8 @@ public class BrowserStackClient {
         caps.put("browserName", browser);
     }
 
-    private Browser connect(Playwright playwright, String browser, JSONObject caps) {
-        String ws = "wss://cdp.browserstack.com/playwright?caps=" + urlEncode(caps.toString());
+    private Browser connect(Playwright playwright, String browser, Map<String, Object> caps) {
+        String ws = "wss://cdp.browserstack.com/playwright?caps=" + urlEncode(toJson(caps));
 
         BrowserType type = switch (browser.toLowerCase()) {
             case "firefox", "playwright-firefox" -> playwright.firefox();
@@ -82,6 +90,14 @@ public class BrowserStackClient {
             default -> playwright.chromium();
         };
         return type.connect(ws);
+    }
+
+    private String toJson(Map<String, Object> caps) {
+        try {
+            return objectMapper.writeValueAsString(caps);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void ensureCreds() {

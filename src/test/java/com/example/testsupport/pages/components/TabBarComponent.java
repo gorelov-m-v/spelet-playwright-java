@@ -3,11 +3,17 @@ package com.example.testsupport.pages.components;
 import com.example.testsupport.framework.localization.LocalizationService;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.options.AriaRole;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
 import static com.example.testsupport.framework.utils.AllureHelper.step;
 
 /**
  * Tab bar component for the mobile version.
  */
+@Component
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class TabBarComponent extends BaseComponent {
     private final LocalizationService ls;
 

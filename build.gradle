@@ -19,7 +19,6 @@ repositories { mavenCentral() }
         testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
         implementation 'com.microsoft.playwright:playwright:1.48.0'
-        implementation 'org.json:json:20240303'
         implementation 'com.fasterxml.jackson.core:jackson-databind'
         implementation 'com.fasterxml.jackson.core:jackson-core'
 

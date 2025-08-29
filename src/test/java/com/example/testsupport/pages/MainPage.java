@@ -2,6 +2,8 @@ package com.example.testsupport.pages;
 
 import com.example.testsupport.framework.browser.PlaywrightManager;
 import com.example.testsupport.framework.localization.LocalizationService;
+import com.example.testsupport.pages.components.HeaderComponent;
+import com.example.testsupport.pages.components.TabBarComponent;
 import com.microsoft.playwright.Page;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -20,8 +22,10 @@ public class MainPage extends BasePage<MainPage> {
 
     public MainPage(ObjectProvider<Page> page, LocalizationService ls,
                     ObjectProvider<CasinoPage> casinoPageProvider,
-                    PlaywrightManager playwrightManager) {
-        super(page, ls);
+                    PlaywrightManager playwrightManager,
+                    ObjectProvider<HeaderComponent> headerProvider,
+                    ObjectProvider<TabBarComponent> tabBarProvider) {
+        super(page, ls, headerProvider, tabBarProvider);
         this.casinoPageProvider = casinoPageProvider;
         this.playwrightManager = playwrightManager;
     }

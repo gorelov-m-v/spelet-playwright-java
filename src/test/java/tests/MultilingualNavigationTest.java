@@ -32,10 +32,6 @@ class MultilingualNavigationTest extends BaseTest {
         }
         final TestContext ctx = new TestContext();
 
-        step(String.format("Подготовка тестового окружения [Устройство: %s, Язык: %s]", device, languageCode), () -> {
-            setupTestEnvironment(device, languageCode);
-        });
-
         step("Открываем главную страницу", () -> {
             mainPage.open()
                     .verifyIsLoaded();

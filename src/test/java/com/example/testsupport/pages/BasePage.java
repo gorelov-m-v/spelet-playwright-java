@@ -6,7 +6,6 @@ import com.example.testsupport.pages.components.TabBarComponent;
 import com.microsoft.playwright.Page;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.factory.ObjectProvider;
-import java.util.function.Supplier;
 
 /**
  * Base Page Object with shared logic.
@@ -14,15 +13,19 @@ import java.util.function.Supplier;
 public abstract class BasePage<T extends BasePage<T>> {
     private final ObjectProvider<Page> pageProvider;
     protected final LocalizationService ls;
-    private final Supplier<HeaderComponent> header;
-    private final Supplier<TabBarComponent> tabBar;
+    private final ObjectProvider<HeaderComponent> headerProvider;
+    private final ObjectProvider<TabBarComponent> tabBarProvider;
+    private HeaderComponent header;
+    private TabBarComponent tabBar;
 
     @SuppressWarnings("resource")
-    protected BasePage(ObjectProvider<Page> pageProvider, LocalizationService ls) {
+    protected BasePage(ObjectProvider<Page> pageProvider, LocalizationService ls,
+                       ObjectProvider<HeaderComponent> headerProvider,
+                       ObjectProvider<TabBarComponent> tabBarProvider) {
         this.pageProvider = pageProvider;
         this.ls = ls;
-        this.header = memoize(() -> new HeaderComponent(page().locator("header"), ls));
-        this.tabBar = memoize(() -> new TabBarComponent(page().locator("div.tab-bar__list"), ls));
+        this.headerProvider = headerProvider;
+        this.tabBarProvider = tabBarProvider;
     }
 
     protected Page page() {
@@ -30,29 +33,22 @@ public abstract class BasePage<T extends BasePage<T>> {
     }
 
     public HeaderComponent header() {
-        return header.get();
+        if (header == null) {
+            header = headerProvider.getObject(page().locator("header"));
+        }
+        return header;
     }
 
     public TabBarComponent tabBar() {
-        return tabBar.get();
+        if (tabBar == null) {
+            tabBar = tabBarProvider.getObject(page().locator("div.tab-bar__list"));
+        }
+        return tabBar;
     }
 
     @SuppressWarnings("unchecked")
     protected T self() {
         return (T) this;
-    }
-
-    private static <T> Supplier<T> memoize(Supplier<T> supplier) {
-        return new Supplier<>() {
-            private T value;
-            @Override
-            public T get() {
-                if (value == null) {
-                    value = supplier.get();
-                }
-                return value;
-            }
-        };
     }
 
     /**

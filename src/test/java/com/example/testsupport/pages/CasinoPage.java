@@ -5,6 +5,8 @@ import com.example.testsupport.framework.localization.LocalizationService;
 import com.example.testsupport.framework.utils.Breakpoints;
 import com.example.testsupport.pages.components.FilterDrawerComponent;
 import com.example.testsupport.pages.components.AuthModalComponent;
+import com.example.testsupport.pages.components.HeaderComponent;
+import com.example.testsupport.pages.components.TabBarComponent;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
@@ -24,8 +26,10 @@ import static com.example.testsupport.framework.utils.AllureHelper.step;
 public class CasinoPage extends BasePage<CasinoPage> {
     private final AppProperties props;
 
-    public CasinoPage(ObjectProvider<Page> page, AppProperties props, LocalizationService ls) {
-        super(page, ls);
+    public CasinoPage(ObjectProvider<Page> page, AppProperties props, LocalizationService ls,
+                      ObjectProvider<HeaderComponent> headerProvider,
+                      ObjectProvider<TabBarComponent> tabBarProvider) {
+        super(page, ls, headerProvider, tabBarProvider);
         this.props = props;
     }
 
