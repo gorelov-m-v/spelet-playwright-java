@@ -1,2 +1,2 @@
 org.springframework.boot.env.EnvironmentPostProcessor=\
-com.example.testsupport.framework.config.JsonConfigEnvironmentPostProcessor
+main.framework.config.JsonConfigEnvironmentPostProcessor
