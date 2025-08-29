@@ -4,9 +4,11 @@ import com.example.testsupport.config.AppProperties;
 import com.example.testsupport.framework.localization.LocalizationService;
 import com.example.testsupport.framework.utils.Breakpoints;
 import com.example.testsupport.pages.components.FilterDrawerComponent;
+import com.example.testsupport.pages.components.AuthModalComponent;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
+import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
@@ -84,6 +86,55 @@ public class CasinoPage extends BasePage<CasinoPage> {
             button.click();
             Locator drawer = page().locator("div.drawer__headerWrapper").locator("..");
             return new FilterDrawerComponent(drawer, ls, this);
+        });
+    }
+    /**
+     * Types the given query into the casino search field.
+     *
+     * @param query game name or part of it
+     * @return current page object
+     */
+    public CasinoPage typeInSearch(String query) {
+        return step(String.format("Вводим в поле поиска '%s'", query), () -> {
+            String searchLabel = ls.get("casino.search.input");
+            page().getByRole(AriaRole.SEARCHBOX, new Page.GetByRoleOptions()
+                    .setName(searchLabel)
+                    .setExact(true))
+                .fill(query);
+            return this;
+        });
+    }
+
+    /**
+     * Waits for a game card with the specified name to become visible.
+     *
+     * @param gameName expected game title
+     * @return current page object
+     */
+    public CasinoPage waitForGameVisible(String gameName) {
+        return step(String.format("Ожидаем отображения игры '%s'", gameName), () -> {
+            Locator card = page().locator(".GameCard__root").filter(new Locator.FilterOptions()
+                    .setHasText(gameName));
+            assertThat(card.first()).isVisible();
+            return this;
+        });
+    }
+
+    /**
+     * Clicks the play button for the specified game and returns the auth prompt modal.
+     *
+     * @param gameName name of the game whose play button should be clicked
+     * @return authorization modal component
+     */
+    public AuthModalComponent clickPlay(String gameName) {
+        return step(String.format("Запускаем игру '%s'", gameName), () -> {
+            Locator card = page().locator(".GameCard__root").filter(new Locator.FilterOptions()
+                    .setHasText(gameName)).first();
+            card.getByRole(AriaRole.BUTTON).click();
+            String promptTitle = ls.get("casino.play.prompt");
+            Locator dialog = page().getByText(promptTitle, new Page.GetByTextOptions()
+                    .setExact(true)).locator("..");
+            return new AuthModalComponent(dialog, ls);
         });
     }
 }

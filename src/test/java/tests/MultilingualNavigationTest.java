@@ -5,6 +5,7 @@ import com.example.testsupport.framework.device.DeviceProvider;
 import com.example.testsupport.pages.MainPage;
 import com.example.testsupport.pages.CasinoPage;
 import com.example.testsupport.pages.components.FilterDrawerComponent;
+import com.example.testsupport.pages.components.AuthModalComponent;
 import io.qameta.allure.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -27,6 +28,7 @@ class MultilingualNavigationTest extends BaseTest {
         final class TestContext {
             CasinoPage casinoPage;
             FilterDrawerComponent filterDrawer;
+            AuthModalComponent authModal;
         }
         final TestContext ctx = new TestContext();
 
@@ -55,6 +57,16 @@ class MultilingualNavigationTest extends BaseTest {
 
         step("Применяем фильтры", () -> {
             ctx.casinoPage = ctx.filterDrawer.clickShow()
+                    .verifyIsLoaded();
+        });
+
+        step("Ищем игру 'Book of Dead'", () -> {
+            ctx.casinoPage.typeInSearch("Book of Dead")
+                    .waitForGameVisible("Book of Dead");
+        });
+
+        step("Запускаем игру 'Book of Dead'", () -> {
+            ctx.authModal = ctx.casinoPage.clickPlay("Book of Dead")
                     .verifyIsLoaded();
         });
     }
