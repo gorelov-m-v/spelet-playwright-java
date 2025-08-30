@@ -3,6 +3,7 @@ package tests;
 import com.example.testsupport.framework.device.Device;
 import com.example.testsupport.framework.device.DeviceProvider;
 import com.example.testsupport.pages.MainPage;
+import org.springframework.beans.factory.ObjectProvider;
 import com.example.testsupport.pages.CasinoPage;
 import com.example.testsupport.pages.components.FilterDrawerComponent;
 import com.example.testsupport.pages.components.AuthModalComponent;
@@ -17,7 +18,7 @@ import static com.example.testsupport.framework.utils.AllureHelper.step;
 @Epic("Spelet.lv")
 @Feature("Навигация по шапке")
 class MultilingualNavigationTest extends BaseTest {
-    @Autowired private MainPage mainPage;
+    @Autowired private ObjectProvider<MainPage> mainPageProvider;
 
     @Story("Переход на страницу казино для всех поддерживаемых языков и устройств")
     @DisplayName("Навигация на страницу казино")
@@ -37,13 +38,13 @@ class MultilingualNavigationTest extends BaseTest {
         });
 
         step("Открываем главную страницу", () -> {
-            mainPage.open()
-                    .verifyIsLoaded();
+            MainPage mainPage = mainPageProvider.getObject();
+            mainPage.open().verifyIsLoaded();
         });
 
         step("Переходим на страницу 'Казино'", () -> {
-            ctx.casinoPage = mainPage.navigateToCasino()
-                    .verifyIsLoaded();
+            MainPage mainPage = mainPageProvider.getObject();
+            ctx.casinoPage = mainPage.navigateToCasino().verifyIsLoaded();
         });
 
         step("Открываем дровер фильтров", () -> {
