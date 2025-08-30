@@ -22,7 +22,9 @@ dependencyManagement {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'com.vaadin.external.google', module: 'android-json'
+    }
 
     // Needed for SpringExtension used in main test framework classes
     implementation 'org.springframework:spring-test'
@@ -85,63 +87,87 @@ allure {
     }
 }
 
-def bsTask = { String name, Map<String,String> props ->
-    tasks.register(name, Test) {
+
+def browserStackConfigs = [
+        bsWin10Chrome: [
+                'env.browserstack.os'         : 'Windows',
+                'env.browserstack.osVersion'  : '10',
+                'env.browserstack.browser'    : 'chrome',
+                'env.browserstack.browserVersion': 'latest',
+                'env.browserstack.name'       : 'Spelet Win10 Chrome'
+        ],
+        bsWin11Firefox: [
+                'env.browserstack.os'         : 'Windows',
+                'env.browserstack.osVersion'  : '11',
+                'env.browserstack.browser'    : 'playwright-firefox',
+                'env.browserstack.browserVersion': 'latest',
+                'env.browserstack.name'       : 'Spelet Win11 Firefox'
+        ],
+        bsMacChrome: [
+                'env.browserstack.os'         : 'OS X',
+                'env.browserstack.osVersion'  : 'Ventura',
+                'env.browserstack.browser'    : 'chrome',
+                'env.browserstack.browserVersion': 'latest',
+                'env.browserstack.name'       : 'Spelet macOS Chrome'
+        ],
+        bsMacSafari: [
+                'env.browserstack.os'         : 'OS X',
+                'env.browserstack.osVersion'  : 'Ventura',
+                'env.browserstack.browser'    : 'playwright-webkit',
+                'env.browserstack.browserVersion': 'latest',
+                'env.browserstack.name'       : 'Spelet macOS Safari (WebKit)'
+        ],
+        bsSamsungS20: [
+                'env.browserstack.deviceName' : 'Samsung Galaxy S20',
+                'env.browserstack.osVersion'  : '10.0',
+                'env.browserstack.browser'    : 'chrome',
+                'env.browserstack.name'       : 'Spelet Galaxy S20 Chrome'
+        ],
+        bsHuaweiP30: [
+                'env.browserstack.deviceName' : 'Huawei P30',
+                'env.browserstack.osVersion'  : '9.0',
+                'env.browserstack.browser'    : 'chrome',
+                'env.browserstack.name'       : 'Spelet Huawei P30 Chrome'
+        ],
+        bsSamsungS25Ultra: [
+                'env.browserstack.deviceName' : 'Samsung Galaxy S25 Ultra',
+                'env.browserstack.osVersion'  : '15.0',
+                'env.browserstack.browser'    : 'chrome',
+                'env.browserstack.name'       : 'Spelet Galaxy S25 Ultra Chrome'
+        ],
+        bsSamsungS24: [
+                'env.browserstack.deviceName' : 'Samsung Galaxy S24',
+                'env.browserstack.osVersion'  : '14.0',
+                'env.browserstack.browser'    : 'chrome',
+                'env.browserstack.name'       : 'Spelet Galaxy S24 Chrome'
+        ],
+        bsiPhone16: [
+                'env.browserstack.deviceName' : 'iPhone 16',
+                'env.browserstack.osVersion'  : '18.5',
+                'env.browserstack.browser'    : 'safari',
+                'env.browserstack.name'       : 'Spelet iPhone 16 Safari'
+        ],
+        bsiPhone15: [
+                'env.browserstack.deviceName' : 'iPhone 15',
+                'env.browserstack.osVersion'  : '17.0',
+                'env.browserstack.browser'    : 'safari',
+                'env.browserstack.name'       : 'Spelet iPhone 15 Safari'
+        ],
+        bsiPhone11: [
+                'env.browserstack.deviceName' : 'iPhone 11',
+                'env.browserstack.osVersion'  : '13.0',
+                'env.browserstack.browser'    : 'safari',
+                'env.browserstack.name'       : 'Spelet iPhone 11 Safari'
+        ]
+]
+
+browserStackConfigs.each { taskName, props ->
+    tasks.register(taskName, Test) {
         useJUnitPlatform()
+        systemProperties = System.getProperties() as Map<String, ?>
         systemProperty 'spring.profiles.active', 'browserstack'
         props.each { k, v -> systemProperty k, v }
         testLogging { events "passed", "skipped", "failed" }
         dependsOn(playwrightInstall)
     }
 }
-
-bsTask('bsWin10Chrome', [
-        'env.browserstack.os':'Windows', 'env.browserstack.osVersion':'10',
-        'env.browserstack.browser':'chrome', 'env.browserstack.browserVersion':'latest',
-        'env.browserstack.name':'Spelet Win10 Chrome'
-])
-bsTask('bsWin11Firefox', [
-        'env.browserstack.os':'Windows', 'env.browserstack.osVersion':'11',
-        'env.browserstack.browser':'playwright-firefox', 'env.browserstack.browserVersion':'latest',
-        'env.browserstack.name':'Spelet Win11 Firefox'
-])
-bsTask('bsMacChrome', [
-        'env.browserstack.os':'OS X', 'env.browserstack.osVersion':'Ventura',
-        'env.browserstack.browser':'chrome', 'env.browserstack.browserVersion':'latest',
-        'env.browserstack.name':'Spelet macOS Chrome'
-])
-bsTask('bsMacSafari', [
-        'env.browserstack.os':'OS X', 'env.browserstack.osVersion':'Ventura',
-        'env.browserstack.browser':'playwright-webkit', 'env.browserstack.browserVersion':'latest',
-        'env.browserstack.name':'Spelet macOS Safari (WebKit)'
-])
-
-bsTask('bsSamsungS20', [
-        'env.browserstack.deviceName':'Samsung Galaxy S20', 'env.browserstack.osVersion':'10.0',
-        'env.browserstack.browser':'chrome', 'env.browserstack.name':'Spelet Galaxy S20 Chrome'
-])
-bsTask('bsHuaweiP30', [
-        'env.browserstack.deviceName':'Huawei P30', 'env.browserstack.osVersion':'9.0',
-        'env.browserstack.browser':'chrome', 'env.browserstack.name':'Spelet Huawei P30 Chrome'
-])
-bsTask('bsSamsungS25Ultra', [
-        'env.browserstack.deviceName':'Samsung Galaxy S25 Ultra', 'env.browserstack.osVersion':'15.0',
-        'env.browserstack.browser':'chrome', 'env.browserstack.name':'Spelet Galaxy S25 Ultra Chrome'
-])
-bsTask('bsSamsungS24', [
-        'env.browserstack.deviceName':'Samsung Galaxy S24', 'env.browserstack.osVersion':'14.0',
-        'env.browserstack.browser':'chrome', 'env.browserstack.name':'Spelet Galaxy S24 Chrome'
-])
-
-bsTask('bsiPhone16', [
-        'env.browserstack.deviceName':'iPhone 16', 'env.browserstack.osVersion':'18.5',
-        'env.browserstack.browser':'safari', 'env.browserstack.name':'Spelet iPhone 16 Safari'
-])
-bsTask('bsiPhone15', [
-        'env.browserstack.deviceName':'iPhone 15', 'env.browserstack.osVersion':'17.0',
-        'env.browserstack.browser':'safari', 'env.browserstack.name':'Spelet iPhone 15 Safari'
-])
-bsTask('bsiPhone11', [
-        'env.browserstack.deviceName':'iPhone 11', 'env.browserstack.osVersion':'13.0',
-        'env.browserstack.browser':'safari', 'env.browserstack.name':'Spelet iPhone 11 Safari'
-])
