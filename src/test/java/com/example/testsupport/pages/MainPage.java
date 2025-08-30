@@ -2,6 +2,8 @@ package com.example.testsupport.pages;
 
 import com.example.testsupport.config.AppProperties;
 import com.example.testsupport.framework.localization.LocalizationService;
+import com.example.testsupport.pages.components.HeaderComponent;
+import com.example.testsupport.pages.components.TabBarComponent;
 import com.microsoft.playwright.Page;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -17,11 +19,13 @@ public class MainPage extends BasePage<MainPage> {
 
     private final ObjectProvider<CasinoPage> casinoPageProvider;
 
-    public MainPage(ObjectProvider<Page> page,
+    public MainPage(Page page,
                     LocalizationService ls,
                     ObjectProvider<CasinoPage> casinoPageProvider,
-                    AppProperties props) {
-        super(page, ls, props);
+                    AppProperties props,
+                    ObjectProvider<HeaderComponent> headerProvider,
+                    ObjectProvider<TabBarComponent> tabBarProvider) {
+        super(page, ls, props, headerProvider, tabBarProvider);
         this.casinoPageProvider = casinoPageProvider;
     }
 
@@ -31,13 +35,13 @@ public class MainPage extends BasePage<MainPage> {
     @SuppressWarnings("resource")
     public CasinoPage navigateToCasino() {
         return step("Навигация на страницу 'Казино'", () -> {
-            int currentWidth = page().viewportSize().width;
+            int currentWidth = page.viewportSize().width;
             if (currentWidth < MOBILE) {
                 tabBar().clickCasino();
             } else {
                 header().clickCasino();
             }
-            step("Ожидание URL страницы 'Казино'", () -> page().waitForURL("**/casino"));
+            step("Ожидание URL страницы 'Казино'", () -> page.waitForURL("**/casino"));
             return casinoPageProvider.getObject().verifyIsLoaded();
         });
     }

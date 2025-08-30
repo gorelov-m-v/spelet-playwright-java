@@ -3,7 +3,12 @@ package com.example.testsupport.pages.components;
 import com.example.testsupport.framework.localization.LocalizationService;
 import com.example.testsupport.pages.CasinoPage;
 import com.microsoft.playwright.Locator;
+import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static com.example.testsupport.framework.utils.AllureHelper.step;
@@ -11,21 +16,23 @@ import static com.example.testsupport.framework.utils.AllureHelper.step;
 /**
  * Component representing the filter drawer on the casino page.
  */
+@Component
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class FilterDrawerComponent extends BaseComponent {
 
-    private final LocalizationService ls;
-    private final CasinoPage casinoPage;
+    private final ObjectProvider<CasinoPage> casinoPageProvider;
     private final Locator title;
     private final Locator showButton;
 
-    public FilterDrawerComponent(Locator root, LocalizationService ls, CasinoPage casinoPage) {
-        super(root);
-        this.ls = ls;
-        this.casinoPage = casinoPage;
+    public FilterDrawerComponent(Page page,
+                                 LocalizationService ls,
+                                 ObjectProvider<CasinoPage> casinoPageProvider) {
+        super(page.locator("div.drawer__headerWrapper").locator(".."));
+        this.casinoPageProvider = casinoPageProvider;
         String titleText = ls.get("casino.filters.title");
-        this.title = root.getByRole(AriaRole.HEADING, new Locator.GetByRoleOptions().setName(titleText).setExact(true));
+        this.title = root().getByRole(AriaRole.HEADING, new Locator.GetByRoleOptions().setName(titleText).setExact(true));
         String showText = ls.get("casino.filters.show");
-        this.showButton = root.getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName(showText).setExact(true));
+        this.showButton = root().getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName(showText).setExact(true));
     }
 
     /**
@@ -48,7 +55,7 @@ public class FilterDrawerComponent extends BaseComponent {
      */
     public FilterDrawerComponent selectProvider(String providerName) {
         return step(String.format("Выбор провайдера '%s'", providerName), () -> {
-            root.getByRole(AriaRole.ROW, new Locator.GetByRoleOptions()
+            root().getByRole(AriaRole.ROW, new Locator.GetByRoleOptions()
                     .setName(providerName)
                     .setExact(true))
                 .click();
@@ -62,7 +69,7 @@ public class FilterDrawerComponent extends BaseComponent {
     public CasinoPage clickShow() {
         return step("Применение фильтров", () -> {
             showButton.click();
-            return casinoPage;
+            return casinoPageProvider.getObject();
         });
     }
 }

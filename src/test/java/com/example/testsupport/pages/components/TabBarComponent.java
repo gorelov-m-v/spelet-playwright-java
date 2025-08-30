@@ -2,22 +2,28 @@ package com.example.testsupport.pages.components;
 
 import com.example.testsupport.framework.localization.LocalizationService;
 import com.microsoft.playwright.Locator;
+import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import static com.example.testsupport.framework.utils.AllureHelper.step;
 
 /**
  * Tab bar component for the mobile version.
  */
+@Component
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class TabBarComponent extends BaseComponent {
     private final Locator casinoTab;
     private final Locator profileTab;
 
-    public TabBarComponent(Locator root, LocalizationService ls) {
-        super(root);
+    public TabBarComponent(Page page, LocalizationService ls) {
+        super(page.locator("div.tab-bar__list"));
         String casinoText = ls.get("header.menu.casino");
-        this.casinoTab = root.getByRole(AriaRole.TAB, new Locator.GetByRoleOptions().setName(casinoText).setExact(true));
-        this.profileTab = root.getByRole(AriaRole.TAB, new Locator.GetByRoleOptions().setName("Profile"));
+        this.casinoTab = root().getByRole(AriaRole.TAB, new Locator.GetByRoleOptions().setName(casinoText).setExact(true));
+        this.profileTab = root().getByRole(AriaRole.TAB, new Locator.GetByRoleOptions().setName("Profile"));
     }
 
     /**
