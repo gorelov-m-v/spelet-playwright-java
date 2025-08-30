@@ -46,7 +46,7 @@ public class TestMatrixService {
                     .filter(s -> !s.isEmpty())
                     .collect(Collectors.toSet());
             Map<String, Device> deviceMap = allDevices.stream()
-                    .collect(Collectors.toMap(Device::name, d -> d));
+                    .collect(Collectors.toMap(Device::getName, d -> d));
             List<String> missing = requested.stream()
                     .filter(name -> !deviceMap.containsKey(name))
                     .toList();

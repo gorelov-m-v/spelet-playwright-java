@@ -24,7 +24,7 @@ public abstract class BaseTest {
 
     protected void setupTestEnvironment(Device device, String languageCode) {
         step("Устанавливаем размер окна просмотра", () -> {
-            playwrightManager.getPage().setViewportSize(device.width(), device.height());
+            playwrightManager.getPage().setViewportSize(device.getWidth(), device.getHeight());
         });
 
         step("Устанавливаем язык теста", () -> {
@@ -43,7 +43,7 @@ public abstract class BaseTest {
         Assertions.assertFalse(platforms.isEmpty(), "env.testDevices.platforms is empty!");
 
         System.out.println("Found devices: " + platforms.size());
-        System.out.println("First device: " + platforms.get(0).name());
+        System.out.println("First device: " + platforms.get(0).getName());
     }
 }
 
