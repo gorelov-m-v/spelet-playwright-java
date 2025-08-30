@@ -42,3 +42,36 @@ When a test fails, open it in Allure and inspect the following attachments:
    This provides an interactive timeline for step-by-step debugging.
 
 Only failed tests include console logs and trace attachments to keep reports lightweight.
+
+## 🌐 Configuration
+Configuration for tests is defined in JSON files located under `src/test/resources/configs`.
+Each file represents a full test environment and is loaded via Spring Boot's
+`spring.config.import` property.
+
+Example `local.json` structure:
+```json
+{
+  "env": {
+    "api": { "baseUrl": "https://spelet.lv" },
+    "browser": {
+      "name": "chromium",
+      "headless": false,
+      "language": "lv",
+      "defaultLanguage": "lv"
+    }
+  }
+}
+```
+
+To run tests with a specific configuration file:
+```bash
+./gradlew test -Dspring.config.import=classpath:configs/local.json
+```
+
+BrowserStack profiles can be launched the same way:
+```bash
+./gradlew bsWin10Chrome -Dspring.config.import=classpath:configs/browserstack.json
+```
+
+To add a new environment, copy one of the existing JSON files, adjust values and
+pass its path via `-Dspring.config.import`.

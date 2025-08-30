@@ -1,19 +1,19 @@
 package com.example.testsupport.framework.listeners;
 
-import com.example.testsupport.config.AppProperties;
+import com.example.testsupport.config.EnvironmentConfig;
 import com.example.testsupport.framework.browser.PlaywrightManager;
 import com.example.testsupport.framework.localization.LocalizationService;
 import com.example.testsupport.framework.lifecycle.PlaywrightLifecycleStrategy;
 import com.microsoft.playwright.Page;
 import io.qameta.allure.Allure;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import org.junit.jupiter.api.extension.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 /**
  * JUnit 5 extension that manages the Playwright lifecycle
@@ -38,8 +38,8 @@ public class PlaywrightExtension implements BeforeAllCallback, BeforeEachCallbac
             lifecycle = ctx.getBean(PlaywrightLifecycleStrategy.class);
         }
         LocalizationService ls = ctx.getBean(LocalizationService.class);
-        AppProperties props = ctx.getBean(AppProperties.class);
-        ls.loadLocale(props.getLanguage());
+        EnvironmentConfig config = ctx.getBean(EnvironmentConfig.class);
+        ls.loadLocale(config.getBrowser().getLanguage());
 
         PlaywrightManager manager = ctx.getBean(PlaywrightManager.class);
         manager.clearConsoleMessages();
@@ -94,4 +94,3 @@ public class PlaywrightExtension implements BeforeAllCallback, BeforeEachCallbac
         }
     }
 }
-

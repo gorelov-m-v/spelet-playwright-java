@@ -1,6 +1,6 @@
 package com.example.testsupport.pages;
 
-import com.example.testsupport.config.AppProperties;
+import com.example.testsupport.config.EnvironmentConfig;
 import com.example.testsupport.framework.localization.LocalizationService;
 import com.example.testsupport.pages.components.HeaderComponent;
 import com.example.testsupport.pages.components.TabBarComponent;
@@ -22,10 +22,10 @@ public class MainPage extends BasePage<MainPage> {
     public MainPage(Page page,
                     LocalizationService ls,
                     ObjectProvider<CasinoPage> casinoPageProvider,
-                    AppProperties props,
+                    EnvironmentConfig config,
                     ObjectProvider<HeaderComponent> headerProvider,
                     ObjectProvider<TabBarComponent> tabBarProvider) {
-        super(page, ls, props, headerProvider, tabBarProvider);
+        super(page, ls, config, headerProvider, tabBarProvider);
         this.casinoPageProvider = casinoPageProvider;
     }
 
@@ -72,4 +72,3 @@ public class MainPage extends BasePage<MainPage> {
         });
     }
 }
-

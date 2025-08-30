@@ -60,12 +60,14 @@ dependencies {
 test {
     useJUnitPlatform()
     systemProperties = System.getProperties() as Map<String, ?>
+    systemProperty 'spring.config.import', System.getProperty('spring.config.import', 'optional:classpath:configs/local.json')
     testLogging {
         events "passed", "skipped", "failed"
         exceptionFormat "full"
         showStandardStreams = true
     }
 }
+
 tasks.register('playwrightInstall', JavaExec) {
     group = 'verification'
     description = 'Install Playwright browsers'
@@ -87,6 +89,7 @@ def bsTask = { String name, Map<String,String> props ->
     tasks.register(name, Test) {
         useJUnitPlatform()
         systemProperty 'spring.profiles.active', 'browserstack'
+        systemProperty 'spring.config.import', System.getProperty('spring.config.import', 'optional:classpath:configs/local.json')
         props.each { k, v -> systemProperty k, v }
         testLogging { events "passed", "skipped", "failed" }
         dependsOn(playwrightInstall)
@@ -94,60 +97,61 @@ def bsTask = { String name, Map<String,String> props ->
 }
 
 bsTask('bsWin10Chrome', [
-        'bs.os':'Windows', 'bs.osVersion':'10',
-        'bs.browser':'chrome', 'bs.browserVersion':'latest',
-        'bs.name':'Spelet Win10 Chrome'
+        'env.browserstack.os':'Windows', 'env.browserstack.osVersion':'10',
+        'env.browserstack.browser':'chrome', 'env.browserstack.browserVersion':'latest',
+        'env.browserstack.name':'Spelet Win10 Chrome'
 ])
 bsTask('bsWin11Firefox', [
-        'bs.os':'Windows', 'bs.osVersion':'11',
-        'bs.browser':'playwright-firefox', 'bs.browserVersion':'latest',
-        'bs.name':'Spelet Win11 Firefox'
+        'env.browserstack.os':'Windows', 'env.browserstack.osVersion':'11',
+        'env.browserstack.browser':'playwright-firefox', 'env.browserstack.browserVersion':'latest',
+        'env.browserstack.name':'Spelet Win11 Firefox'
 ])
 bsTask('bsMacChrome', [
-        'bs.os':'OS X', 'bs.osVersion':'Ventura',
-        'bs.browser':'chrome', 'bs.browserVersion':'latest',
-        'bs.name':'Spelet macOS Chrome'
+        'env.browserstack.os':'OS X', 'env.browserstack.osVersion':'Ventura',
+        'env.browserstack.browser':'chrome', 'env.browserstack.browserVersion':'latest',
+        'env.browserstack.name':'Spelet macOS Chrome'
 ])
 bsTask('bsMacSafari', [
-        'bs.os':'OS X', 'bs.osVersion':'Ventura',
-        'bs.browser':'playwright-webkit', 'bs.browserVersion':'latest',
-        'bs.name':'Spelet macOS Safari (WebKit)'
+        'env.browserstack.os':'OS X', 'env.browserstack.osVersion':'Ventura',
+        'env.browserstack.browser':'playwright-webkit', 'env.browserstack.browserVersion':'latest',
+        'env.browserstack.name':'Spelet macOS Safari (WebKit)'
 ])
 
 bsTask('bsSamsungS20', [
-        'bs.deviceName':'Samsung Galaxy S20', 'bs.osVersion':'10.0',
-        'bs.browser':'chrome', 'bs.name':'Spelet Galaxy S20 Chrome'
+        'env.browserstack.deviceName':'Samsung Galaxy S20', 'env.browserstack.osVersion':'10.0',
+        'env.browserstack.browser':'chrome', 'env.browserstack.name':'Spelet Galaxy S20 Chrome'
 ])
 bsTask('bsHuaweiP30', [
-        'bs.deviceName':'Huawei P30', 'bs.osVersion':'9.0',
-        'bs.browser':'chrome', 'bs.name':'Spelet Huawei P30 Chrome'
+        'env.browserstack.deviceName':'Huawei P30', 'env.browserstack.osVersion':'9.0',
+        'env.browserstack.browser':'chrome', 'env.browserstack.name':'Spelet Huawei P30 Chrome'
 ])
 bsTask('bsSamsungS25Ultra', [
-        'bs.deviceName':'Samsung Galaxy S25 Ultra', 'bs.osVersion':'15.0',
-        'bs.browser':'chrome', 'bs.name':'Spelet Galaxy S25 Ultra Chrome'
+        'env.browserstack.deviceName':'Samsung Galaxy S25 Ultra', 'env.browserstack.osVersion':'15.0',
+        'env.browserstack.browser':'chrome', 'env.browserstack.name':'Spelet Galaxy S25 Ultra Chrome'
 ])
 bsTask('bsSamsungS24', [
-        'bs.deviceName':'Samsung Galaxy S24', 'bs.osVersion':'14.0',
-        'bs.browser':'chrome', 'bs.name':'Spelet Galaxy S24 Chrome'
+        'env.browserstack.deviceName':'Samsung Galaxy S24', 'env.browserstack.osVersion':'14.0',
+        'env.browserstack.browser':'chrome', 'env.browserstack.name':'Spelet Galaxy S24 Chrome'
 ])
 
 bsTask('bsiPhone16', [
-        'bs.deviceName':'iPhone 16', 'bs.osVersion':'18.5',
-        'bs.browser':'safari', 'bs.name':'Spelet iPhone 16 Safari'
+        'env.browserstack.deviceName':'iPhone 16', 'env.browserstack.osVersion':'18.5',
+        'env.browserstack.browser':'safari', 'env.browserstack.name':'Spelet iPhone 16 Safari'
 ])
 bsTask('bsiPhone15', [
-        'bs.deviceName':'iPhone 15', 'bs.osVersion':'17.0',
-        'bs.browser':'safari', 'bs.name':'Spelet iPhone 15 Safari'
+        'env.browserstack.deviceName':'iPhone 15', 'env.browserstack.osVersion':'17.0',
+        'env.browserstack.browser':'safari', 'env.browserstack.name':'Spelet iPhone 15 Safari'
 ])
 bsTask('bsiPhone11', [
-        'bs.deviceName':'iPhone 11', 'bs.osVersion':'13.0',
-        'bs.browser':'safari', 'bs.name':'Spelet iPhone 11 Safari'
+        'env.browserstack.deviceName':'iPhone 11', 'env.browserstack.osVersion':'13.0',
+        'env.browserstack.browser':'safari', 'env.browserstack.name':'Spelet iPhone 11 Safari'
 ])
+
 tasks.register('speletProd', Test) {
     group = 'verification'
     description = 'Runs tests against PROD environment'
     useJUnitPlatform()
-    systemProperty 'env.config', 'spelet-prod'
+    systemProperty 'spring.config.import', 'classpath:configs/spelet-prod.json'
     testLogging { events "passed", "skipped", "failed" }
     dependsOn(playwrightInstall)
 }
@@ -155,7 +159,7 @@ tasks.register('speletDemo', Test) {
     group = 'verification'
     description = 'Runs tests against DEMO environment'
     useJUnitPlatform()
-    systemProperty 'env.config', 'spelet-demo'
+    systemProperty 'spring.config.import', 'classpath:configs/spelet-demo.json'
     testLogging { events "passed", "skipped", "failed" }
     dependsOn(playwrightInstall)
 }
