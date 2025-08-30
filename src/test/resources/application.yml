@@ -2,3 +2,9 @@ app:
   base-url: https://spelet.lv
   browser: chromium
   headless: false
+  api:
+    base-url: https://spelet.lv
+spring:
+  cloud:
+    compatibility-verifier:
+      enabled: false
