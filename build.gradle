@@ -18,16 +18,26 @@ repositories { mavenCentral() }
         implementation 'org.springframework.boot:spring-boot-starter'
         testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
+        // Needed for SpringExtension used in main test framework classes
+        implementation 'org.springframework:spring-test'
+
         implementation 'com.microsoft.playwright:playwright:1.48.0'
         implementation 'org.json:json:20240303'
         implementation 'com.fasterxml.jackson.core:jackson-databind'
         implementation 'com.fasterxml.jackson.core:jackson-core'
 
-    testImplementation platform('org.junit:junit-bom:5.10.0')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
+        // JUnit API needed for main framework classes such as extensions
+        implementation platform('org.junit:junit-bom:5.10.0')
+        implementation 'org.junit.jupiter:junit-jupiter-api'
 
-    testImplementation 'io.qameta.allure:allure-junit5:2.29.0'
-    testRuntimeOnly 'org.aspectj:aspectjweaver:1.9.22.1'
+        // Allure commons used by framework utilities and listeners
+        implementation 'io.qameta.allure:allure-java-commons:2.29.0'
+
+        testImplementation platform('org.junit:junit-bom:5.10.0')
+        testImplementation 'org.junit.jupiter:junit-jupiter'
+
+        testImplementation 'io.qameta.allure:allure-junit5:2.29.0'
+        testRuntimeOnly 'org.aspectj:aspectjweaver:1.9.22.1'
 }
 
 test {
