@@ -2,6 +2,10 @@ package com.example.testsupport.pages.components;
 
 import com.example.testsupport.framework.localization.LocalizationService;
 import com.microsoft.playwright.Locator;
+import com.microsoft.playwright.Page;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static com.example.testsupport.framework.utils.AllureHelper.step;
@@ -10,16 +14,16 @@ import static com.example.testsupport.framework.utils.AllureHelper.step;
  * Component representing the authorization prompt modal that appears when
  * attempting to launch a game without being logged in.
  */
+@Component
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class AuthModalComponent extends BaseComponent {
 
     private final Locator title;
-    private final LocalizationService ls;
 
-    public AuthModalComponent(Locator root, LocalizationService ls) {
-        super(root);
-        this.ls = ls;
+    public AuthModalComponent(Page page, LocalizationService ls) {
+        super(page.getByText(ls.get("casino.play.prompt"), new Page.GetByTextOptions().setExact(true)).locator(".."));
         String titleText = ls.get("casino.play.prompt");
-        this.title = root.getByText(titleText, new Locator.GetByTextOptions().setExact(true));
+        this.title = root().getByText(titleText, new Locator.GetByTextOptions().setExact(true));
     }
 
     /**

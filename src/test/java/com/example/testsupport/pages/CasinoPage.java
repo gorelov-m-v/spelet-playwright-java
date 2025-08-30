@@ -5,6 +5,8 @@ import com.example.testsupport.framework.localization.LocalizationService;
 import com.example.testsupport.framework.utils.Breakpoints;
 import com.example.testsupport.pages.components.FilterDrawerComponent;
 import com.example.testsupport.pages.components.AuthModalComponent;
+import com.example.testsupport.pages.components.HeaderComponent;
+import com.example.testsupport.pages.components.TabBarComponent;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
@@ -26,22 +28,27 @@ public class CasinoPage extends BasePage<CasinoPage> {
 
     private final Locator mobileFilterButton;
     private final Locator desktopFilterButton;
-    private final Locator filterDrawerRoot;
     private final Locator searchInput;
     private final Locator gameCards;
-    private final Locator authDialog;
+    private final ObjectProvider<FilterDrawerComponent> filterDrawerComponentProvider;
+    private final ObjectProvider<AuthModalComponent> authModalComponentProvider;
 
-    public CasinoPage(ObjectProvider<Page> page, AppProperties props, LocalizationService ls) {
-        super(page, ls, props);
-        this.mobileFilterButton = page().locator("div.d_block.pos_relative.w768\\:d_none > button");
+    public CasinoPage(Page page,
+                      AppProperties props,
+                      LocalizationService ls,
+                      ObjectProvider<FilterDrawerComponent> filterDrawerComponentProvider,
+                      ObjectProvider<AuthModalComponent> authModalComponentProvider,
+                      ObjectProvider<HeaderComponent> headerProvider,
+                      ObjectProvider<TabBarComponent> tabBarProvider) {
+        super(page, ls, props, headerProvider, tabBarProvider);
+        this.filterDrawerComponentProvider = filterDrawerComponentProvider;
+        this.authModalComponentProvider = authModalComponentProvider;
+        this.mobileFilterButton = page.locator("div.d_block.pos_relative.w768\\:d_none > button");
         String buttonText = ls.get("casino.filters.button");
-        this.desktopFilterButton = page().getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName(buttonText).setExact(true));
-        this.filterDrawerRoot = page().locator("div.drawer__headerWrapper").locator("..");
+        this.desktopFilterButton = page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName(buttonText).setExact(true));
         String searchLabel = ls.get("casino.search.input");
-        this.searchInput = page().getByRole(AriaRole.SEARCHBOX, new Page.GetByRoleOptions().setName(searchLabel).setExact(true));
-        this.gameCards = page().locator(".GameCard__root");
-        String promptTitle = ls.get("casino.play.prompt");
-        this.authDialog = page().getByText(promptTitle, new Page.GetByTextOptions().setExact(true)).locator("..");
+        this.searchInput = page.getByRole(AriaRole.SEARCHBOX, new Page.GetByRoleOptions().setName(searchLabel).setExact(true));
+        this.gameCards = page.locator(".GameCard__root");
     }
 
     /**
@@ -89,14 +96,14 @@ public class CasinoPage extends BasePage<CasinoPage> {
     public FilterDrawerComponent openFilters() {
         return step("Открытие панели фильтров", () -> {
             Locator button;
-            int width = page().viewportSize() != null ? page().viewportSize().width : Integer.MAX_VALUE;
+            int width = page.viewportSize() != null ? page.viewportSize().width : Integer.MAX_VALUE;
             if (width < Breakpoints.TABLET) {
                 button = mobileFilterButton;
             } else {
                 button = desktopFilterButton;
             }
             button.click();
-            return new FilterDrawerComponent(filterDrawerRoot, ls, this);
+            return filterDrawerComponentProvider.getObject();
         });
     }
 
@@ -137,7 +144,7 @@ public class CasinoPage extends BasePage<CasinoPage> {
         return step(String.format("Запускаем игру '%s'", gameName), () -> {
             Locator card = gameCards.filter(new Locator.FilterOptions().setHasText(gameName)).first();
             card.getByRole(AriaRole.BUTTON).click();
-            return new AuthModalComponent(authDialog, ls);
+            return authModalComponentProvider.getObject();
         });
     }
 }

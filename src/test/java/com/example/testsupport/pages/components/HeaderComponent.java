@@ -2,7 +2,11 @@ package com.example.testsupport.pages.components;
 
 import com.example.testsupport.framework.localization.LocalizationService;
 import com.microsoft.playwright.Locator;
+import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static com.example.testsupport.framework.utils.AllureHelper.step;
@@ -10,17 +14,17 @@ import static com.example.testsupport.framework.utils.AllureHelper.step;
 /**
  * Header component for the desktop version.
  */
+@Component
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class HeaderComponent extends BaseComponent {
     private final Locator casinoLink;
     private final Locator logoLink;
-    private final LocalizationService ls;
 
-    public HeaderComponent(Locator root, LocalizationService ls) {
-        super(root);
-        this.ls = ls;
+    public HeaderComponent(Page page, LocalizationService ls) {
+        super(page.locator("header"));
         String casinoText = ls.get("header.menu.casino");
-        this.casinoLink = root.getByRole(AriaRole.LINK, new Locator.GetByRoleOptions().setName(casinoText).setExact(true));
-        this.logoLink = root.getByRole(AriaRole.LINK, new Locator.GetByRoleOptions().setName("Spelet"));
+        this.casinoLink = root().getByRole(AriaRole.LINK, new Locator.GetByRoleOptions().setName(casinoText).setExact(true));
+        this.logoLink = root().getByRole(AriaRole.LINK, new Locator.GetByRoleOptions().setName("Spelet"));
     }
 
     /**
