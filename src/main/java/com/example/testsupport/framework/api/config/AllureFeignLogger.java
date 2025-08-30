@@ -111,7 +111,8 @@ public class AllureFeignLogger extends Logger {
                     }
                     processedResponse = response.toBuilder().body(bodyData).build();
                 } else {
-                    processedResponse = response.toBuilder().body(null, (Integer) null).build();
+                    // No body to re-buffer; return the original response to avoid NPE
+                    processedResponse = response;
                 }
 
                 StringBuilder responseDetails = formatResponse(processedResponse, elapsedTime, bodyData, logLevel, false);
