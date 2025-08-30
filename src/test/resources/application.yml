@@ -4,3 +4,7 @@ app:
   headless: false
   api:
     base-url: https://spelet.lv
+spring:
+  cloud:
+    compatibility-verifier:
+      enabled: false
