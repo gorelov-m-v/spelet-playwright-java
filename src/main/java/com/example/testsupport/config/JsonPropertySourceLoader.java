@@ -36,7 +36,8 @@ public class JsonPropertySourceLoader implements PropertySourceLoader {
     @SuppressWarnings("unchecked")
     private void flattenMap(String prefix, Map<String, Object> source, Map<String, Object> target) {
         for (Map.Entry<String, Object> entry : source.entrySet()) {
-            String key = prefix.isEmpty() ? entry.getKey() : prefix + "." + entry.getKey();
+            String current = normalizeKey(entry.getKey());
+            String key = prefix.isEmpty() ? current : prefix + "." + current;
             Object value = entry.getValue();
             if (value instanceof Map<?, ?> m) {
                 flattenMap(key, (Map<String, Object>) m, target);
@@ -53,5 +54,9 @@ public class JsonPropertySourceLoader implements PropertySourceLoader {
                 target.put(key, value);
             }
         }
+    }
+
+    private String normalizeKey(String key) {
+        return key.replaceAll("([a-z])([A-Z])", "$1-$2").toLowerCase();
     }
 }

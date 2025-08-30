@@ -27,6 +27,9 @@ public class TestMatrixService {
      */
     public Stream<List<Object>> getTestMatrix() {
         List<Device> allDevices = config.getTestDevices().getPlatforms();
+        if (allDevices == null || allDevices.isEmpty()) {
+            throw new IllegalStateException("No test devices configured under env.test-devices.platforms");
+        }
         List<String> languages = config.getBrowser().getLanguages();
         if (languages == null || languages.isEmpty()) {
             languages = List.of("lv", "ru", "en");
