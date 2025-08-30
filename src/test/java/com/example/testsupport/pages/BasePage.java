@@ -1,12 +1,13 @@
 package com.example.testsupport.pages;
 
+import com.example.testsupport.config.AppProperties;
 import com.example.testsupport.framework.localization.LocalizationService;
 import com.example.testsupport.pages.components.HeaderComponent;
 import com.example.testsupport.pages.components.TabBarComponent;
+import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.factory.ObjectProvider;
-import java.util.function.Supplier;
 
 /**
  * Base Page Object with shared logic.
@@ -14,15 +15,21 @@ import java.util.function.Supplier;
 public abstract class BasePage<T extends BasePage<T>> {
     private final ObjectProvider<Page> pageProvider;
     protected final LocalizationService ls;
-    private final Supplier<HeaderComponent> header;
-    private final Supplier<TabBarComponent> tabBar;
+    protected final AppProperties props;
+    private final HeaderComponent header;
+    private final TabBarComponent tabBar;
+    private final Locator headerRoot;
+    private final Locator tabBarRoot;
 
     @SuppressWarnings("resource")
-    protected BasePage(ObjectProvider<Page> pageProvider, LocalizationService ls) {
+    protected BasePage(ObjectProvider<Page> pageProvider, LocalizationService ls, AppProperties props) {
         this.pageProvider = pageProvider;
         this.ls = ls;
-        this.header = memoize(() -> new HeaderComponent(page().locator("header"), ls));
-        this.tabBar = memoize(() -> new TabBarComponent(page().locator("div.tab-bar__list"), ls));
+        this.props = props;
+        this.headerRoot = page().locator("header");
+        this.tabBarRoot = page().locator("div.tab-bar__list");
+        this.header = new HeaderComponent(headerRoot, ls);
+        this.tabBar = new TabBarComponent(tabBarRoot, ls);
     }
 
     protected Page page() {
@@ -30,11 +37,11 @@ public abstract class BasePage<T extends BasePage<T>> {
     }
 
     public HeaderComponent header() {
-        return header.get();
+        return header;
     }
 
     public TabBarComponent tabBar() {
-        return tabBar.get();
+        return tabBar;
     }
 
     @SuppressWarnings("unchecked")
@@ -42,17 +49,22 @@ public abstract class BasePage<T extends BasePage<T>> {
         return (T) this;
     }
 
-    private static <T> Supplier<T> memoize(Supplier<T> supplier) {
-        return new Supplier<>() {
-            private T value;
-            @Override
-            public T get() {
-                if (value == null) {
-                    value = supplier.get();
-                }
-                return value;
-            }
-        };
+    private String buildBaseUrlForCurrentLanguage() {
+        String lang = ls.getCurrentLangCode();
+        if (lang == null || lang.equals(props.getDefaultLanguage())) {
+            return props.getBaseUrl();
+        }
+        return props.getBaseUrl() + "/" + lang;
+    }
+
+    public T open() {
+        page().navigate(buildBaseUrlForCurrentLanguage());
+        return self();
+    }
+
+    public T navigate(String path) {
+        page().navigate(buildBaseUrlForCurrentLanguage() + path);
+        return self();
     }
 
     /**
@@ -70,3 +82,4 @@ public abstract class BasePage<T extends BasePage<T>> {
 
     public abstract T verifyIsLoaded();
 }
+
