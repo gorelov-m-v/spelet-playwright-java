@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.function.Function;
 import org.springframework.stereotype.Service;
 
 /**
@@ -46,7 +47,7 @@ public class TestMatrixService {
                     .filter(s -> !s.isEmpty())
                     .collect(Collectors.toSet());
             Map<String, Device> deviceMap = allDevices.stream()
-                    .collect(Collectors.toMap(Device::getName, d -> d));
+                    .collect(Collectors.toMap(Device::getName, Function.identity()));
             List<String> missing = requested.stream()
                     .filter(name -> !deviceMap.containsKey(name))
                     .toList();
