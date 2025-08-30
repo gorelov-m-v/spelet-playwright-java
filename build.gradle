@@ -60,7 +60,7 @@ dependencies {
 test {
     useJUnitPlatform()
     systemProperties = System.getProperties() as Map<String, ?>
-    systemProperty 'spring.config.import', System.getProperty('spring.config.import', 'optional:classpath:configs/local.json')
+    systemProperty 'spring.profiles.active', System.getProperty('spring.profiles.active', 'local')
     testLogging {
         events "passed", "skipped", "failed"
         exceptionFormat "full"
@@ -89,7 +89,6 @@ def bsTask = { String name, Map<String,String> props ->
     tasks.register(name, Test) {
         useJUnitPlatform()
         systemProperty 'spring.profiles.active', 'browserstack'
-        systemProperty 'spring.config.import', System.getProperty('spring.config.import', 'optional:classpath:configs/local.json')
         props.each { k, v -> systemProperty k, v }
         testLogging { events "passed", "skipped", "failed" }
         dependsOn(playwrightInstall)
@@ -146,20 +145,3 @@ bsTask('bsiPhone11', [
         'env.browserstack.deviceName':'iPhone 11', 'env.browserstack.osVersion':'13.0',
         'env.browserstack.browser':'safari', 'env.browserstack.name':'Spelet iPhone 11 Safari'
 ])
-
-tasks.register('speletProd', Test) {
-    group = 'verification'
-    description = 'Runs tests against PROD environment'
-    useJUnitPlatform()
-    systemProperty 'spring.config.import', 'classpath:configs/spelet-prod.json'
-    testLogging { events "passed", "skipped", "failed" }
-    dependsOn(playwrightInstall)
-}
-tasks.register('speletDemo', Test) {
-    group = 'verification'
-    description = 'Runs tests against DEMO environment'
-    useJUnitPlatform()
-    systemProperty 'spring.config.import', 'classpath:configs/spelet-demo.json'
-    testLogging { events "passed", "skipped", "failed" }
-    dependsOn(playwrightInstall)
-}

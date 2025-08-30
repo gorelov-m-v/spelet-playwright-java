@@ -10,7 +10,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 /**
- * Root configuration object for test environments loaded from JSON files.
+ * Root configuration object for test environments loaded from YAML profiles.
  */
 @Data
 @Component

@@ -44,34 +44,34 @@ When a test fails, open it in Allure and inspect the following attachments:
 Only failed tests include console logs and trace attachments to keep reports lightweight.
 
 ## 🌐 Configuration
-Configuration for tests is defined in JSON files located under `src/test/resources/configs`.
-Each file represents a full test environment and is loaded via Spring Boot's
-`spring.config.import` property.
+Environment settings are stored in profile-specific YAML files under `src/test/resources`.
+Spring Boot loads `application-<profile>.yml` based on the active profile.
 
-Example `local.json` structure:
-```json
-{
-  "env": {
-    "api": { "baseUrl": "https://spelet.lv" },
-    "browser": {
-      "name": "chromium",
-      "headless": false,
-      "language": "lv",
-      "defaultLanguage": "lv"
-    }
-  }
-}
+Example `application-local.yml` structure:
+```yaml
+env:
+  api:
+    baseUrl: https://spelet.lv
+  browser:
+    name: chromium
+    headless: false
+    language: lv
+    defaultLanguage: lv
 ```
 
-To run tests with a specific configuration file:
-```bash
-./gradlew test -Dspring.config.import=classpath:configs/local.json
-```
+### Running with different profiles
+- Default (local) profile:
+  ```bash
+  ./gradlew test
+  ```
+- BrowserStack profile:
+  ```bash
+  ./gradlew bsWin10Chrome
+  ```
+- Any other profile:
+  ```bash
+  ./gradlew test -Dspring.profiles.active=browserstack
+  ```
 
-BrowserStack profiles can be launched the same way:
-```bash
-./gradlew bsWin10Chrome -Dspring.config.import=classpath:configs/browserstack.json
-```
-
-To add a new environment, copy one of the existing JSON files, adjust values and
-pass its path via `-Dspring.config.import`.
+To create a new environment, add `application-myenv.yml` and run tests with
+`-Dspring.profiles.active=myenv`.
