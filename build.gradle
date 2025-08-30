@@ -171,3 +171,9 @@ browserStackConfigs.each { taskName, props ->
         dependsOn(playwrightInstall)
     }
 }
+
+// Ensure UTF-8 encoding for all test JVMs
+tasks.withType(Test).configureEach {
+    jvmArgs '-Dfile.encoding=UTF-8'
+}
+
