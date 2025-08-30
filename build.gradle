@@ -35,8 +35,8 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-core'
 
     // OpenFeign
-    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
-    implementation 'io.github.openfeign:feign-okhttp'
+    testImplementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+    testImplementation 'io.github.openfeign:feign-okhttp'
 
     // Lombok
     compileOnly 'org.projectlombok:lombok'
