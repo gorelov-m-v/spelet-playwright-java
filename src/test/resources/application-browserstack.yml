@@ -1,0 +1,24 @@
+env:
+  api:
+    baseUrl: https://spelet.lv
+  browser:
+    name: chromium
+    headless: true
+    language: lv
+    defaultLanguage: lv
+    languages:
+      - lv
+      - ru
+      - en
+  browserstack:
+    os: Windows
+    osVersion: "10"
+    browser: chrome
+    browserVersion: latest
+    project: "Spelet LV"
+    name: "Spelet test"
+  testDevices:
+    platforms:
+      - name: "Desktop FullHD"
+        width: 1920
+        height: 1080

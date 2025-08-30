@@ -1,6 +1,6 @@
 package com.example.testsupport.pages;
 
-import com.example.testsupport.config.AppProperties;
+import com.example.testsupport.config.EnvironmentConfig;
 import com.example.testsupport.framework.localization.LocalizationService;
 import com.example.testsupport.pages.components.HeaderComponent;
 import com.example.testsupport.pages.components.TabBarComponent;
@@ -14,19 +14,19 @@ import org.springframework.beans.factory.ObjectProvider;
 public abstract class BasePage<T extends BasePage<T>> {
     protected final Page page;
     protected final LocalizationService ls;
-    protected final AppProperties props;
+    protected final EnvironmentConfig config;
     private final HeaderComponent header;
     private final TabBarComponent tabBar;
 
     @SuppressWarnings("resource")
     protected BasePage(Page page,
                        LocalizationService ls,
-                       AppProperties props,
+                       EnvironmentConfig config,
                        ObjectProvider<HeaderComponent> headerProvider,
                        ObjectProvider<TabBarComponent> tabBarProvider) {
         this.page = page;
         this.ls = ls;
-        this.props = props;
+        this.config = config;
         this.header = headerProvider.getObject();
         this.tabBar = tabBarProvider.getObject();
     }
@@ -46,10 +46,11 @@ public abstract class BasePage<T extends BasePage<T>> {
 
     private String buildBaseUrlForCurrentLanguage() {
         String lang = ls.getCurrentLangCode();
-        if (lang == null || lang.equals(props.getDefaultLanguage())) {
-            return props.getBaseUrl();
+        String base = config.getApi().getBaseUrl();
+        if (lang == null || lang.equals(config.getBrowser().getDefaultLanguage())) {
+            return base;
         }
-        return props.getBaseUrl() + "/" + lang;
+        return base + "/" + lang;
     }
 
     public T open() {
@@ -77,4 +78,3 @@ public abstract class BasePage<T extends BasePage<T>> {
 
     public abstract T verifyIsLoaded();
 }
-

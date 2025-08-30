@@ -1,6 +1,6 @@
 package com.example.testsupport.framework.device;
 
-import com.example.testsupport.config.AppProperties;
+import com.example.testsupport.config.EnvironmentConfig;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -16,20 +16,21 @@ import org.springframework.stereotype.Service;
 @Service
 public class TestMatrixService {
 
-    private final DeviceConfiguration deviceConfig;
-    private final AppProperties properties;
+    private final EnvironmentConfig config;
 
-    public TestMatrixService(DeviceConfiguration deviceConfig, AppProperties properties) {
-        this.deviceConfig = deviceConfig;
-        this.properties = properties;
+    public TestMatrixService(EnvironmentConfig config) {
+        this.config = config;
     }
 
     /**
      * Returns a stream of device/language combinations.
      */
     public Stream<List<Object>> getTestMatrix() {
-        List<Device> allDevices = deviceConfig.getPlatforms();
-        List<String> languages = properties.getLanguages();
+        List<Device> allDevices = config.getTestDevices().getPlatforms();
+        if (allDevices == null || allDevices.isEmpty()) {
+            throw new IllegalStateException("No test devices configured under env.test-devices.platforms");
+        }
+        List<String> languages = config.getBrowser().getLanguages();
         if (languages == null || languages.isEmpty()) {
             languages = List.of("lv", "ru", "en");
         }
@@ -45,7 +46,7 @@ public class TestMatrixService {
                     .filter(s -> !s.isEmpty())
                     .collect(Collectors.toSet());
             Map<String, Device> deviceMap = allDevices.stream()
-                    .collect(Collectors.toMap(Device::name, d -> d));
+                    .collect(Collectors.toMap(Device::getName, d -> d));
             List<String> missing = requested.stream()
                     .filter(name -> !deviceMap.containsKey(name))
                     .toList();
@@ -61,4 +62,3 @@ public class TestMatrixService {
                         .map(lang -> List.of(device, lang)));
     }
 }
-

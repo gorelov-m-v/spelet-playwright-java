@@ -20,12 +20,13 @@ public abstract class BaseTest {
 
     protected void setupTestEnvironment(Device device, String languageCode) {
         step("Устанавливаем размер окна просмотра", () -> {
-            playwrightManager.getPage().setViewportSize(device.width(), device.height());
+            playwrightManager.getPage().setViewportSize(device.getWidth(), device.getHeight());
         });
 
         step("Устанавливаем язык теста", () -> {
             ls.loadLocale(languageCode);
         });
     }
+
 }
 

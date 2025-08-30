@@ -72,3 +72,4 @@ class MultilingualNavigationTest extends BaseTest {
         });
     }
 }
+

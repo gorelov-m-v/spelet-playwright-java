@@ -42,3 +42,36 @@ When a test fails, open it in Allure and inspect the following attachments:
    This provides an interactive timeline for step-by-step debugging.
 
 Only failed tests include console logs and trace attachments to keep reports lightweight.
+
+## 🌐 Configuration
+Environment settings are stored in profile-specific YAML files under `src/test/resources`.
+Spring Boot loads `application-<profile>.yml` based on the active profile.
+
+Example `application-local.yml` structure:
+```yaml
+env:
+  api:
+    baseUrl: https://spelet.lv
+  browser:
+    name: chromium
+    headless: false
+    language: lv
+    defaultLanguage: lv
+```
+
+### Running with different profiles
+- Default (local) profile:
+  ```bash
+  ./gradlew test
+  ```
+- BrowserStack profile:
+  ```bash
+  ./gradlew bsWin10Chrome
+  ```
+- Any other profile:
+  ```bash
+  ./gradlew test -Dspring.profiles.active=browserstack
+  ```
+
+To create a new environment, add `application-myenv.yml` and run tests with
+`-Dspring.profiles.active=myenv`.

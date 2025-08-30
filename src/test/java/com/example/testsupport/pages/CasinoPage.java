@@ -1,6 +1,6 @@
 package com.example.testsupport.pages;
 
-import com.example.testsupport.config.AppProperties;
+import com.example.testsupport.config.EnvironmentConfig;
 import com.example.testsupport.framework.localization.LocalizationService;
 import com.example.testsupport.framework.utils.Breakpoints;
 import com.example.testsupport.pages.components.FilterDrawerComponent;
@@ -34,13 +34,13 @@ public class CasinoPage extends BasePage<CasinoPage> {
     private final ObjectProvider<AuthModalComponent> authModalComponentProvider;
 
     public CasinoPage(Page page,
-                      AppProperties props,
+                      EnvironmentConfig config,
                       LocalizationService ls,
                       ObjectProvider<FilterDrawerComponent> filterDrawerComponentProvider,
                       ObjectProvider<AuthModalComponent> authModalComponentProvider,
                       ObjectProvider<HeaderComponent> headerProvider,
                       ObjectProvider<TabBarComponent> tabBarProvider) {
-        super(page, ls, props, headerProvider, tabBarProvider);
+        super(page, ls, config, headerProvider, tabBarProvider);
         this.filterDrawerComponentProvider = filterDrawerComponentProvider;
         this.authModalComponentProvider = authModalComponentProvider;
         this.mobileFilterButton = page.locator("div.d_block.pos_relative.w768\\:d_none > button");
@@ -58,7 +58,7 @@ public class CasinoPage extends BasePage<CasinoPage> {
      */
     public String getExpectedPath() {
         String lang = ls.getCurrentLangCode();
-        if (lang == null || lang.equals(props.getDefaultLanguage())) {
+        if (lang == null || lang.equals(config.getBrowser().getDefaultLanguage())) {
             return "/casino";
         }
         return "/" + lang + "/casino";
@@ -148,4 +148,3 @@ public class CasinoPage extends BasePage<CasinoPage> {
         });
     }
 }
-
