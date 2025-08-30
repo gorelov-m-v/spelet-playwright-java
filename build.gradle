@@ -29,6 +29,7 @@ repositories { mavenCentral() }
         // JUnit API needed for main framework classes such as extensions
         implementation platform('org.junit:junit-bom:5.10.0')
         implementation 'org.junit.jupiter:junit-jupiter-api'
+        implementation 'org.junit.jupiter:junit-jupiter-params'
 
         // Allure commons used by framework utilities and listeners
         implementation 'io.qameta.allure:allure-java-commons:2.29.0'

@@ -8,12 +8,13 @@ import com.example.testsupport.pages.components.AuthModalComponent;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
-import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+
 import static com.example.testsupport.framework.utils.AllureHelper.step;
+import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
 /**
  * Page object for the casino page.
@@ -22,11 +23,25 @@ import static com.example.testsupport.framework.utils.AllureHelper.step;
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class CasinoPage extends BasePage<CasinoPage> {
-    private final AppProperties props;
+
+    private final Locator mobileFilterButton;
+    private final Locator desktopFilterButton;
+    private final Locator filterDrawerRoot;
+    private final Locator searchInput;
+    private final Locator gameCards;
+    private final Locator authDialog;
 
     public CasinoPage(ObjectProvider<Page> page, AppProperties props, LocalizationService ls) {
-        super(page, ls);
-        this.props = props;
+        super(page, ls, props);
+        this.mobileFilterButton = page().locator("div.d_block.pos_relative.w768\\:d_none > button");
+        String buttonText = ls.get("casino.filters.button");
+        this.desktopFilterButton = page().getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName(buttonText).setExact(true));
+        this.filterDrawerRoot = page().locator("div.drawer__headerWrapper").locator("..");
+        String searchLabel = ls.get("casino.search.input");
+        this.searchInput = page().getByRole(AriaRole.SEARCHBOX, new Page.GetByRoleOptions().setName(searchLabel).setExact(true));
+        this.gameCards = page().locator(".GameCard__root");
+        String promptTitle = ls.get("casino.play.prompt");
+        this.authDialog = page().getByText(promptTitle, new Page.GetByTextOptions().setExact(true)).locator("..");
     }
 
     /**
@@ -76,18 +91,15 @@ public class CasinoPage extends BasePage<CasinoPage> {
             Locator button;
             int width = page().viewportSize() != null ? page().viewportSize().width : Integer.MAX_VALUE;
             if (width < Breakpoints.TABLET) {
-                button = page().locator("div.d_block.pos_relative.w768\\:d_none > button");
+                button = mobileFilterButton;
             } else {
-                String buttonText = ls.get("casino.filters.button");
-                button = page().getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions()
-                        .setName(buttonText)
-                        .setExact(true));
+                button = desktopFilterButton;
             }
             button.click();
-            Locator drawer = page().locator("div.drawer__headerWrapper").locator("..");
-            return new FilterDrawerComponent(drawer, ls, this);
+            return new FilterDrawerComponent(filterDrawerRoot, ls, this);
         });
     }
+
     /**
      * Types the given query into the casino search field.
      *
@@ -96,11 +108,7 @@ public class CasinoPage extends BasePage<CasinoPage> {
      */
     public CasinoPage typeInSearch(String query) {
         return step(String.format("Вводим в поле поиска '%s'", query), () -> {
-            String searchLabel = ls.get("casino.search.input");
-            page().getByRole(AriaRole.SEARCHBOX, new Page.GetByRoleOptions()
-                    .setName(searchLabel)
-                    .setExact(true))
-                .fill(query);
+            searchInput.fill(query);
             return this;
         });
     }
@@ -113,8 +121,7 @@ public class CasinoPage extends BasePage<CasinoPage> {
      */
     public CasinoPage waitForGameVisible(String gameName) {
         return step(String.format("Ожидаем отображения игры '%s'", gameName), () -> {
-            Locator card = page().locator(".GameCard__root").filter(new Locator.FilterOptions()
-                    .setHasText(gameName));
+            Locator card = gameCards.filter(new Locator.FilterOptions().setHasText(gameName));
             assertThat(card.first()).isVisible();
             return this;
         });
@@ -128,13 +135,10 @@ public class CasinoPage extends BasePage<CasinoPage> {
      */
     public AuthModalComponent clickPlay(String gameName) {
         return step(String.format("Запускаем игру '%s'", gameName), () -> {
-            Locator card = page().locator(".GameCard__root").filter(new Locator.FilterOptions()
-                    .setHasText(gameName)).first();
+            Locator card = gameCards.filter(new Locator.FilterOptions().setHasText(gameName)).first();
             card.getByRole(AriaRole.BUTTON).click();
-            String promptTitle = ls.get("casino.play.prompt");
-            Locator dialog = page().getByText(promptTitle, new Page.GetByTextOptions()
-                    .setExact(true)).locator("..");
-            return new AuthModalComponent(dialog, ls);
+            return new AuthModalComponent(authDialog, ls);
         });
     }
 }
+

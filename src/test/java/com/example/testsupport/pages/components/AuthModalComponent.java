@@ -12,11 +12,14 @@ import static com.example.testsupport.framework.utils.AllureHelper.step;
  */
 public class AuthModalComponent extends BaseComponent {
 
+    private final Locator title;
     private final LocalizationService ls;
 
     public AuthModalComponent(Locator root, LocalizationService ls) {
         super(root);
         this.ls = ls;
+        String titleText = ls.get("casino.play.prompt");
+        this.title = root.getByText(titleText, new Locator.GetByTextOptions().setExact(true));
     }
 
     /**
@@ -26,10 +29,9 @@ public class AuthModalComponent extends BaseComponent {
      */
     public AuthModalComponent verifyIsLoaded() {
         return step("Проверяем отображение модального окна авторизации", () -> {
-            String title = ls.get("casino.play.prompt");
-            assertThat(root.getByText(title, new Locator.GetByTextOptions()
-                    .setExact(true))).isVisible();
+            assertThat(title).isVisible();
             return this;
         });
     }
 }
+

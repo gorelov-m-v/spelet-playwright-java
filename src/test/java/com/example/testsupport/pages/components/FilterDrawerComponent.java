@@ -15,11 +15,17 @@ public class FilterDrawerComponent extends BaseComponent {
 
     private final LocalizationService ls;
     private final CasinoPage casinoPage;
+    private final Locator title;
+    private final Locator showButton;
 
     public FilterDrawerComponent(Locator root, LocalizationService ls, CasinoPage casinoPage) {
         super(root);
         this.ls = ls;
         this.casinoPage = casinoPage;
+        String titleText = ls.get("casino.filters.title");
+        this.title = root.getByRole(AriaRole.HEADING, new Locator.GetByRoleOptions().setName(titleText).setExact(true));
+        String showText = ls.get("casino.filters.show");
+        this.showButton = root.getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName(showText).setExact(true));
     }
 
     /**
@@ -29,10 +35,7 @@ public class FilterDrawerComponent extends BaseComponent {
      */
     public FilterDrawerComponent verifyIsLoaded() {
         return step("Проверка загрузки дровера фильтров", () -> {
-            String title = ls.get("casino.filters.title");
-            assertThat(root.getByRole(AriaRole.HEADING, new Locator.GetByRoleOptions()
-                    .setName(title)
-                    .setExact(true))).isVisible();
+            assertThat(title).isVisible();
             return this;
         });
     }
@@ -58,11 +61,7 @@ public class FilterDrawerComponent extends BaseComponent {
      */
     public CasinoPage clickShow() {
         return step("Применение фильтров", () -> {
-            String showText = ls.get("casino.filters.show");
-            root.getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions()
-                    .setName(showText)
-                    .setExact(true))
-                .click();
+            showButton.click();
             return casinoPage;
         });
     }

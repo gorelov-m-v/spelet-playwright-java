@@ -1,8 +1,6 @@
 package com.example.testsupport.framework.browser;
 
 import com.microsoft.playwright.*;
-import com.example.testsupport.config.AppProperties;
-import com.example.testsupport.framework.localization.LocalizationService;
 import org.springframework.stereotype.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,8 +21,6 @@ import java.util.List;
 public class PlaywrightManager {
 
     private final BrowserFactory browserFactory;
-    private final AppProperties props;
-    private final LocalizationService ls;
 
     private static final Logger log = LoggerFactory.getLogger(PlaywrightManager.class);
 
@@ -34,12 +30,8 @@ public class PlaywrightManager {
     private static final ThreadLocal<Page> page = new ThreadLocal<>();
     private static final ThreadLocal<List<String>> consoleMessages = ThreadLocal.withInitial(ArrayList::new);
 
-    public PlaywrightManager(BrowserFactory browserFactory,
-                             AppProperties props,
-                             LocalizationService ls) {
+    public PlaywrightManager(BrowserFactory browserFactory) {
         this.browserFactory = browserFactory;
-        this.props = props;
-        this.ls = ls;
     }
 
     /**
@@ -83,26 +75,6 @@ public class PlaywrightManager {
         return Collections.unmodifiableList(consoleMessages.get());
     }
 
-    private String buildBaseUrlForCurrentLanguage() {
-        String lang = ls.getCurrentLangCode();
-        if (lang == null || lang.equals(props.getDefaultLanguage())) {
-            return props.getBaseUrl();
-        }
-        return props.getBaseUrl() + "/" + lang;
-    }
-
-    public void open() {
-        getPage().navigate(buildBaseUrlForCurrentLanguage());
-    }
-
-    /**
-     * Navigates to a path relative to the base URL considering the language.
-     *
-     * @param path e.g., "/casino"
-     */
-    public void navigate(String path) {
-        getPage().navigate(buildBaseUrlForCurrentLanguage() + path);
-    }
     /**
      * Closes the page and context.
      */

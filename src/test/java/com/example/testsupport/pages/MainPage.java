@@ -1,29 +1,28 @@
 package com.example.testsupport.pages;
 
-import com.example.testsupport.framework.browser.PlaywrightManager;
+import com.example.testsupport.config.AppProperties;
 import com.example.testsupport.framework.localization.LocalizationService;
 import com.microsoft.playwright.Page;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+
 import static com.example.testsupport.framework.utils.AllureHelper.step;
 import static com.example.testsupport.framework.utils.Breakpoints.MOBILE;
-
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class MainPage extends BasePage<MainPage> {
 
     private final ObjectProvider<CasinoPage> casinoPageProvider;
-    private final PlaywrightManager playwrightManager;
 
-    public MainPage(ObjectProvider<Page> page, LocalizationService ls,
+    public MainPage(ObjectProvider<Page> page,
+                    LocalizationService ls,
                     ObjectProvider<CasinoPage> casinoPageProvider,
-                    PlaywrightManager playwrightManager) {
-        super(page, ls);
+                    AppProperties props) {
+        super(page, ls, props);
         this.casinoPageProvider = casinoPageProvider;
-        this.playwrightManager = playwrightManager;
     }
 
     /**
@@ -38,9 +37,7 @@ public class MainPage extends BasePage<MainPage> {
             } else {
                 header().clickCasino();
             }
-            step("Ожидание URL страницы 'Казино'", () -> {
-                page().waitForURL("**/casino");
-            });
+            step("Ожидание URL страницы 'Казино'", () -> page().waitForURL("**/casino"));
             return casinoPageProvider.getObject().verifyIsLoaded();
         });
     }
@@ -60,14 +57,15 @@ public class MainPage extends BasePage<MainPage> {
     }
 
     /**
-     * Opens the main page using the Playwright manager and verifies it's loaded.
+     * Opens the main page and verifies it's loaded.
      *
      * @return current page object
      */
     public MainPage open() {
         return step("Открыть главную страницу", () -> {
-            playwrightManager.open();
+            super.open();
             return verifyIsLoaded();
         });
     }
 }
+
