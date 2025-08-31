@@ -46,10 +46,14 @@ Only failed tests include console logs and trace attachments to keep reports lig
 ## 🌐 Configuration
 Environment settings are stored in profile-specific YAML files under `src/test/resources`.
 Spring Boot loads `application-<profile>.yml` based on the active profile.
+Each file can also control JUnit concurrency via the `env.parallelism` block.
 
 Example `application-spelet.yml` structure:
 ```yaml
 env:
+  parallelism:
+    strategy: fixed
+    threads: 4
   api:
     baseUrl: https://spelet.lv
   browser:
