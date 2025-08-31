@@ -7,7 +7,7 @@
 ## 1. `@Suite` — Человекочитаемые отчеты
 
 **Проблема:**  
-Стандартная интеграция Allure с JUnit 5 использует полное имя тестового класса (например, `tests.casino.MultilingualNavigationTest`) в качестве названия для "сьюта" (Test Suite). Это делает отчеты технически перегруженными и затрудняет их понимание для нетехнических специалистов.
+Стандартная интеграция Allure с JUnit 5 использует полное имя тестового класса (например, [`tests.casino.MultilingualNavigationTest`](src/test/java/tests/MultilingualNavigationTest.java)) в качестве названия для "сьюта" (Test Suite). Это делает отчеты технически перегруженными и затрудняет их понимание для нетехнических специалистов.
 
 **Решение:**  
 Создана кастомная аннотация [`@Suite`](src/main/java/com/example/testsupport/framework/allure/Suite.java), которая работает в паре с JUnit-расширением [`CustomSuiteExtension`](src/main/java/com/example/testsupport/framework/allure/CustomSuiteExtension.java).
@@ -24,6 +24,8 @@ class MultilingualNavigationTest extends BaseTest {
     // ...
 }
 ```
+
+Класс [`BaseTest`](src/test/java/tests/BaseTest.java) содержит общую инфраструктуру для тестов.
 
 *Результат в отчете: вместо `tests.casino.MultilingualNavigationTest` будет `Навигация и базовый флоу казино`.*
 
@@ -55,6 +57,8 @@ void navigationTest(Device device, String languageCode) {
 }
 ```
 
+Здесь используется [`DeviceProvider`](src/main/java/com/example/testsupport/framework/device/DeviceProvider.java) для генерации объектов [`Device`](src/main/java/com/example/testsupport/framework/device/Device.java).
+
 **После (одна аннотация):**
 
 ```java
@@ -76,8 +80,8 @@ void navigationTest(Device device, String languageCode) {
 **Решение:**  
 Реализован паттерн Builder в связке с универсальным Feign-интерцептором и кастомными аннотациями для описания параметров запроса.
 
-Аннотации: `@RequestQueryParam`, `@RequestHeaderParam`  
-Перехватчик: `GenericParamsInterceptor`
+Аннотации: [`@RequestQueryParam`](src/main/java/com/example/testsupport/framework/api/client/annotations/RequestQueryParam.java), [`@RequestHeaderParam`](src/main/java/com/example/testsupport/framework/api/client/annotations/RequestHeaderParam.java)
+Перехватчик: [`GenericParamsInterceptor`](src/main/java/com/example/testsupport/framework/api/client/GenericParamsInterceptor.java)
 
 **Как это работает (пошагово):**
 
@@ -99,6 +103,8 @@ public class GamblingBrandsParams {
 }
 ```
 
+Класс [`GamblingBrandsParams`](src/test/java/com/example/testsupport/framework/api/client/params/GamblingBrandsParams.java) описывает все возможные параметры запроса.
+
 ### Шаг 2: Создаем лаконичный Feign-интерфейс
 
 Метод клиента теперь принимает всего один DTO-объект.
@@ -111,6 +117,8 @@ public interface FrontApiClient {
     GamblingBrandsResponse getGamblingBrands(@RequestParam("params") GamblingBrandsParams params);
 }
 ```
+
+Метод возвращает [`GamblingBrandsResponse`](src/test/java/com/example/testsupport/framework/api/dto/gambling/GamblingBrandsResponse.java).
 
 ### Шаг 3: Используем Builder в тестах
 
@@ -137,4 +145,4 @@ GamblingBrandsResponse response = frontApiClient.getGamblingBrands(params);
 
 ### Шаг 4: Магия "под капотом"
 
-`GenericParamsInterceptor` перехватывает запрос и, используя рефлексию, динамически добавляет в него только те параметры и заголовки, которые были заданы в билдере.
+[`GenericParamsInterceptor`](src/main/java/com/example/testsupport/framework/api/client/GenericParamsInterceptor.java) перехватывает запрос и, используя рефлексию, динамически добавляет в него только те параметры и заголовки, которые были заданы в билдере.
