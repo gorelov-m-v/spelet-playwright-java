@@ -102,8 +102,9 @@ public class GamblingBrandsParams {
 
 Метод клиента теперь принимает всего один DTO-объект.
 
+[`FrontApiClient.java`](src/test/java/com/example/testsupport/framework/api/client/FrontApiClient.java)
+
 ```java
-// Файл: .../api/client/FrontApiClient.java
 @FeignClient(name = "frontApiClient", configuration = GenericParamsInterceptor.class)
 public interface FrontApiClient {
     @GetMapping("/gambling/brands")
@@ -137,3 +138,197 @@ GamblingBrandsResponse response = frontApiClient.getGamblingBrands(params);
 ### Шаг 4: Магия "под капотом"
 
 [`GenericParamsInterceptor`](src/main/java/com/example/testsupport/framework/api/client/GenericParamsInterceptor.java) перехватывает запрос и, используя рефлексию, динамически добавляет в него только те параметры и заголовки, которые были заданы в билдере.
+
+---
+
+## 4. 📞 Декларативный API-клиент на OpenFeign
+
+Для взаимодействия с API и подготовки состояний перед UI-тестами в фреймворке реализован мощный и удобный HTTP-клиент на базе Spring Cloud OpenFeign. Этот подход позволяет описывать API как простые Java-интерфейсы, полностью абстрагируясь от низкоуровневой реализации HTTP-запросов.
+
+### 1. Конфигурация клиента
+
+Вся настройка клиента централизована и управляется Spring.
+
+**Включение Feign:** В главной тестовой конфигурации `TestConfig.java` активируется сканер Feign-клиентов:
+
+```java
+@Configuration
+@EnableFeignClients(basePackages = "com/example/testsupport/framework/api/client")
+public class TestConfig { /* ... */ }
+```
+
+**Настройка HTTP-слоя и логирования:** В классе `AllureFeignLoggerConfig.java` определяется HTTP-клиент (OkHttp) и регистрируется кастомный логгер, который детально записывает каждый запрос и ответ в Allure-отчет.
+
+```java
+@Configuration
+public class AllureFeignLoggerConfig {
+    @Bean
+    public Client feignClient() {
+        // Используем надежный OkHttp с таймаутами и пулом соединений
+        return new OkHttpClient(...);
+    }
+
+    @Bean
+    public FeignBuilderCustomizer allureFeignLoggerCustomizer(...) {
+        // Подключаем логгер, который аттачит запросы/ответы к Allure
+        return builder -> builder.logger(new AllureFeignLogger(...));
+    }
+}
+```
+
+### 2. Описание API-эндпоинта
+
+Создание нового API-вызова сводится к описанию его в нескольких декларативных классах, без написания императивной логики.
+
+**Шаг 1: Описываем DTO для ответа**
+
+Это простые record или POJO, которые точно повторяют структуру JSON-ответа от сервера.
+
+[`GamblingBrandsResponse.java`](src/test/java/com/example/testsupport/framework/api/dto/gambling/GamblingBrandsResponse.java) и
+[`Brand.java`](src/test/java/com/example/testsupport/framework/api/dto/gambling/Brand.java)
+
+```java
+public record GamblingBrandsResponse(List<Brand> brands) {}
+
+public record Brand(
+        String id,
+        String name,
+        String alias,
+        String icon,
+        String logo,
+        String colorLogo
+) {}
+```
+
+**Шаг 2: Описываем параметры запроса с помощью DTO и аннотаций**
+
+Для каждого API-эндпоинта создается POJO-класс, поля которого представляют все возможные параметры и помечаются кастомными аннотациями `@RequestQueryParam` и `@RequestHeaderParam`.
+
+[`GamblingBrandsParams.java`](src/test/java/com/example/testsupport/framework/api/client/params/GamblingBrandsParams.java)
+
+```java
+@Getter
+@Builder
+public class GamblingBrandsParams {
+    @RequestHeaderParam("Platform-Locale")
+    private String platformLocale;
+
+    @RequestQueryParam("categoryAlias")
+    private String categoryAlias;
+}
+```
+
+**Шаг 3: Описываем метод в интерфейсе клиента**
+
+В главном интерфейсе `FrontApiClient.java` добавляется новый метод. Он принимает всего один DTO-объект с параметрами. Вся магия по сборке реального HTTP-запроса инкапсулирована в универсальном перехватчике `GenericParamsInterceptor`.
+
+[`FrontApiClient.java`](src/test/java/com/example/testsupport/framework/api/client/FrontApiClient.java)
+
+```java
+@FeignClient(name = "...", configuration = GenericParamsInterceptor.class)
+public interface FrontApiClient {
+    @GetMapping("/_front_api/api/v1/gambling/brands")
+    GamblingBrandsResponse getGamblingBrands(@RequestParam("params") GamblingBrandsParams params);
+}
+```
+
+### 3. Использование в тесте
+
+Благодаря паттерну Builder, вызов API в тесте становится чистым, декларативным и типобезопасным.
+
+[`MultilingualNavigationTest.java`](src/test/java/tests/MultilingualNavigationTest.java)
+
+```java
+@Autowired
+private FrontApiClient frontApiClient;
+
+@Test
+void apiIntegrationTest() {
+    step("Получаем список брендов через API", () -> {
+        // 1. Декларативно собираем запрос, указывая только нужные параметры
+        var params = GamblingBrandsParams.builder()
+                .platformLocale("lv")
+                .categoryAlias("new")
+                .build();
+
+        // 2. Вызываем метод клиента
+        GamblingBrandsResponse response = frontApiClient.getGamblingBrands(params);
+
+        // 3. Проверяем результат
+        Assertions.assertFalse(response.brands().isEmpty());
+    });
+}
+```
+
+*Результат: В Allure-отчете для этого шага будет автоматически создан аттачмент с полным текстом HTTP-запроса и ответа, что делает отладку тривиальной.*
+
+
+---
+
+## 🎨 Кодстайл: DTO и неизменяемость (Records vs Lombok)
+
+Фреймворк придерживается прагматичного подхода к созданию DTO и выбирает инструмент под задачу. Ниже описаны основные правила, примеры и аргументация.
+
+### Когда использовать `record`
+
+**Правило:** применяйте `record` для неизменяемых контейнеров данных, описывающих ответы API или другие структуры, состояние которых не должно меняться после создания.
+
+**Почему это хорошо:**
+
+- **Гарантия неизменяемости.** Все поля `record` финализированы, отсутствуют сеттеры. Это делает объекты потокобезопасными и предсказуемыми.
+- **Автоматические `equals`/`hashCode`/`toString`.** Компилятор генерирует корректные реализации, исключая ошибки и шум в коде.
+- **Ясный контракт.** Объявление `public record Brand(...)` прямо сигнализирует, что класс является простым переносчиком данных.
+- **Поддержка JSON-библиотек.** Jackson и другие популярные мапперы умеют работать с record без дополнительной конфигурации.
+
+✅ **Хороший пример:** [`Brand.java`](src/test/java/com/example/testsupport/framework/api/dto/gambling/Brand.java)
+
+```java
+// DTO, описывающий бренд из API-ответа. Его состояние не должно меняться.
+public record Brand(
+        String id,
+        String name,
+        String alias,
+        String icon,
+        String logo,
+        String colorLogo
+) {}
+```
+
+### Когда использовать класс с Lombok
+
+**Правило:** используйте обычный класс с Lombok (`@Getter`, `@Builder`, при необходимости `@EqualsAndHashCode`) для объектов, которые требуется гибко создавать и у которых не все поля обязательны.
+
+**Почему это хорошо:**
+
+- **Паттерн Builder.** Позволяет декларативно собирать объект, указывая только нужные поля, и избегать длинных конструкторов с множеством `null`.
+- **Возможность расширения.** Класс можно дополнить дополнительной логикой, методами и, при необходимости, наследованием.
+- **Явные имена параметров.** В builder-е каждое поле вызывается по имени, что повышает читаемость тестов.
+
+✅ **Хороший пример:** [`GamblingBrandsParams.java`](src/test/java/com/example/testsupport/framework/api/client/params/GamblingBrandsParams.java)
+
+```java
+@Getter
+@Builder
+public class GamblingBrandsParams {
+    @RequestHeaderParam("Platform-Locale")
+    private String platformLocale;
+
+    @RequestQueryParam("categoryAlias")
+    private String categoryAlias;
+}
+
+// Использование в тесте
+var params = GamblingBrandsParams.builder()
+        .platformLocale("lv")
+        .categoryAlias("new")
+        .build();
+```
+
+### Итоговые рекомендации
+
+- Не смешивайте `record` и Lombok в одном и том же DTO.
+- Для объектов, которые описывают ответ сервера, отдавайте предпочтение `record`.
+- Для объектов, предназначенных для формирования запросов, используйте Lombok с паттерном Builder.
+- Держите Feign-интерфейсы минималистичными и без бизнес-логики.
+- Конфигурацию и перехватчики выносите в отдельные классы, чтобы тесты оставались чистыми.
+
