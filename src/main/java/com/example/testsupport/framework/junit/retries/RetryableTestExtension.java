@@ -14,10 +14,10 @@
  * limitations under the License.
  *
  */
-package com.example.testsupport.annotations;
+package com.example.testsupport.framework.junit.retries;
 
 
-import com.example.testsupport.annotations.RetryableTest;
+import com.example.testsupport.framework.junit.retries.RetryableTest;
 import io.github.artsok.internal.RepeatedIfException;
 import io.github.artsok.internal.RepeatedIfExceptionsDisplayNameFormatter;
 import io.github.artsok.internal.RepeatedIfExceptionsInvocationContext;

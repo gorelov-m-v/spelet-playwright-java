@@ -1,4 +1,4 @@
-package com.example.testsupport.annotations;
+package com.example.testsupport.framework.junit.retries;
 
 import com.example.testsupport.framework.device.DeviceProvider;
 import org.junit.jupiter.api.TestTemplate;
