@@ -1,5 +1,8 @@
 package com.example.testsupport.framework.api.attachment;
 
+import lombok.Getter;
+
+@Getter
 public enum AttachmentType {
     HTTP("HTTP"),
     KAFKA("Kafka"),
@@ -13,7 +16,4 @@ public enum AttachmentType {
         this.prefix = prefix;
     }
 
-    public String getPrefix() {
-        return prefix;
-    }
 }
