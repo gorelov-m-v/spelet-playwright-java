@@ -6,6 +6,8 @@ import feign.RequestInterceptor;
 import feign.RequestTemplate;
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Generic interceptor that maps annotated fields of parameter objects to
@@ -15,11 +17,19 @@ public class GenericParamsInterceptor implements RequestInterceptor {
 
     @Override
     public void apply(RequestTemplate template) {
-        Collection<?> paramsCollection = template.queries().remove("params");
-        if (paramsCollection == null || paramsCollection.isEmpty()) {
+        if (!template.queries().containsKey("params")) {
             return;
         }
+
+        Collection<?> paramsCollection = template.queries().get("params");
+        if (paramsCollection == null || paramsCollection.isEmpty()) {
+            clearParamsQuery(template);
+            return;
+        }
+
         Object params = paramsCollection.iterator().next();
+        clearParamsQuery(template);
+
         for (Field field : params.getClass().getDeclaredFields()) {
             field.setAccessible(true);
             try {
@@ -39,5 +49,11 @@ public class GenericParamsInterceptor implements RequestInterceptor {
                 // ignore inaccessible field
             }
         }
+    }
+
+    private void clearParamsQuery(RequestTemplate template) {
+        Map<String, Collection<String>> queries = new LinkedHashMap<>(template.queries());
+        queries.remove("params");
+        template.queries(queries);
     }
 }
