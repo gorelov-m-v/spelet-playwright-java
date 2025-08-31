@@ -1,90 +1,130 @@
-# Spelet Playwright Java
+# ✨ Фокус на Developer Experience (DX): Кастомные аннотации как DSL
 
-## 🚀 Playwright tracing with Allure integration
+Фреймворк спроектирован так, чтобы написание тестов было простым, читаемым и безопасным. Вместо того чтобы заставлять разработчиков использовать сложные комбинации стандартных аннотаций, был создан собственный DSL (Domain-Specific Language). Он скрывает внутреннюю сложность фреймворка и библиотек, предоставляя чистый и декларативный API.
 
-This project records [Playwright](https://playwright.dev/java/) traces for each test. When a test fails, the trace is saved to disk and automatically attached to the Allure report for interactive debugging.
+---
 
-### Running tests
-```bash
-./gradlew clean test -Dspring.profiles.active=spelet
+## 1. `@Suite` — Человекочитаемые отчеты
+
+**Проблема:**  
+Стандартная интеграция Allure с JUnit 5 использует полное имя тестового класса (например, `tests.casino.MultilingualNavigationTest`) в качестве названия для "сьюта" (Test Suite). Это делает отчеты технически перегруженными и затрудняет их понимание для нетехнических специалистов.
+
+**Решение:**  
+Создана кастомная аннотация [`@Suite`](src/main/java/com/example/testsupport/framework/allure/Suite.java), которая работает в паре с JUnit-расширением [`CustomSuiteExtension`](src/main/java/com/example/testsupport/framework/allure/CustomSuiteExtension.java).
+
+**Как это работает:**  
+Перед запуском каждого теста расширение `CustomSuiteExtension` проверяет наличие аннотации `@Suite` у тестового класса. Если она есть, расширение программно заменяет стандартный `suite` label в Allure на значение из аннотации, делая отчеты бизнес-ориентированными.
+
+**Как применять:**
+
+```java
+// Добавляем аннотацию над тестовым классом
+@Suite("Навигация и базовый флоу казино")
+class MultilingualNavigationTest extends BaseTest {
+    // ...
+}
 ```
 
-### Analysing a failed test
-1. Generate and open the Allure report as usual.
-2. Locate a test marked as **FAILED** and download the `Playwright Trace` attachment.
-3. View the trace locally with:
-   ```bash
-   npx playwright show-trace path/to/trace.zip
-   ```
-   This opens a timeline that lets you step through actions, inspect DOM snapshots and review network/console logs.
+*Результат в отчете: вместо `tests.casino.MultilingualNavigationTest` будет `Навигация и базовый флоу казино`.*
 
-### Trace artifacts
-Trace files are stored in `build/traces` using the test name for easy identification. Traces are only saved for failed tests to keep the directory clean.
+---
 
-The existing Allure integration remains the single source for failure analysis, now enriched with Playwright trace attachments.
+## 2. `@RetryableTest` & `@RetryableParameterizedTest` — Встроенная отказоустойчивость
 
-## 📊 How to read the enhanced Allure report
+**Проблема:**  
+E2E-тесты подвержены нестабильности (flakiness) из-за проблем с сетью или средой. Стандартные аннотации JUnit 5 не предоставляют механизма перезапуска, а использование сторонних библиотек требует сложной и многословной конфигурации.
 
-Our Allure report now serves as a comprehensive diagnostic dashboard for every test run.
+**Решение:**  
+Созданы две аннотации-агрегаторы, которые инкапсулируют всю логику перезапуска:
+- `@RetryableTest` для обычных тестов.
+- `@RetryableParameterizedTest` для параметризованных тестов.
 
-### 1. Performance analysis (all tests)
-Open any test case. In the **Test Body** section you'll find a tree of nested steps. Each step displays its execution time, helping to spot slow areas in the application or test code.
+**Как это работает:**  
+Эти аннотации регистрируют кастомные JUnit-расширения, которые перехватывают исключения при падении теста. Если лимит попыток, заданный в YAML-конфигурации, не исчерпан, расширение генерирует для JUnit новый контекст запуска, эффективно заставляя его повторить упавший тест.
 
-### 2. Failed test analysis (three levels)
-When a test fails, open it in Allure and inspect the following attachments:
+**Как применять:**
 
-1. **Visual context** – check the `Screenshot` and `Current URL` attachments to see what the user saw at the moment of failure.
-2. **Frontend context** – review the `Browser Console Logs` attachment. Look for `[ERROR]` messages that often explain the root cause (JavaScript exceptions, network issues, etc.).
-3. **Deep analysis** – download the `Playwright Trace` (`.zip`) and open it locally with:
-   ```bash
-   npx playwright show-trace <trace-file>
-   ```
-   This provides an interactive timeline for step-by-step debugging.
-
-Only failed tests include console logs and trace attachments to keep reports lightweight.
-
-## 🌐 Configuration
-Environment settings are stored in profile-specific YAML files under `src/test/resources`.
-Spring Boot loads `application-<profile>.yml` based on the active profile.
-Each file can also control JUnit concurrency via the `env.parallelism` block.
-
-Example `application-spelet.yml` structure:
-```yaml
-env:
-  parallelism:
-    strategy: fixed
-    threads: 4
-  api:
-    baseUrl: https://spelet.lv
-  browser:
-    name: chromium
-    headless: false
-    language: lv
-    defaultLanguage: lv
+```java
+// Пример для параметризованного теста
+// Одна аннотация вместо трех
+@RetryableParameterizedTest(name = "[Устройство: {0}, Язык: {1}]")
+@Flaky // Для красивого отчета в Allure
+void navigationTest(Device device, String languageCode) {
+    // ...
+}
 ```
 
-### Running with different profiles
-- Local run (auto-applies `local` mode profile):
-  ```bash
-  ./gradlew test -Dspring.profiles.active=spelet
-  ```
-- BrowserStack run (auto-applies `browserstack` mode profile):
-  ```bash
-  ./gradlew bsWin10Chrome -Dspring.profiles.active=spelet-demo
-  ```
-- Any other profile:
-  ```bash
-  ./gradlew test -Dspring.profiles.active=<profile>
-  ```
+*Это делает любой тест отказоустойчивым одной строкой, повышая стабильность CI/CD.*
 
-The `spring.profiles.active` property selects the configuration profile and is mandatory.
-Gradle tasks add the appropriate mode profile (`local` or `browserstack`) automatically.
-To create a new environment, add `application-myenv.yml` and run tests with
-`-Dspring.profiles.active=myenv`.
+---
 
-## 🧩 Custom suite names in Allure
+## 3. Аннотации для декларативного API-клиента
 
-Annotate test classes or methods with `@Suite("Human readable name")` to set a
-clear, business-oriented suite name in the Allure report. When both class and
-method are annotated, the method-level value takes precedence. Tests without the
-annotation continue to use the default class name.
+**Проблема:**  
+Вызов API-методов с множеством необязательных параметров через стандартный Feign приводит к коду с большим количеством `null`, что нечитаемо и хрупко.
+
+**Решение:**  
+Реализован паттерн Builder в связке с универсальным Feign-интерцептором и кастомными аннотациями для описания параметров запроса.
+
+Аннотации: `@RequestQueryParam`, `@RequestHeaderParam`  
+Перехватчик: `GenericParamsInterceptor`
+
+**Как это работает (пошагово):**
+
+### Шаг 1: Описываем параметры запроса с помощью DTO и аннотаций
+
+Для каждого API-эндпоинта создается POJO-класс, поля которого представляют все возможные параметры и помечаются нашими аннотациями.
+
+```java
+// Файл: .../params/GamblingBrandsParams.java
+@Getter
+@Builder
+public class GamblingBrandsParams {
+    // Это поле будет преобразовано в HTTP-заголовок "Platform-Locale"
+    @RequestHeaderParam("Platform-Locale")
+    private String platformLocale;
+    // Это поле станет query-параметром "?categoryAlias=..."
+    @RequestQueryParam("categoryAlias")
+    private String categoryAlias;
+}
+```
+
+### Шаг 2: Создаем лаконичный Feign-интерфейс
+
+Метод клиента теперь принимает всего один DTO-объект.
+
+```java
+// Файл: .../api/client/FrontApiClient.java
+@FeignClient(name = "...", configuration = GenericParamsInterceptor.class)
+public interface FrontApiClient {
+    @GetMapping("/gambling/brands")
+    GamblingBrandsResponse getGamblingBrands(@RequestParam("params") GamblingBrandsParams params);
+}
+```
+
+### Шаг 3: Используем Builder в тестах
+
+Вместо передачи `null` мы декларативно конструируем запрос.
+
+**Было (хрупко и нечитаемо):**
+
+```java
+// Легко ошибиться, передавая null для всех необязательных параметров.
+GamblingBrandsResponse response = frontApiClient.getGamblingBrands(
+    null, "lv", null, null, "new");
+```
+
+**Стало (декларативно и безопасно):**
+
+```java
+// Создаем запрос, указывая параметры по имени. Код самодокументируемый.
+var params = GamblingBrandsParams.builder()
+        .platformLocale("lv")
+        .categoryAlias("new")
+        .build();
+GamblingBrandsResponse response = frontApiClient.getGamblingBrands(params);
+```
+
+### Шаг 4: Магия "под капотом"
+
+`GenericParamsInterceptor` перехватывает запрос и, используя рефлексию, динамически добавляет в него только те параметры и заголовки, которые были заданы в билдере.
