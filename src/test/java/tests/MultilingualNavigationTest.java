@@ -15,11 +15,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.example.testsupport.framework.api.client.FrontApiClient;
 import com.example.testsupport.framework.api.client.params.GamblingBrandsParams;
 import com.example.testsupport.framework.api.dto.gambling.GamblingBrandsResponse;
+import com.example.testsupport.framework.allure.Suite;
 
 import static com.example.testsupport.framework.utils.AllureHelper.step;
 
 @Epic("Spelet.lv")
 @Feature("Навигация по шапке")
+@Suite("Навигация и базовый флоу казино")
 class MultilingualNavigationTest extends BaseTest {
     @Autowired private ObjectProvider<MainPage> mainPageProvider;
     @Autowired private FrontApiClient frontApiClient;
