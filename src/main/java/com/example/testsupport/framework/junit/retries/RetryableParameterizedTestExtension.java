@@ -1,6 +1,6 @@
-package com.example.testsupport.annotations;
+package com.example.testsupport.framework.junit.retries;
 
-import com.example.testsupport.annotations.RetryableParameterizedTest;
+import com.example.testsupport.framework.junit.retries.RetryableParameterizedTest;
 import io.github.artsok.internal.RepeatedIfException;
 import io.github.artsok.internal.ParameterizedRepeatedIfExceptionsTestNameFormatter;
 import io.github.artsok.internal.ParameterizedRepeatedMethodContext;

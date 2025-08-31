@@ -1,7 +1,7 @@
 package tests;
 
 import com.example.testsupport.framework.device.Device;
-import com.example.testsupport.annotations.RetryableParameterizedTest;
+import com.example.testsupport.framework.junit.retries.RetryableParameterizedTest;
 import com.example.testsupport.pages.MainPage;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
