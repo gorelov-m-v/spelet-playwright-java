@@ -34,21 +34,31 @@ class MultilingualNavigationTest extends BaseTest {
 **Проблема:**  
 E2E-тесты подвержены нестабильности (flakiness) из-за проблем с сетью или средой. Стандартные аннотации JUnit 5 не предоставляют механизма перезапуска, а использование сторонних библиотек требует сложной и многословной конфигурации.
 
-**Решение:**  
+**Решение:**
 Созданы две аннотации-агрегаторы, которые инкапсулируют всю логику перезапуска:
-- `@RetryableTest` для обычных тестов.
-- `@RetryableParameterizedTest` для параметризованных тестов.
+- [`@RetryableTest`](src/main/java/com/example/testsupport/framework/junit/retries/RetryableTest.java) — для обычных тестов (работает в паре с [`RetryableTestExtension`](src/main/java/com/example/testsupport/framework/junit/retries/RetryableTestExtension.java)).
+- [`@RetryableParameterizedTest`](src/main/java/com/example/testsupport/framework/junit/retries/RetryableParameterizedTest.java) — для параметризованных тестов (работает в паре с [`RetryableParameterizedTestExtension`](src/main/java/com/example/testsupport/framework/junit/retries/RetryableParameterizedTestExtension.java)).
 
 **Как это работает:**  
 Эти аннотации регистрируют кастомные JUnit-расширения, которые перехватывают исключения при падении теста. Если лимит попыток, заданный в YAML-конфигурации, не исчерпан, расширение генерирует для JUnit новый контекст запуска, эффективно заставляя его повторить упавший тест.
 
 **Как применять:**
 
+**До (многословно):**
+
 ```java
-// Пример для параметризованного теста
-// Одна аннотация вместо трех
+@TestTemplate
+@ArgumentsSource(DeviceProvider.class)
+@ExtendWith(RetryableParameterizedTestExtension.class)
+void navigationTest(Device device, String languageCode) {
+    // ...
+}
+```
+
+**После (одна аннотация):**
+
+```java
 @RetryableParameterizedTest(name = "[Устройство: {0}, Язык: {1}]")
-@Flaky // Для красивого отчета в Allure
 void navigationTest(Device device, String languageCode) {
     // ...
 }
