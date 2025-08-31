@@ -25,8 +25,6 @@ class MultilingualNavigationTest extends BaseTest {
 }
 ```
 
-Класс [`BaseTest`](src/test/java/tests/BaseTest.java) содержит общую инфраструктуру для тестов.
-
 *Результат в отчете: вместо `tests.casino.MultilingualNavigationTest` будет `Навигация и базовый флоу казино`.*
 
 ---
@@ -56,8 +54,6 @@ void navigationTest(Device device, String languageCode) {
     // ...
 }
 ```
-
-Здесь используется [`DeviceProvider`](src/main/java/com/example/testsupport/framework/device/DeviceProvider.java) для генерации объектов [`Device`](src/main/java/com/example/testsupport/framework/device/Device.java).
 
 **После (одна аннотация):**
 
@@ -90,7 +86,6 @@ void navigationTest(Device device, String languageCode) {
 Для каждого API-эндпоинта создается POJO-класс, поля которого представляют все возможные параметры и помечаются нашими аннотациями.
 
 ```java
-// Файл: .../params/GamblingBrandsParams.java
 @Getter
 @Builder
 public class GamblingBrandsParams {
@@ -103,15 +98,13 @@ public class GamblingBrandsParams {
 }
 ```
 
-Класс [`GamblingBrandsParams`](src/test/java/com/example/testsupport/framework/api/client/params/GamblingBrandsParams.java) описывает все возможные параметры запроса.
-
 ### Шаг 2: Создаем лаконичный Feign-интерфейс
 
 Метод клиента теперь принимает всего один DTO-объект.
 
 ```java
 // Файл: .../api/client/FrontApiClient.java
-@FeignClient(name = "...", configuration = GenericParamsInterceptor.class)
+@FeignClient(name = "frontApiClient", configuration = GenericParamsInterceptor.class)
 public interface FrontApiClient {
     @GetMapping("/gambling/brands")
     GamblingBrandsResponse getGamblingBrands(@RequestParam("params") GamblingBrandsParams params);
