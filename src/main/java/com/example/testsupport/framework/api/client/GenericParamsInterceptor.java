@@ -15,12 +15,10 @@ public class GenericParamsInterceptor implements RequestInterceptor {
 
     @Override
     public void apply(RequestTemplate template) {
-        Collection<?> paramsCollection = template.queries().get("params");
+        Collection<?> paramsCollection = template.queries().remove("params");
         if (paramsCollection == null || paramsCollection.isEmpty()) {
             return;
         }
-        // remove technical "params" query parameter
-        template.query("params", (String) null);
         Object params = paramsCollection.iterator().next();
         for (Field field : params.getClass().getDeclaredFields()) {
             field.setAccessible(true);
