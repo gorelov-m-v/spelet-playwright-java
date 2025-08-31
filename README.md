@@ -6,7 +6,7 @@ This project records [Playwright](https://playwright.dev/java/) traces for each 
 
 ### Running tests
 ```bash
-./gradlew clean test
+./gradlew clean test -Dspring.profiles.active=spelet
 ```
 
 ### Analysing a failed test
@@ -46,10 +46,14 @@ Only failed tests include console logs and trace attachments to keep reports lig
 ## 🌐 Configuration
 Environment settings are stored in profile-specific YAML files under `src/test/resources`.
 Spring Boot loads `application-<profile>.yml` based on the active profile.
+Each file can also control JUnit concurrency via the `env.parallelism` block.
 
-Example `application-local.yml` structure:
+Example `application-spelet.yml` structure:
 ```yaml
 env:
+  parallelism:
+    strategy: fixed
+    threads: 4
   api:
     baseUrl: https://spelet.lv
   browser:
@@ -60,19 +64,21 @@ env:
 ```
 
 ### Running with different profiles
-- Default (local) profile:
+- Local run (auto-applies `local` mode profile):
   ```bash
-  ./gradlew test
+  ./gradlew test -Dspring.profiles.active=spelet
   ```
-- BrowserStack profile:
+- BrowserStack run (auto-applies `browserstack` mode profile):
   ```bash
-  ./gradlew bsWin10Chrome
+  ./gradlew bsWin10Chrome -Dspring.profiles.active=spelet-demo
   ```
 - Any other profile:
   ```bash
-  ./gradlew test -Dspring.profiles.active=browserstack
+  ./gradlew test -Dspring.profiles.active=<profile>
   ```
 
+The `spring.profiles.active` property selects the configuration profile and is mandatory.
+Gradle tasks add the appropriate mode profile (`local` or `browserstack`) automatically.
 To create a new environment, add `application-myenv.yml` and run tests with
 `-Dspring.profiles.active=myenv`.
 
