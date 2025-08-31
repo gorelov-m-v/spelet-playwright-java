@@ -174,6 +174,6 @@ browserStackConfigs.each { taskName, props ->
 
 // Ensure UTF-8 encoding for all test JVMs
 tasks.withType(Test).configureEach {
-    jvmArgs '-Dfile.encoding=UTF-8'
+    systemProperty 'file.encoding', 'UTF-8'
 }
 
