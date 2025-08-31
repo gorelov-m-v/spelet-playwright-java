@@ -19,6 +19,7 @@ public class EnvironmentConfig {
     private ApiConfig api = new ApiConfig();
     private BrowserConfig browser = new BrowserConfig();
     private BrowserStackConfig browserstack = new BrowserStackConfig();
+    private Retries retries = new Retries();
     private TestDevices testDevices = new TestDevices();
 
     @Data
@@ -45,6 +46,12 @@ public class EnvironmentConfig {
         private String project = "Spelet LV";
         private String build = "spelet-lv-" + ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmm"));
         private String name = "Spelet test";
+    }
+
+    @Data
+    public static class Retries {
+        private boolean enabled = true;
+        private int count = 1;
     }
 
     @Data

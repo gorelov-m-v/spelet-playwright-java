@@ -13,6 +13,9 @@ env:
       - lv
       - ru
       - en
+  retries:
+    enabled: true
+    count: 2
   browserstack:
     os: Windows
     osVersion: "10"
