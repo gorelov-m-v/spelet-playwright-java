@@ -55,7 +55,5 @@ public class GenericParamsInterceptor implements RequestInterceptor {
         Map<String, Collection<String>> queries = new LinkedHashMap<>(template.queries());
         queries.remove("params");
         template.queries(queries);
-        // Remove any body accidentally created for GET requests
-        template.body((String) null);
     }
 }
