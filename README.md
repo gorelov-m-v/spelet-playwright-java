@@ -111,8 +111,6 @@ public interface FrontApiClient {
 }
 ```
 
-Метод возвращает [`GamblingBrandsResponse`](src/test/java/com/example/testsupport/framework/api/dto/gambling/GamblingBrandsResponse.java).
-
 ### Шаг 3: Используем Builder в тестах
 
 Вместо передачи `null` мы декларативно конструируем запрос.
