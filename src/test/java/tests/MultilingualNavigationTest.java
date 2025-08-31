@@ -3,6 +3,8 @@ package tests;
 import com.example.testsupport.framework.device.Device;
 import com.example.testsupport.annotations.RetryableParameterizedTest;
 import com.example.testsupport.pages.MainPage;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.beans.factory.ObjectProvider;
 import com.example.testsupport.pages.CasinoPage;
 import com.example.testsupport.pages.components.FilterDrawerComponent;
@@ -17,12 +19,12 @@ import static com.example.testsupport.framework.utils.AllureHelper.step;
 @Epic("Spelet.lv")
 @Feature("Навигация по шапке")
 @Suite("Навигация и базовый флоу казино")
+@Execution(ExecutionMode.CONCURRENT)
 class MultilingualNavigationTest extends BaseTest {
     @Autowired private ObjectProvider<MainPage> mainPageProvider;
 
     @Story("Переход на страницу казино для всех поддерживаемых языков и устройств")
     @DisplayName("Навигация на страницу казино")
-    @Flaky
     @RetryableParameterizedTest(name = "[Устройство: {0}, Язык: {1}]")
     void navigateToCasinoPageOnAllLanguagesAndDevices(Device device, String languageCode) {
 

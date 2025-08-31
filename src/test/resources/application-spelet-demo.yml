@@ -2,6 +2,9 @@ env:
   parallelism:
     strategy: fixed
     threads: 4
+  retries:
+    enabled: true
+    count: 2
   api:
     baseUrl: https://demo.spelet.lv
   browser:
@@ -13,9 +16,6 @@ env:
       - lv
       - ru
       - en
-  retries:
-    enabled: true
-    count: 2
   testDevices:
     platforms:
       - name: "Desktop FullHD"
