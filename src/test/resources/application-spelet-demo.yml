@@ -1,0 +1,17 @@
+env:
+  api:
+    baseUrl: https://demo.spelet.lv
+  browser:
+    name: chromium
+    headless: true
+    language: lv
+    defaultLanguage: lv
+    languages:
+      - lv
+      - ru
+      - en
+  testDevices:
+    platforms:
+      - name: "Desktop FullHD"
+        width: 1920
+        height: 1080

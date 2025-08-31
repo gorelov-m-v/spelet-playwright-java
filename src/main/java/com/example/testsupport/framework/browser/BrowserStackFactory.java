@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
  * Factory that creates browsers connected to BrowserStack.
  */
 @Component
-@Profile("spelet-bs")
+@Profile("browserstack")
 public class BrowserStackFactory implements BrowserFactory {
 
     private final BrowserStackClient bsClient;

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
  * Local strategy: one browser per class, new context for each test.
  */
 @Component
-@Profile("spelet")
+@Profile("local")
 public class LocalPlaywrightLifecycle implements PlaywrightLifecycleStrategy {
 
     private final PlaywrightManager pm;

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
  * Factory for launching local Playwright browsers.
  */
 @Component
-@Profile("spelet")
+@Profile("local")
 public class LocalBrowserFactory implements BrowserFactory {
 
     private final EnvironmentConfig config;

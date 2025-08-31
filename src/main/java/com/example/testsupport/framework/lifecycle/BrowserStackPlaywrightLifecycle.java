@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
  * Strategy for BrowserStack: new browser and context for each test.
  */
 @Component
-@Profile("spelet-bs")
+@Profile("browserstack")
 public class BrowserStackPlaywrightLifecycle implements PlaywrightLifecycleStrategy {
 
     private final PlaywrightManager pm;

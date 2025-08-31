@@ -89,6 +89,10 @@ tasks.withType(Test) {
     }
 }
 
+tasks.named('test') {
+    systemProperty 'spring.profiles.include', 'local'
+}
+
 gradle.taskGraph.whenReady { graph ->
     if (graph.allTasks.any { it instanceof Test }) {
         def activeProfile = System.getProperty('spring.profiles.active')
@@ -211,7 +215,7 @@ def browserStackConfigs = [
 
 browserStackConfigs.each { taskName, props ->
     tasks.register(taskName, Test) {
-        systemProperty 'spring.profiles.active', 'spelet-bs'
+        systemProperty 'spring.profiles.include', 'browserstack'
         props.each { k, v -> systemProperty k, v }
     }
 }

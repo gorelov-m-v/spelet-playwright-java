@@ -60,21 +60,22 @@ env:
 ```
 
 ### Running with different profiles
-- Local profile:
+- Local run (auto-applies `local` mode profile):
   ```bash
   ./gradlew test -Dspring.profiles.active=spelet
   ```
-- BrowserStack profile:
+- BrowserStack run (auto-applies `browserstack` mode profile):
   ```bash
-  ./gradlew bsWin10Chrome
+  ./gradlew bsWin10Chrome -Dspring.profiles.active=spelet-demo
   ```
 - Any other profile:
   ```bash
   ./gradlew test -Dspring.profiles.active=<profile>
   ```
 
-The `spring.profiles.active` property is now mandatory. To create a new environment,
-add `application-myenv.yml` and run tests with
+The `spring.profiles.active` property selects the configuration profile and is mandatory.
+Gradle tasks add the appropriate mode profile (`local` or `browserstack`) automatically.
+To create a new environment, add `application-myenv.yml` and run tests with
 `-Dspring.profiles.active=myenv`.
 
 ## 🧩 Custom suite names in Allure
