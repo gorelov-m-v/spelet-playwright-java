@@ -72,6 +72,10 @@ test {
     }
 }
 
+tasks.withType(Test).configureEach {
+    jvmArgs '-Dfile.encoding=UTF-8', '--add-opens=java.base/java.lang=ALL-UNNAMED'
+}
+
 tasks.register('playwrightInstall', JavaExec) {
     group = 'verification'
     description = 'Install Playwright browsers'
