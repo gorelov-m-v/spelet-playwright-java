@@ -87,18 +87,11 @@ tasks.withType(Test) {
         exceptionFormat "full"
         showStandardStreams = true
     }
-}
 
-tasks.named('test') {
-    systemProperty 'spring.profiles.include', 'local'
-}
-
-gradle.taskGraph.whenReady { graph ->
-    if (graph.allTasks.any { it instanceof Test }) {
+    doFirst {
         def activeProfile = System.getProperty('spring.profiles.active')
         if (!activeProfile) {
-            def testTask = graph.allTasks.find { it instanceof Test }
-            activeProfile = testTask?.systemProperties?.get('spring.profiles.active')
+            activeProfile = systemProperties['spring.profiles.active']
         }
 
         if (activeProfile == null || activeProfile.trim().isEmpty()) {
@@ -120,15 +113,17 @@ gradle.taskGraph.whenReady { graph ->
             def threads = parallelismConfig.threads.toString()
             def strategy = parallelismConfig.strategy
 
-            tasks.withType(Test).configureEach {
-                systemProperty 'junit.jupiter.execution.parallel.enabled', 'true'
-                systemProperty 'junit.jupiter.execution.parallel.config.strategy', strategy
-                if (strategy == 'fixed') {
-                    systemProperty 'junit.jupiter.execution.parallel.config.fixed.parallelism', threads
-                }
+            systemProperty 'junit.jupiter.execution.parallel.enabled', 'true'
+            systemProperty 'junit.jupiter.execution.parallel.config.strategy', strategy
+            if (strategy == 'fixed') {
+                systemProperty 'junit.jupiter.execution.parallel.config.fixed.parallelism', threads
             }
         }
     }
+}
+
+tasks.named('test') {
+    systemProperty 'spring.profiles.include', 'local'
 }
 allure {
     version = '2.29.0'
