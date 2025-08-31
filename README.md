@@ -75,3 +75,10 @@ env:
 
 To create a new environment, add `application-myenv.yml` and run tests with
 `-Dspring.profiles.active=myenv`.
+
+## 🧩 Custom suite names in Allure
+
+Annotate test classes or methods with `@Suite("Human readable name")` to set a
+clear, business-oriented suite name in the Allure report. When both class and
+method are annotated, the method-level value takes precedence. Tests without the
+annotation continue to use the default class name.
