@@ -6,7 +6,7 @@ This project records [Playwright](https://playwright.dev/java/) traces for each 
 
 ### Running tests
 ```bash
-./gradlew clean test
+./gradlew clean test -Dspring.profiles.active=spelet
 ```
 
 ### Analysing a failed test
@@ -47,7 +47,7 @@ Only failed tests include console logs and trace attachments to keep reports lig
 Environment settings are stored in profile-specific YAML files under `src/test/resources`.
 Spring Boot loads `application-<profile>.yml` based on the active profile.
 
-Example `application-local.yml` structure:
+Example `application-spelet.yml` structure:
 ```yaml
 env:
   api:
@@ -60,9 +60,9 @@ env:
 ```
 
 ### Running with different profiles
-- Default (local) profile:
+- Local profile:
   ```bash
-  ./gradlew test
+  ./gradlew test -Dspring.profiles.active=spelet
   ```
 - BrowserStack profile:
   ```bash
@@ -70,10 +70,11 @@ env:
   ```
 - Any other profile:
   ```bash
-  ./gradlew test -Dspring.profiles.active=browserstack
+  ./gradlew test -Dspring.profiles.active=<profile>
   ```
 
-To create a new environment, add `application-myenv.yml` and run tests with
+The `spring.profiles.active` property is now mandatory. To create a new environment,
+add `application-myenv.yml` and run tests with
 `-Dspring.profiles.active=myenv`.
 
 ## 🧩 Custom suite names in Allure

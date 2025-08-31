@@ -1,9 +1,16 @@
+buildscript {
+    repositories { mavenCentral() }
+    dependencies { classpath 'org.yaml:snakeyaml:2.2' }
+}
+
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.4'
     id 'io.spring.dependency-management' version '1.1.6'
     id 'io.qameta.allure' version '2.12.0'
 }
+
+import org.yaml.snakeyaml.Yaml
 
 group = 'com.example'
 version = '1.0.0'
@@ -61,21 +68,6 @@ dependencies {
     testRuntimeOnly 'org.aspectj:aspectjweaver:1.9.22.1'
 }
 
-test {
-    useJUnitPlatform()
-    systemProperties = System.getProperties() as Map<String, ?>
-    systemProperty 'spring.profiles.active', System.getProperty('spring.profiles.active', 'local')
-    testLogging {
-        events "passed", "skipped", "failed"
-        exceptionFormat "full"
-        showStandardStreams = true
-    }
-}
-
-tasks.withType(Test).configureEach {
-    jvmArgs '-Dfile.encoding=UTF-8', '--add-opens=java.base/java.lang=ALL-UNNAMED'
-}
-
 tasks.register('playwrightInstall', JavaExec) {
     group = 'verification'
     description = 'Install Playwright browsers'
@@ -83,7 +75,57 @@ tasks.register('playwrightInstall', JavaExec) {
     classpath = sourceSets.test.runtimeClasspath
     args 'install'
 }
-test.dependsOn(playwrightInstall)
+
+tasks.withType(Test) {
+    useJUnitPlatform()
+    systemProperties = System.getProperties() as Map<String, ?>
+    jvmArgs '-Dfile.encoding=UTF-8', '--add-opens=java.base/java.lang=ALL-UNNAMED'
+    dependsOn(playwrightInstall)
+
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat "full"
+        showStandardStreams = true
+    }
+}
+
+gradle.taskGraph.whenReady { graph ->
+    if (graph.allTasks.any { it instanceof Test }) {
+        def activeProfile = System.getProperty('spring.profiles.active')
+        if (!activeProfile) {
+            def testTask = graph.allTasks.find { it instanceof Test }
+            activeProfile = testTask?.systemProperties?.get('spring.profiles.active')
+        }
+
+        if (activeProfile == null || activeProfile.trim().isEmpty()) {
+            throw new GradleException("ERROR: Spring profile is not set. Please run tests with -Dspring.profiles.active=<profile-name>")
+        }
+
+        def configFileName = "src/test/resources/application-${activeProfile}.yml"
+        def configFile = file(configFileName)
+
+        if (!configFile.exists()) {
+            throw new GradleException("ERROR: Configuration file not found for profile '${activeProfile}'. Expected path: ${configFileName}")
+        }
+
+        def yaml = new Yaml()
+        def config = yaml.load(configFile.newDataInputStream())
+
+        def parallelismConfig = config?.env?.parallelism
+        if (parallelismConfig) {
+            def threads = parallelismConfig.threads.toString()
+            def strategy = parallelismConfig.strategy
+
+            tasks.withType(Test).configureEach {
+                systemProperty 'junit.jupiter.execution.parallel.enabled', 'true'
+                systemProperty 'junit.jupiter.execution.parallel.config.strategy', strategy
+                if (strategy == 'fixed') {
+                    systemProperty 'junit.jupiter.execution.parallel.config.fixed.parallelism', threads
+                }
+            }
+        }
+    }
+}
 allure {
     version = '2.29.0'
     adapter {
@@ -169,11 +211,7 @@ def browserStackConfigs = [
 
 browserStackConfigs.each { taskName, props ->
     tasks.register(taskName, Test) {
-        useJUnitPlatform()
-        systemProperties = System.getProperties() as Map<String, ?>
-        systemProperty 'spring.profiles.active', 'browserstack'
+        systemProperty 'spring.profiles.active', 'spelet-bs'
         props.each { k, v -> systemProperty k, v }
-        testLogging { events "passed", "skipped", "failed" }
-        dependsOn(playwrightInstall)
     }
 }
