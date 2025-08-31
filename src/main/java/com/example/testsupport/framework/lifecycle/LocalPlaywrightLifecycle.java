@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 /**
- * Local strategy: one browser per class, new context for each test.
+ * Local strategy: new browser and context for each test.
  */
 @Component
 @Profile("local")
@@ -18,23 +18,21 @@ public class LocalPlaywrightLifecycle implements PlaywrightLifecycleStrategy {
     }
 
     @Override
-    public void beforeAll() {
-        pm.initializeBrowser();
-    }
+    public void beforeAll() { }
 
     @Override
     public void beforeEach() {
+        pm.initializeBrowser();
         pm.createContextAndPage();
     }
 
     @Override
     public void afterEach() {
         pm.closeContextAndPage();
+        pm.closeBrowser();
     }
 
     @Override
-    public void afterAll() {
-        pm.closeBrowser();
-    }
+    public void afterAll() { }
 }
 
