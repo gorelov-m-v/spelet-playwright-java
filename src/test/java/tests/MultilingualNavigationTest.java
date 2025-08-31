@@ -12,6 +12,9 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import com.example.testsupport.framework.api.client.FrontApiClient;
+import com.example.testsupport.framework.api.client.params.GamblingBrandsParams;
+import com.example.testsupport.framework.api.dto.gambling.GamblingBrandsResponse;
 
 import static com.example.testsupport.framework.utils.AllureHelper.step;
 
@@ -19,6 +22,7 @@ import static com.example.testsupport.framework.utils.AllureHelper.step;
 @Feature("Навигация по шапке")
 class MultilingualNavigationTest extends BaseTest {
     @Autowired private ObjectProvider<MainPage> mainPageProvider;
+    @Autowired private FrontApiClient frontApiClient;
 
     @Story("Переход на страницу казино для всех поддерживаемых языков и устройств")
     @DisplayName("Навигация на страницу казино")
@@ -32,6 +36,16 @@ class MultilingualNavigationTest extends BaseTest {
             AuthModalComponent authModal;
         }
         final TestContext ctx = new TestContext();
+
+        step("Получаем список брендов через API", () -> {
+            GamblingBrandsResponse response = frontApiClient.getGamblingBrands(
+                    GamblingBrandsParams.builder().build()
+            );
+            Assertions.assertFalse(response.brands().isEmpty(), "Список брендов пуст");
+            Assertions.assertTrue(
+                    response.brands().stream().anyMatch(b -> "Play'n Go".equals(b.name())),
+                    "Бренд 'Play'n Go' отсутствует");
+        });
 
         step(String.format("Подготовка тестового окружения [Устройство: %s, Язык: %s]", device, languageCode), () -> {
             setupTestEnvironment(device, languageCode);
