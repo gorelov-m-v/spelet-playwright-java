@@ -1,10 +1,16 @@
 package com.example.testsupport.framework.retry;
 
+import io.qameta.allure.Allure;
+import io.qameta.allure.model.Status;
+import io.qameta.allure.model.StatusDetails;
+import io.qameta.allure.util.ResultsUtils;
 import org.junit.jupiter.api.extension.*;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -156,6 +162,13 @@ public class RetryableParameterizedTestExtension implements TestTemplateInvocati
         if (!retryableException || history.size() + 1 >= totalRuns) {
             throw throwable;
         }
+        Allure.getLifecycle().updateTestCase(result -> {
+            result.setStatus(ResultsUtils.getStatus(throwable).orElse(Status.BROKEN));
+            result.setStatusDetails(new StatusDetails()
+                    .setMessage(throwable.getMessage())
+                    .setTrace(getStackTrace(throwable))
+                    .setFlaky(true));
+        });
         getRunStore(context).put("lastException", throwable);
     }
 
@@ -166,6 +179,12 @@ public class RetryableParameterizedTestExtension implements TestTemplateInvocati
         CopyOnWriteArrayList<Throwable> history = histories.get(scenario);
         Throwable last = getRunStore(context).remove("lastException", Throwable.class);
         history.add(last);
+    }
+
+    private String getStackTrace(Throwable throwable) {
+        StringWriter sw = new StringWriter();
+        throwable.printStackTrace(new PrintWriter(sw));
+        return sw.toString();
     }
 
     private boolean isExceptionRetryable(Throwable throwable, Class<? extends Throwable>[] retryable) {
