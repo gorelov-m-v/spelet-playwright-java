@@ -53,7 +53,10 @@ public class RetryableParameterizedTestExtension implements TestTemplateInvocati
     }
 
     private ExtensionContext.Store getRunStore(ExtensionContext context) {
-        return context.getStore(ExtensionContext.Namespace.create(RUN, context.getRequiredTestMethod(), context.getDisplayName()));
+        ExtensionContext methodContext = context.getParent()
+                .filter(c -> c.getTestMethod().isPresent())
+                .orElse(context);
+        return methodContext.getStore(ExtensionContext.Namespace.create(RUN, methodContext.getDisplayName()));
     }
 
     private List<Object[]> resolveArguments(ExtensionContext context) {

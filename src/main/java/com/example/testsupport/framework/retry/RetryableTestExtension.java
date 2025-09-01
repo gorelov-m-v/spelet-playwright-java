@@ -44,7 +44,10 @@ public class RetryableTestExtension implements TestTemplateInvocationContextProv
     }
 
     private ExtensionContext.Store getRunStore(ExtensionContext context) {
-        return context.getStore(ExtensionContext.Namespace.create(RUN, context.getDisplayName()));
+        ExtensionContext methodContext = context.getParent()
+                .filter(c -> c.getTestMethod().isPresent())
+                .orElse(context);
+        return methodContext.getStore(ExtensionContext.Namespace.create(RUN, methodContext.getDisplayName()));
     }
 
     private class TestTemplateIterator implements java.util.Iterator<TestTemplateInvocationContext> {
