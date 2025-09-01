@@ -29,42 +29,18 @@ class MultilingualNavigationTest extends BaseTest {
 
 ---
 
-## 2. `@RetryableTest` & `@RetryableParameterizedTest` — Встроенная отказоустойчивость
+## 2. Retries — Gradle Test Retry
 
-**Проблема:**  
-E2E-тесты подвержены нестабильности (flakiness) из-за проблем с сетью или средой. Стандартные аннотации JUnit 5 не предоставляют механизма перезапуска, а использование сторонних библиотек требует сложной и многословной конфигурации.
+Перезапуски нестабильных тестов выполняет [Gradle Test Retry Plugin](https://github.com/gradle/test-retry-gradle-plugin).
+Количество повторов, лимит фейлов и поведение при "позеленевших" тестах задаются в `gradle.properties`:
 
-**Решение:**
-Созданы две аннотации-агрегаторы, которые инкапсулируют всю логику перезапуска:
-- [`@RetryableTest`](src/main/java/com/example/testsupport/framework/junit/retries/RetryableTest.java) — для обычных тестов (работает в паре с [`RetryableTestExtension`](src/main/java/com/example/testsupport/framework/junit/retries/RetryableTestExtension.java)).
-- [`@RetryableParameterizedTest`](src/main/java/com/example/testsupport/framework/junit/retries/RetryableParameterizedTest.java) — для параметризованных тестов (работает в паре с [`RetryableParameterizedTestExtension`](src/main/java/com/example/testsupport/framework/junit/retries/RetryableParameterizedTestExtension.java)).
-
-**Как это работает:**  
-Эти аннотации регистрируют кастомные JUnit-расширения, которые перехватывают исключения при падении теста. Если лимит попыток, заданный в YAML-конфигурации, не исчерпан, расширение генерирует для JUnit новый контекст запуска, эффективно заставляя его повторить упавший тест.
-
-**Как применять:**
-
-**До (многословно):**
-
-```java
-@TestTemplate
-@ArgumentsSource(DeviceProvider.class)
-@ExtendWith(RetryableParameterizedTestExtension.class)
-void navigationTest(Device device, String languageCode) {
-    // ...
-}
+```
+retry.maxRetries=2
+retry.maxFailures=0
+retry.failOnPassedAfterRetry=false
 ```
 
-**После (одна аннотация):**
-
-```java
-@RetryableParameterizedTest(name = "[Устройство: {0}, Язык: {1}]")
-void navigationTest(Device device, String languageCode) {
-    // ...
-}
-```
-
-*Это делает любой тест отказоустойчивым одной строкой, повышая стабильность CI/CD.*
+Плагин автоматически повторяет упавшие тесты без дополнительных аннотаций. Артефакты каждой попытки получают суффикс `_attempt-N-of-M`, что упрощает диагностику.
 
 ---
 

@@ -5,6 +5,7 @@ import com.example.testsupport.framework.browser.PlaywrightManager;
 import com.example.testsupport.framework.localization.LocalizationService;
 import com.example.testsupport.framework.lifecycle.PlaywrightLifecycleStrategy;
 import com.microsoft.playwright.Page;
+import com.microsoft.playwright.PlaywrightException;
 import io.qameta.allure.Allure;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -55,29 +56,39 @@ public class PlaywrightExtension implements BeforeAllCallback, BeforeEachCallbac
         // Check for test failure BEFORE closing the context
         if (context.getExecutionException().isPresent()) {
             log.info("Test {} failed. Capturing failure artifacts...", context.getDisplayName());
-            Page page = manager.getPage();
             try {
-                // 1. Attach URL and Screenshot
-                Allure.addAttachment("Current URL", "text/plain", page.url());
-                byte[] screenshot = page.screenshot(new Page.ScreenshotOptions().setFullPage(true));
-                Allure.getLifecycle().addAttachment("Screenshot", "image/png", "png", screenshot);
-
-                // 2. Attach browser console logs
-                String consoleLog = String.join(System.lineSeparator(), manager.getConsoleMessages());
-                if (!consoleLog.isEmpty()) {
-                    Allure.addAttachment("Browser Console Logs", "text/plain", consoleLog);
-                }
-
-                // 3. Save and attach Playwright Trace
-                Path tracePath = manager.saveTrace(context.getDisplayName());
-                if (tracePath != null && Files.exists(tracePath)) {
-                    try (InputStream traceStream = Files.newInputStream(tracePath)) {
-                        Allure.addAttachment("Playwright Trace", "application/zip", traceStream, "zip");
-                    }
+                Page page = manager.getPage();
+                if (page == null) {
+                    log.warn("No page available to capture failure artifacts.");
                 } else {
-                    log.warn("Trace file was not created for failed test: {}", context.getDisplayName());
-                }
+                    String attempt = System.getProperty("org.gradle.test-retry.currentAttempt", "1");
+                    String max = System.getProperty("org.gradle.test-retry.maxRetries", "0");
+                    String suffix = String.format("_attempt-%s-of-%s", attempt,
+                            max.equals("0") ? "0" : String.valueOf(Integer.parseInt(max) + 1));
 
+                    // 1. Attach URL and Screenshot
+                    Allure.addAttachment("Current URL" + suffix, "text/plain", page.url());
+                    byte[] screenshot = page.screenshot(new Page.ScreenshotOptions().setFullPage(true));
+                    Allure.getLifecycle().addAttachment("Screenshot" + suffix, "image/png", "png", screenshot);
+
+                    // 2. Attach browser console logs
+                    String consoleLog = String.join(System.lineSeparator(), manager.getConsoleMessages());
+                    if (!consoleLog.isEmpty()) {
+                        Allure.addAttachment("Browser Console Logs" + suffix, "text/plain", consoleLog);
+                    }
+
+                    // 3. Save and attach Playwright Trace
+                    Path tracePath = manager.saveTrace(context.getDisplayName(), suffix);
+                    if (tracePath != null && Files.exists(tracePath)) {
+                        try (InputStream traceStream = Files.newInputStream(tracePath)) {
+                            Allure.addAttachment("Playwright Trace" + suffix, "application/zip", traceStream, "zip");
+                        }
+                    } else {
+                        log.warn("Trace file was not created for failed test: {}", context.getDisplayName());
+                    }
+                }
+            } catch (PlaywrightException e) {
+                log.warn("Failed to capture failure artifacts; browser may already be closed.", e);
             } catch (Throwable e) {
                 log.error("Critical error while creating Allure attachments for failed test.", e);
             }

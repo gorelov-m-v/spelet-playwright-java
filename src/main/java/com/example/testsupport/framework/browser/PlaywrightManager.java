@@ -95,12 +95,12 @@ public class PlaywrightManager {
      * @param testName The display name of the test, used for the filename.
      * @return The path to the saved trace file, or {@code null} if saving failed.
      */
-    public Path saveTrace(String testName) {
+    public Path saveTrace(String testName, String attemptSuffix) {
         String sanitizedTestName = testName
                 .replaceAll("[^a-zA-Z0-9.-]", "_")
                 .replaceAll("\\s+", "_");
 
-        String traceName = "trace-" + sanitizedTestName + ".zip";
+        String traceName = "trace-" + sanitizedTestName + attemptSuffix + ".zip";
         Path tracePath = Paths.get("build", "traces", traceName);
 
         if (context.get() != null) {

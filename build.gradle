@@ -8,6 +8,7 @@ plugins {
     id 'org.springframework.boot' version '3.5.4'
     id 'io.spring.dependency-management' version '1.1.6'
     id 'io.qameta.allure' version '2.12.0'
+    id "org.gradle.test-retry" version "1.5.8"
 }
 
 import org.yaml.snakeyaml.Yaml
@@ -26,6 +27,12 @@ dependencyManagement {
         mavenBom 'org.springframework.cloud:spring-cloud-dependencies:2023.0.3'
     }
 }
+
+def prop = { k, defVal -> (findProperty(k) ?: defVal).toString() }
+
+def retryMaxRetries  = prop("retry.maxRetries", "2").toInteger()
+def retryMaxFailures = prop("retry.maxFailures", "0").toInteger()
+def retryFailOnPass  = prop("retry.failOnPassedAfterRetry", "false").toBoolean()
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
@@ -65,7 +72,6 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter'
 
     testImplementation 'io.qameta.allure:allure-junit5:2.29.0'
-    implementation 'io.github.artsok:rerunner-jupiter:2.1.6'
     testRuntimeOnly 'org.aspectj:aspectjweaver:1.9.22.1'
 }
 
@@ -77,11 +83,17 @@ tasks.register('playwrightInstall', JavaExec) {
     args 'install'
 }
 
-tasks.withType(Test) {
+tasks.withType(Test).configureEach {
     useJUnitPlatform()
     systemProperties = System.getProperties() as Map<String, ?>
     jvmArgs '-Dfile.encoding=UTF-8', '--add-opens=java.base/java.lang=ALL-UNNAMED'
     dependsOn(playwrightInstall)
+
+    retry {
+        maxRetries = retryMaxRetries
+        maxFailures = retryMaxFailures
+        failOnPassedAfterRetry = retryFailOnPass
+    }
 
     testLogging {
         events "passed", "skipped", "failed"
@@ -90,6 +102,10 @@ tasks.withType(Test) {
     }
 
     doFirst {
+        logger.lifecycle("Gradle Test Retry → maxRetries=${retryMaxRetries}, " +
+                "maxFailures=${retryMaxFailures}, " +
+                "failOnPassedAfterRetry=${retryFailOnPass}")
+
         def activeProfile = System.getProperty('spring.profiles.active')
         if (!activeProfile) {
             activeProfile = systemProperties['spring.profiles.active']
@@ -120,13 +136,6 @@ tasks.withType(Test) {
                 systemProperty 'junit.jupiter.execution.parallel.config.fixed.parallelism', threads
             }
         }
-
-        def retriesConfig = config?.env?.retries
-        def repeats = '1'
-        if (retriesConfig && retriesConfig.enabled && retriesConfig.count) {
-            repeats = retriesConfig.count.toString()
-        }
-        systemProperty 'totalRepeats', repeats
     }
 }
 
