@@ -136,6 +136,7 @@ public class RetryableParameterizedTestExtension implements TestTemplateInvocati
     public void afterTestExecution(ExtensionContext context) {
         if (context.getExecutionException().isEmpty()) {
             historyExceptionAppear.add(false);
+            repeatableExceptionAppeared = false;
         }
     }
 
@@ -271,42 +272,45 @@ public class RetryableParameterizedTestExtension implements TestTemplateInvocati
          */
         @Override
         public TestTemplateInvocationContext next() {
-
-            if (hasNext()) {
-                int currentParam = paramsCount.intValue();
-                int errorTestRepetitionsCountForOneArgument = toIntExact(historyExceptionAppear.stream().filter(b -> b).count());
-                int successfulTestRepetitionsCountForOneArgument = toIntExact(historyExceptionAppear
-                        .stream()
-                        .skip(historyExceptionAppear.size() - minSuccess <= 0 ? 0 : historyExceptionAppear.size() - minSuccess)
-                        .filter(b -> !b)
-                        .count());
-
-                if (errorTestRepetitionsCountForOneArgument >= 1 && currentIndex < totalRepeats && successfulTestRepetitionsCountForOneArgument != minSuccess) {
-
-                    //If exception appeared would wait suspend time
-                    if (historyExceptionAppear.stream().anyMatch(ex -> ex) && suspend != 0L) {
-                        try {
-                            Thread.sleep(suspend);
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                        }
-                    }
-
-                    currentIndex++;
-                    repeatableExceptionAppeared = false;
-                    return new ParameterizedTestInvocationContext(currentIndex, totalRepeats, formatter, methodContext, params.get(currentParam - 1));
-                }
-
-                if (currentIndex == totalRepeats || !repeatableExceptionAppeared) {
-                    paramsCount.incrementAndGet();
-                    repeatableExceptionAppeared = false;
-                    historyExceptionAppear.clear();
-                }
-
-                currentIndex = 0;
-                return new ParameterizedTestInvocationContext(0, 0, formatter, methodContext, params.get(currentParam));
+            if (!hasNext()) {
+                throw new NoSuchElementException();
             }
-            throw new NoSuchElementException();
+
+            int currentParam = paramsCount.intValue();
+
+            long lastSuccessWindow = historyExceptionAppear.stream()
+                    .skip(Math.max(0, historyExceptionAppear.size() - minSuccess))
+                    .filter(b -> !b)
+                    .count();
+
+            boolean lastWasFailure = !historyExceptionAppear.isEmpty()
+                    && historyExceptionAppear.get(historyExceptionAppear.size() - 1);
+
+            boolean needRetry = lastWasFailure
+                    && currentIndex < totalRepeats
+                    && lastSuccessWindow < minSuccess;
+
+            if (needRetry) {
+                if (suspend > 0) {
+                    try {
+                        Thread.sleep(suspend);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+                currentIndex++;
+                return new ParameterizedTestInvocationContext(currentIndex, totalRepeats, formatter, methodContext, params.get(currentParam));
+            }
+
+            paramsCount.incrementAndGet();
+            currentIndex = 0;
+            repeatableExceptionAppeared = false;
+            historyExceptionAppear.clear();
+
+            if (currentParam >= params.size()) {
+                throw new NoSuchElementException();
+            }
+            return new ParameterizedTestInvocationContext(0, 0, formatter, methodContext, params.get(currentParam));
         }
 
         @Override

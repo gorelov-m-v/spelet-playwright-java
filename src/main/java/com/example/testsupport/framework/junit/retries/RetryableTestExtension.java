@@ -145,6 +145,7 @@ public class RetryableTestExtension implements TestTemplateInvocationContextProv
     public void afterTestExecution(ExtensionContext extensionContext) {
         if (extensionContext.getExecutionException().isEmpty()) {
             historyExceptionAppear.add(false);
+            repeatableExceptionAppeared = false;
         }
     }
 
