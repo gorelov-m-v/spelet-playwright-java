@@ -9,6 +9,9 @@ import org.springframework.beans.factory.ObjectProvider;
 import com.example.testsupport.pages.CasinoPage;
 import com.example.testsupport.pages.components.FilterDrawerComponent;
 import com.example.testsupport.pages.components.AuthModalComponent;
+import com.example.testsupport.framework.api.client.FrontApiClient;
+import com.example.testsupport.framework.api.client.params.GamblingBrandsParams;
+import com.example.testsupport.framework.api.dto.gambling.GamblingBrandsResponse;
 import io.qameta.allure.*;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +25,7 @@ import static com.example.testsupport.framework.utils.AllureHelper.step;
 @Execution(ExecutionMode.CONCURRENT)
 class MultilingualNavigationTest extends BaseTest {
     @Autowired private ObjectProvider<MainPage> mainPageProvider;
+    @Autowired private FrontApiClient frontApiClient;
 
     @Story("Переход на страницу казино для всех поддерживаемых языков и устройств")
     @DisplayName("Навигация на страницу казино")
@@ -29,24 +33,34 @@ class MultilingualNavigationTest extends BaseTest {
     void navigateToCasinoPageOnAllLanguagesAndDevices(Device device, String languageCode) {
 
         final class TestContext {
+            MainPage mainPage;
             CasinoPage casinoPage;
             FilterDrawerComponent filterDrawer;
             AuthModalComponent authModal;
+            GamblingBrandsResponse gamblingBrandsResponse;
         }
         final TestContext ctx = new TestContext();
+
+        step("Получаем список брендов через API", () -> {
+            var params = GamblingBrandsParams.builder()
+                    .platformLocale(languageCode)
+                    .categoryAlias("new")
+                    .build();
+
+            ctx.gamblingBrandsResponse = frontApiClient.getGamblingBrands(params);
+        });
 
         step(String.format("Подготовка тестового окружения [Устройство: %s, Язык: %s]", device, languageCode), () -> {
             setupTestEnvironment(device, languageCode);
         });
 
         step("Открываем главную страницу", () -> {
-            MainPage mainPage = mainPageProvider.getObject();
-            mainPage.open().verifyIsLoaded();
+            ctx.mainPage = mainPageProvider.getObject();
+            ctx.mainPage.open().verifyIsLoaded();
         });
 
         step("Переходим на страницу 'Казино'", () -> {
-            MainPage mainPage = mainPageProvider.getObject();
-            ctx.casinoPage = mainPage.navigateToCasino().verifyIsLoaded();
+            ctx.casinoPage = ctx.mainPage.navigateToCasino().verifyIsLoaded();
         });
 
         step("Открываем дровер фильтров", () -> {
