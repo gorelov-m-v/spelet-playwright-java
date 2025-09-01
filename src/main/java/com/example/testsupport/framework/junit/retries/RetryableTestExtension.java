@@ -175,13 +175,10 @@ public class RetryableTestExtension implements TestTemplateInvocationContextProv
         repeatableExceptionAppeared = true;
 
         long currentSuccessCount = historyExceptionAppear.stream().filter(exceptionAppeared -> !exceptionAppeared).count();
-        if (currentSuccessCount < minSuccess) {
-            if (isMinSuccessTargetStillReachable(minSuccess)) {
-                throw new TestAbortedException("Do not fail completely, but repeat the test", throwable);
-            } else {
-                throw throwable;
-            }
+        if (currentSuccessCount < minSuccess && isMinSuccessTargetStillReachable(minSuccess)) {
+            throw new TestAbortedException("Do not fail completely, but repeat the test", throwable);
         }
+        throw throwable;
     }
 
     /**
