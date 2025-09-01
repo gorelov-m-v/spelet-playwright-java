@@ -65,7 +65,6 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter'
 
     testImplementation 'io.qameta.allure:allure-junit5:2.29.0'
-    implementation 'io.github.artsok:rerunner-jupiter:2.1.6'
     testRuntimeOnly 'org.aspectj:aspectjweaver:1.9.22.1'
 }
 
@@ -121,12 +120,6 @@ tasks.withType(Test) {
             }
         }
 
-        def retriesConfig = config?.env?.retries
-        def repeats = '1'
-        if (retriesConfig && retriesConfig.enabled && retriesConfig.count) {
-            repeats = retriesConfig.count.toString()
-        }
-        systemProperty 'totalRepeats', repeats
     }
 }
 
