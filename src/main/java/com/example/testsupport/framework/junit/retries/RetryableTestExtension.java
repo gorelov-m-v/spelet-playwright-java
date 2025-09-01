@@ -47,15 +47,15 @@ public class RetryableTestExtension implements TestTemplateInvocationContextProv
         AfterTestExecutionCallback, TestExecutionExceptionHandler {
 
 
-    private int repeats = 0;
-    private int minSuccess = 1;
-    private int totalTestRuns = 0;
-    private List<Class<? extends Throwable>> repeatableExceptions;
-    private boolean repeatableExceptionAppeared = false;
-    private RepeatedIfExceptionsDisplayNameFormatter formatter;
-    private List<Boolean> historyExceptionAppear;
-    private long suspend = 0L;
     private static final int CURRENT_RUN = 1;
+    private static final String REPEATS_KEY = "repeats";
+    private static final String MIN_SUCCESS_KEY = "minSuccess";
+    private static final String TOTAL_RUNS_KEY = "totalRuns";
+    private static final String REPEATABLE_EXCEPTIONS_KEY = "repeatableExceptions";
+    private static final String REPEATABLE_EXCEPTION_APPEARED_KEY = "repeatableExceptionAppeared";
+    private static final String HISTORY_KEY = "history";
+    private static final String SUSPEND_KEY = "suspend";
+    private RepeatedIfExceptionsDisplayNameFormatter formatter;
 
 
     /**
@@ -87,20 +87,26 @@ public class RetryableTestExtension implements TestTemplateInvocationContextProv
 
 
         int totalRepeats = annotationParams.repeats();
-        minSuccess = annotationParams.minSuccess();
+        int minSuccess = annotationParams.minSuccess();
         Preconditions.condition(totalRepeats > 0, "Total repeats must be higher than 0");
         Preconditions.condition(minSuccess >= 1, "Total minimum success must be higher or equals than 1");
 
-        totalTestRuns = totalRepeats + CURRENT_RUN;
-        suspend = annotationParams.suspend();
-        historyExceptionAppear = Collections.synchronizedList(new ArrayList<>());
+        int totalTestRuns = totalRepeats + CURRENT_RUN;
+        long suspend = annotationParams.suspend();
+
+        ExtensionContext.Store store = getStore(extensionContext);
+        store.put(REPEATS_KEY, totalRepeats);
+        store.put(MIN_SUCCESS_KEY, minSuccess);
+        store.put(TOTAL_RUNS_KEY, totalTestRuns);
+        store.put(SUSPEND_KEY, suspend);
+        store.put(HISTORY_KEY, Collections.synchronizedList(new ArrayList<>()));
 
         String displayName = extensionContext.getDisplayName();
         formatter = displayNameFormatter(annotationParams, displayName);
 
         //Convert logic of repeated handler to spliterator
         Spliterator<TestTemplateInvocationContext> spliterator =
-                spliteratorUnknownSize(new TestTemplateIterator(), Spliterator.NONNULL);
+                spliteratorUnknownSize(new TestTemplateIterator(extensionContext), Spliterator.NONNULL);
         return stream(spliterator, false);
     }
 
@@ -108,29 +114,35 @@ public class RetryableTestExtension implements TestTemplateInvocationContextProv
     public void beforeTestExecution(ExtensionContext context) {
             
         //get TotalTestRuns and minSuccess from system properties
+        ExtensionContext.Store store = getStore(context);
+        Integer totalRuns = store.get(TOTAL_RUNS_KEY, Integer.class);
+        Integer minSuccess = store.get(MIN_SUCCESS_KEY, Integer.class);
         String strTotalRepeats = System.getProperty("totalRepeats");
         if(strTotalRepeats != null) {
             try {
-                totalTestRuns = Integer.parseInt(strTotalRepeats);
+                totalRuns = Integer.parseInt(strTotalRepeats);
             }catch(Exception e){
             }
         }
 
-        
         String strMinSuccess = System.getProperty("minSuccess");
         if(strMinSuccess != null) {
             try {
-            	minSuccess = Integer.parseInt(strMinSuccess);
+                minSuccess = Integer.parseInt(strMinSuccess);
             }catch(Exception e){
             }
         }
-            
-        repeatableExceptions = Stream.of(context.getTestMethod()
+
+        store.put(TOTAL_RUNS_KEY, totalRuns);
+        store.put(MIN_SUCCESS_KEY, minSuccess);
+
+        List<Class<? extends Throwable>> repeatableExceptions = Stream.of(context.getTestMethod()
                 .flatMap(testMethods -> findAnnotation(testMethods, RetryableTest.class))
                 .orElseThrow(() -> new IllegalStateException("The extension should not be executed "))
                 .exceptions()
         ).collect(Collectors.toList());
         repeatableExceptions.add(TestAbortedException.class);
+        store.put(REPEATABLE_EXCEPTIONS_KEY, repeatableExceptions);
     }
 
     /**
@@ -141,7 +153,7 @@ public class RetryableTestExtension implements TestTemplateInvocationContextProv
     @Override
     public void afterTestExecution(ExtensionContext extensionContext) {
         boolean exceptionAppeared = exceptionAppeared(extensionContext);
-        historyExceptionAppear.add(exceptionAppeared);
+        getHistory(extensionContext).add(exceptionAppeared);
     }
 
     private boolean exceptionAppeared(ExtensionContext extensionContext) {
@@ -149,6 +161,7 @@ public class RetryableTestExtension implements TestTemplateInvocationContextProv
             return false;
         }
         Throwable exception = extensionContext.getExecutionException().get();
+        List<Class<? extends Throwable>> repeatableExceptions = getStore(extensionContext).get(REPEATABLE_EXCEPTIONS_KEY, List.class);
         return isExceptionRetryable(exception, repeatableExceptions);
     }
 
@@ -170,28 +183,21 @@ public class RetryableTestExtension implements TestTemplateInvocationContextProv
 
     @Override
     public void handleTestExecutionException(ExtensionContext context, Throwable throwable) throws Throwable {
-        if (appearedExceptionDoesNotAllowRepetitions(throwable)) {
+        List<Class<? extends Throwable>> repeatableExceptions = getStore(context).get(REPEATABLE_EXCEPTIONS_KEY, List.class);
+        if (!isExceptionRetryable(throwable, repeatableExceptions)) {
             System.out.printf("Test failed with exception chain [%s] which is not configured for retry. Failing fast.%n",
                     buildExceptionChain(throwable));
             throw throwable;
         }
-        repeatableExceptionAppeared = true;
+        setRepeatableExceptionAppeared(context, true);
 
-        long currentSuccessCount = historyExceptionAppear.stream().filter(exceptionAppeared -> !exceptionAppeared).count();
-        if (currentSuccessCount < minSuccess && isMinSuccessTargetStillReachable(minSuccess)) {
+        List<Boolean> history = getHistory(context);
+        int minSuccess = getStore(context).get(MIN_SUCCESS_KEY, Integer.class);
+        long currentSuccessCount = history.stream().filter(exceptionAppeared -> !exceptionAppeared).count();
+        if (currentSuccessCount < minSuccess && isMinSuccessTargetStillReachable(context, minSuccess)) {
             throw new TestAbortedException("Do not fail completely, but repeat the test", throwable);
         }
         throw throwable;
-    }
-
-    /**
-     * If exception allowed, will return false
-     *
-     * @param appearedException - {@link Throwable}
-     * @return true/false
-     */
-    private boolean appearedExceptionDoesNotAllowRepetitions(final Throwable appearedException) {
-        return !isExceptionRetryable(appearedException, repeatableExceptions);
     }
 
     private boolean isExceptionRetryable(Throwable throwable, List<Class<? extends Throwable>> retryableExceptions) {
@@ -216,14 +222,34 @@ public class RetryableTestExtension implements TestTemplateInvocationContextProv
         return String.join(" -> ", chain);
     }
 
+    private ExtensionContext.Store getStore(ExtensionContext context) {
+        return context.getStore(ExtensionContext.Namespace.create(getClass(), context.getUniqueId()));
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Boolean> getHistory(ExtensionContext context) {
+        return (List<Boolean>) getStore(context).get(HISTORY_KEY, List.class);
+    }
+
+    private void setRepeatableExceptionAppeared(ExtensionContext context, boolean appeared) {
+        getStore(context).put(REPEATABLE_EXCEPTION_APPEARED_KEY, appeared);
+    }
+
+    private boolean getRepeatableExceptionAppeared(ExtensionContext context) {
+        Boolean value = getStore(context).get(REPEATABLE_EXCEPTION_APPEARED_KEY, Boolean.class);
+        return value != null && value;
+    }
+
     /**
      * If cannot reach a minimum success target, will return true
      *
      * @param minSuccessCount - minimum success count
      * @return true/false
      */
-    private boolean isMinSuccessTargetStillReachable(final long minSuccessCount) {
-        return historyExceptionAppear.stream().filter(bool -> bool).count() < totalTestRuns - minSuccessCount;
+    private boolean isMinSuccessTargetStillReachable(ExtensionContext context, final long minSuccessCount) {
+        List<Boolean> history = getHistory(context);
+        int totalRuns = getStore(context).get(TOTAL_RUNS_KEY, Integer.class);
+        return history.stream().filter(bool -> bool).count() < totalRuns - minSuccessCount;
     }
 
     /**
@@ -231,19 +257,28 @@ public class RetryableTestExtension implements TestTemplateInvocationContextProv
      */
     class TestTemplateIterator implements Iterator<TestTemplateInvocationContext> {
         int currentIndex = 0;
+        private final ExtensionContext extensionContext;
+
+        TestTemplateIterator(ExtensionContext extensionContext) {
+            this.extensionContext = extensionContext;
+        }
 
         @Override
         public boolean hasNext() {
             if (currentIndex == 0) {
                 return true;
             }
-            return historyExceptionAppear.stream().anyMatch(ex -> ex) && currentIndex < totalTestRuns;
+            List<Boolean> history = getHistory(extensionContext);
+            int totalRuns = getStore(extensionContext).get(TOTAL_RUNS_KEY, Integer.class);
+            return history.stream().anyMatch(ex -> ex) && currentIndex < totalRuns;
         }
 
         @Override
         public TestTemplateInvocationContext next() {
             //If exception appeared would wait suspend time
-            if (historyExceptionAppear.stream().anyMatch(ex -> ex) && suspend != 0L) {
+            List<Boolean> history = getHistory(extensionContext);
+            long suspend = getStore(extensionContext).get(SUSPEND_KEY, Long.class);
+            if (history.stream().anyMatch(ex -> ex) && suspend != 0L) {
                 try {
                     Thread.sleep(suspend);
                 } catch (InterruptedException e) {
@@ -251,11 +286,14 @@ public class RetryableTestExtension implements TestTemplateInvocationContextProv
                 }
             }
 
-            int successfulTestRepetitionsCount = toIntExact(historyExceptionAppear.stream().filter(b -> !b).count());
+            int successfulTestRepetitionsCount = toIntExact(history.stream().filter(b -> !b).count());
             if (hasNext()) {
                 currentIndex++;
-                return new RepeatedIfExceptionsInvocationContext(currentIndex, totalTestRuns,
-                        successfulTestRepetitionsCount, minSuccess, repeatableExceptionAppeared, formatter);
+                int totalRuns = getStore(extensionContext).get(TOTAL_RUNS_KEY, Integer.class);
+                int minSuccess = getStore(extensionContext).get(MIN_SUCCESS_KEY, Integer.class);
+                boolean appeared = getRepeatableExceptionAppeared(extensionContext);
+                return new RepeatedIfExceptionsInvocationContext(currentIndex, totalRuns,
+                        successfulTestRepetitionsCount, minSuccess, appeared, formatter);
             }
             throw new NoSuchElementException();
         }

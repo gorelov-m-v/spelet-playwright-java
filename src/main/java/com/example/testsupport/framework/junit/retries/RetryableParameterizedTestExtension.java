@@ -33,13 +33,13 @@ import static org.junit.platform.commons.util.AnnotationUtils.*;
 public class RetryableParameterizedTestExtension implements TestTemplateInvocationContextProvider,
         BeforeTestExecutionCallback, AfterTestExecutionCallback, TestExecutionExceptionHandler {
 
-    private int totalRepeats = 0;
-    private int minSuccess = 1;
-    private List<Class<? extends Throwable>> repeatableExceptions;
-    private boolean repeatableExceptionAppeared = false;
-    private final List<Boolean> historyExceptionAppear = Collections.synchronizedList(new ArrayList<>());
     private static final String METHOD_CONTEXT_KEY = "context";
-    private long suspend = 0L;
+    private static final String TOTAL_REPEATS_KEY = "totalRepeats";
+    private static final String MIN_SUCCESS_KEY = "minSuccess";
+    private static final String SUSPEND_KEY = "suspend";
+    private static final String REPEATABLE_EXCEPTIONS_KEY = "repeatableExceptions";
+    private static final String REPEATABLE_EXCEPTION_APPEARED_KEY = "repeatableExceptionAppeared";
+    private static final String HISTORY_KEY = "history";
 
     @Override
     public boolean supportsTestTemplate(ExtensionContext extensionContext) {
@@ -61,7 +61,7 @@ public class RetryableParameterizedTestExtension implements TestTemplateInvocati
                                 + "and before any arguments resolved by another ParameterResolver.",
                         testMethod.toGenericString()));
 
-        getStore(extensionContext).put(METHOD_CONTEXT_KEY, methodContext);
+        getConfigStore(extensionContext).put(METHOD_CONTEXT_KEY, methodContext);
         return true;
     }
 
@@ -69,7 +69,7 @@ public class RetryableParameterizedTestExtension implements TestTemplateInvocati
     public Stream<TestTemplateInvocationContext> provideTestTemplateInvocationContexts(ExtensionContext extensionContext) {
         Method templateMethod = extensionContext.getRequiredTestMethod();
         String displayName = extensionContext.getDisplayName();
-        ParameterizedRepeatedMethodContext methodContext = getStore(extensionContext)//
+        ParameterizedRepeatedMethodContext methodContext = getConfigStore(extensionContext)//
                 .get(METHOD_CONTEXT_KEY, ParameterizedRepeatedMethodContext.class);
         ParameterizedRepeatedIfExceptionsTestNameFormatter formatter = createNameFormatter(templateMethod, displayName);
 
@@ -78,9 +78,9 @@ public class RetryableParameterizedTestExtension implements TestTemplateInvocati
                 .orElseThrow(() -> new RepeatedIfException("The extension should not be executed "
                         + "unless the test method is annotated with @RetryableParameterizedTest."));
 
-        totalRepeats = annotationParams.repeats();
-        minSuccess = annotationParams.minSuccess();
-        suspend = annotationParams.suspend();
+        int totalRepeats = annotationParams.repeats();
+        int minSuccess = annotationParams.minSuccess();
+        long suspend = annotationParams.suspend();
 
         String strTotalRepeats = System.getProperty("totalRepeats");
         if (strTotalRepeats != null) {
@@ -101,6 +101,11 @@ public class RetryableParameterizedTestExtension implements TestTemplateInvocati
         Preconditions.condition(totalRepeats > 0, "Total repeats must be higher than 0");
         Preconditions.condition(minSuccess >= 1, "Total minimum success must be higher or equals than 1");
 
+        ExtensionContext.Store store = getConfigStore(extensionContext);
+        store.put(TOTAL_REPEATS_KEY, totalRepeats);
+        store.put(MIN_SUCCESS_KEY, minSuccess);
+        store.put(SUSPEND_KEY, suspend);
+
 
         List<Object[]> collect = findRepeatableAnnotations(templateMethod, ArgumentsSource.class)
                 .stream()
@@ -113,31 +118,34 @@ public class RetryableParameterizedTestExtension implements TestTemplateInvocati
                 .collect(Collectors.toList());
 
         Spliterator<TestTemplateInvocationContext> spliterator =
-                spliteratorUnknownSize(new TestTemplateIteratorParams(collect, formatter, methodContext), Spliterator.NONNULL);
+                spliteratorUnknownSize(new TestTemplateIteratorParams(collect, formatter, methodContext, extensionContext), Spliterator.NONNULL);
         return stream(spliterator, false);
 
     }
 
     @Override
     public void beforeTestExecution(ExtensionContext context) {
-        repeatableExceptions = Stream.of(context.getTestMethod()
+        List<Class<? extends Throwable>> repeatableExceptions = Stream.of(context.getTestMethod()
                 .flatMap(testMethods -> findAnnotation(testMethods, RetryableParameterizedTest.class))
                 .orElseThrow(() -> new IllegalStateException("The extension should not be executed "))
                 .exceptions()
         ).collect(Collectors.toList());
         repeatableExceptions.add(TestAbortedException.class);
+        getConfigStore(context).put(REPEATABLE_EXCEPTIONS_KEY, repeatableExceptions);
     }
 
     //Записываем в historyExceptionAppear по конкретным аргументам!
     @Override
     public void afterTestExecution(ExtensionContext context) {
         boolean exceptionAppeared = exceptionAppeared(context);
-        historyExceptionAppear.add(exceptionAppeared);
+        List<Boolean> history = getHistory(context);
+        history.add(exceptionAppeared);
     }
 
     private boolean exceptionAppeared(ExtensionContext extensionContext) {
         if (extensionContext.getExecutionException().isPresent()) {
             Throwable exception = extensionContext.getExecutionException().get();
+            List<Class<? extends Throwable>> repeatableExceptions = getStore(extensionContext).get(REPEATABLE_EXCEPTIONS_KEY, List.class);
             return isExceptionRetryable(exception, repeatableExceptions);
         }
         return false;
@@ -145,15 +153,18 @@ public class RetryableParameterizedTestExtension implements TestTemplateInvocati
 
     @Override
     public void handleTestExecutionException(ExtensionContext context, Throwable throwable) throws Throwable {
-        if (appearedExceptionDoesNotAllowRepetitions(throwable)) {
+        List<Class<? extends Throwable>> repeatableExceptions = getConfigStore(context).get(REPEATABLE_EXCEPTIONS_KEY, List.class);
+        if (!isExceptionRetryable(throwable, repeatableExceptions)) {
             System.out.printf("Test failed with exception chain [%s] which is not configured for retry. Failing fast.%n",
                     buildExceptionChain(throwable));
             throw throwable;
         }
-        repeatableExceptionAppeared = true;
+        setRepeatableExceptionAppeared(context, true);
 
-        long currentSuccessCount = historyExceptionAppear.stream().filter(exceptionAppeared -> !exceptionAppeared).count();
-        if (currentSuccessCount < minSuccess && isMinSuccessTargetStillReachable(minSuccess)) {
+        List<Boolean> history = getHistory(context);
+        int minSuccess = getConfigStore(context).get(MIN_SUCCESS_KEY, Integer.class);
+        long currentSuccessCount = history.stream().filter(exceptionAppeared -> !exceptionAppeared).count();
+        if (currentSuccessCount < minSuccess && isMinSuccessTargetStillReachable(context, minSuccess)) {
             throw new TestAbortedException("Do not fail completely, but repeat the test", throwable);
         }
         throw throwable;
@@ -165,12 +176,10 @@ public class RetryableParameterizedTestExtension implements TestTemplateInvocati
      * @param minSuccessCount - minimum success count
      * @return true/false
      */
-    private boolean isMinSuccessTargetStillReachable(final long minSuccessCount) {
-        return historyExceptionAppear.stream().filter(bool -> bool).count() <= totalRepeats - minSuccessCount;
-    }
-
-    private boolean appearedExceptionDoesNotAllowRepetitions(Throwable appearedException) {
-        return !isExceptionRetryable(appearedException, repeatableExceptions);
+    private boolean isMinSuccessTargetStillReachable(ExtensionContext context, final long minSuccessCount) {
+        List<Boolean> history = getHistory(context);
+        int totalRepeats = getStore(context).get(TOTAL_REPEATS_KEY, Integer.class);
+        return history.stream().filter(bool -> bool).count() <= totalRepeats - minSuccessCount;
     }
 
     private boolean isExceptionRetryable(Throwable throwable, List<Class<? extends Throwable>> retryableExceptions) {
@@ -239,7 +248,26 @@ public class RetryableParameterizedTestExtension implements TestTemplateInvocati
     }
 
     private ExtensionContext.Store getStore(ExtensionContext context) {
-        return context.getStore(ExtensionContext.Namespace.create(RetryableParameterizedTestExtension.class, context.getRequiredTestMethod()));
+        return context.getStore(ExtensionContext.Namespace.create(getClass(), context.getUniqueId()));
+    }
+
+    private ExtensionContext.Store getConfigStore(ExtensionContext context) {
+        return context.getStore(ExtensionContext.Namespace.create(getClass(), context.getRequiredTestMethod()));
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Boolean> getHistory(ExtensionContext context) {
+        ExtensionContext.Store store = getStore(context);
+        return (List<Boolean>) store.getOrComputeIfAbsent(HISTORY_KEY, key -> Collections.synchronizedList(new ArrayList<>()), List.class);
+    }
+
+    private void setRepeatableExceptionAppeared(ExtensionContext context, boolean appeared) {
+        getStore(context).put(REPEATABLE_EXCEPTION_APPEARED_KEY, appeared);
+    }
+
+    private boolean getRepeatableExceptionAppeared(ExtensionContext context) {
+        Boolean value = getStore(context).get(REPEATABLE_EXCEPTION_APPEARED_KEY, Boolean.class);
+        return value != null && value;
     }
 
     /**
@@ -253,19 +281,23 @@ public class RetryableParameterizedTestExtension implements TestTemplateInvocati
         private final AtomicLong invocationCount;
         private final AtomicLong paramsCount;
         private int currentIndex = 0;
+        private final ExtensionContext extensionContext;
 
-        TestTemplateIteratorParams(List<Object[]> arguments, final ParameterizedRepeatedIfExceptionsTestNameFormatter formatter, final ParameterizedRepeatedMethodContext methodContext) {
+        TestTemplateIteratorParams(List<Object[]> arguments, final ParameterizedRepeatedIfExceptionsTestNameFormatter formatter, final ParameterizedRepeatedMethodContext methodContext, ExtensionContext extensionContext) {
             this.params = arguments;
             this.formatter = formatter;
             this.methodContext = methodContext;
             this.invocationCount = new AtomicLong(params.size() - 1);
             this.paramsCount = new AtomicLong(0);
+            this.extensionContext = extensionContext;
         }
 
         @Override
         public boolean hasNext() {
-            if (!historyExceptionAppear.isEmpty()
-                    && historyExceptionAppear.get(historyExceptionAppear.size() - 1)
+        int totalRepeats = getConfigStore(extensionContext).get(TOTAL_REPEATS_KEY, Integer.class);
+            List<Boolean> history = getHistory(extensionContext);
+            if (!history.isEmpty()
+                    && history.get(history.size() - 1)
                     && currentIndex < totalRepeats) {
                 return true;
             }
@@ -285,17 +317,21 @@ public class RetryableParameterizedTestExtension implements TestTemplateInvocati
 
             if (hasNext()) {
                 int currentParam = paramsCount.intValue();
-                int errorTestRepetitionsCountForOneArgument = toIntExact(historyExceptionAppear.stream().filter(b -> b).count());
-                int successfulTestRepetitionsCountForOneArgument = toIntExact(historyExceptionAppear
+                List<Boolean> history = getHistory(extensionContext);
+                int totalRepeats = getConfigStore(extensionContext).get(TOTAL_REPEATS_KEY, Integer.class);
+                int minSuccess = getConfigStore(extensionContext).get(MIN_SUCCESS_KEY, Integer.class);
+                int errorTestRepetitionsCountForOneArgument = toIntExact(history.stream().filter(b -> b).count());
+                int successfulTestRepetitionsCountForOneArgument = toIntExact(history
                         .stream()
-                        .skip(historyExceptionAppear.size() - minSuccess <= 0 ? 0 : historyExceptionAppear.size() - minSuccess)
+                        .skip(history.size() - minSuccess <= 0 ? 0 : history.size() - minSuccess)
                         .filter(b -> !b)
                         .count());
 
                 if (errorTestRepetitionsCountForOneArgument >= 1 && currentIndex < totalRepeats && successfulTestRepetitionsCountForOneArgument != minSuccess) {
 
                     //If exception appeared would wait suspend time
-                    if (historyExceptionAppear.stream().anyMatch(ex -> ex) && suspend != 0L) {
+                    long suspend = getConfigStore(extensionContext).get(SUSPEND_KEY, Long.class);
+                    if (history.stream().anyMatch(ex -> ex) && suspend != 0L) {
                         try {
                             Thread.sleep(suspend);
                         } catch (InterruptedException e) {
@@ -304,14 +340,14 @@ public class RetryableParameterizedTestExtension implements TestTemplateInvocati
                     }
 
                     currentIndex++;
-                    repeatableExceptionAppeared = false;
+                    setRepeatableExceptionAppeared(extensionContext, false);
                     return new ParameterizedTestInvocationContext(currentIndex, totalRepeats, formatter, methodContext, params.get(currentParam - 1));
                 }
 
-                if (currentIndex == totalRepeats || !repeatableExceptionAppeared) {
+                if (currentIndex == totalRepeats || !getRepeatableExceptionAppeared(extensionContext)) {
                     paramsCount.incrementAndGet();
-                    repeatableExceptionAppeared = false;
-                    historyExceptionAppear.clear();
+                    setRepeatableExceptionAppeared(extensionContext, false);
+                    history.clear();
                 }
 
                 currentIndex = 0;
