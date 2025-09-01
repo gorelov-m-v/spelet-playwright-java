@@ -145,10 +145,11 @@ public class RetryableTestExtension implements TestTemplateInvocationContextProv
     }
 
     private boolean exceptionAppeared(ExtensionContext extensionContext) {
-        Class<? extends Throwable> exception = extensionContext.getExecutionException()
-                .orElse(new RepeatedIfException("There is no exception in context")).getClass();
-        return repeatableExceptions.stream()
-                .anyMatch(ex -> ex.isAssignableFrom(exception) && !RepeatedIfException.class.isAssignableFrom(exception));
+        if (extensionContext.getExecutionException().isEmpty()) {
+            return false;
+        }
+        Throwable exception = extensionContext.getExecutionException().get();
+        return isExceptionRetryable(exception, repeatableExceptions);
     }
 
     /**
@@ -170,6 +171,8 @@ public class RetryableTestExtension implements TestTemplateInvocationContextProv
     @Override
     public void handleTestExecutionException(ExtensionContext context, Throwable throwable) throws Throwable {
         if (appearedExceptionDoesNotAllowRepetitions(throwable)) {
+            System.out.printf("Test failed with exception chain [%s] which is not configured for retry. Failing fast.%n",
+                    buildExceptionChain(throwable));
             throw throwable;
         }
         repeatableExceptionAppeared = true;
@@ -188,7 +191,29 @@ public class RetryableTestExtension implements TestTemplateInvocationContextProv
      * @return true/false
      */
     private boolean appearedExceptionDoesNotAllowRepetitions(final Throwable appearedException) {
-        return repeatableExceptions.stream().noneMatch(ex -> ex.isAssignableFrom(appearedException.getClass()));
+        return !isExceptionRetryable(appearedException, repeatableExceptions);
+    }
+
+    private boolean isExceptionRetryable(Throwable throwable, List<Class<? extends Throwable>> retryableExceptions) {
+        if (throwable == null) {
+            return false;
+        }
+        for (Class<? extends Throwable> ex : retryableExceptions) {
+            if (ex.isAssignableFrom(throwable.getClass())) {
+                return true;
+            }
+        }
+        return isExceptionRetryable(throwable.getCause(), retryableExceptions);
+    }
+
+    private String buildExceptionChain(Throwable throwable) {
+        List<String> chain = new ArrayList<>();
+        Throwable current = throwable;
+        while (current != null) {
+            chain.add(current.getClass().getName());
+            current = current.getCause();
+        }
+        return String.join(" -> ", chain);
     }
 
     /**

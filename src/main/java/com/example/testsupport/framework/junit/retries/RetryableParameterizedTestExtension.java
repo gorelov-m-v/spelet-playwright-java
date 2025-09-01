@@ -137,8 +137,8 @@ public class RetryableParameterizedTestExtension implements TestTemplateInvocati
 
     private boolean exceptionAppeared(ExtensionContext extensionContext) {
         if (extensionContext.getExecutionException().isPresent()) {
-            Class<? extends Throwable> exception = extensionContext.getExecutionException().get().getClass();
-            return repeatableExceptions.stream().anyMatch(ex -> ex.isAssignableFrom(exception));
+            Throwable exception = extensionContext.getExecutionException().get();
+            return isExceptionRetryable(exception, repeatableExceptions);
         }
         return false;
     }
@@ -146,6 +146,8 @@ public class RetryableParameterizedTestExtension implements TestTemplateInvocati
     @Override
     public void handleTestExecutionException(ExtensionContext context, Throwable throwable) throws Throwable {
         if (appearedExceptionDoesNotAllowRepetitions(throwable)) {
+            System.out.printf("Test failed with exception chain [%s] which is not configured for retry. Failing fast.%n",
+                    buildExceptionChain(throwable));
             throw throwable;
         }
         repeatableExceptionAppeared = true;
@@ -168,7 +170,29 @@ public class RetryableParameterizedTestExtension implements TestTemplateInvocati
     }
 
     private boolean appearedExceptionDoesNotAllowRepetitions(Throwable appearedException) {
-        return repeatableExceptions.stream().noneMatch(ex -> ex.isAssignableFrom(appearedException.getClass()));
+        return !isExceptionRetryable(appearedException, repeatableExceptions);
+    }
+
+    private boolean isExceptionRetryable(Throwable throwable, List<Class<? extends Throwable>> retryableExceptions) {
+        if (throwable == null) {
+            return false;
+        }
+        for (Class<? extends Throwable> ex : retryableExceptions) {
+            if (ex.isAssignableFrom(throwable.getClass())) {
+                return true;
+            }
+        }
+        return isExceptionRetryable(throwable.getCause(), retryableExceptions);
+    }
+
+    private String buildExceptionChain(Throwable throwable) {
+        List<String> chain = new ArrayList<>();
+        Throwable current = throwable;
+        while (current != null) {
+            chain.add(current.getClass().getName());
+            current = current.getCause();
+        }
+        return String.join(" -> ", chain);
     }
 
     private ParameterizedRepeatedIfExceptionsTestNameFormatter createNameFormatter(Method templateMethod, String displayName) {
