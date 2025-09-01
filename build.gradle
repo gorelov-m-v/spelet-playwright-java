@@ -86,7 +86,8 @@ tasks.register('playwrightInstall', JavaExec) {
 tasks.withType(Test).configureEach {
     useJUnitPlatform()
     systemProperties = System.getProperties() as Map<String, ?>
-    jvmArgs '-Dfile.encoding=UTF-8', '--add-opens=java.base/java.lang=ALL-UNNAMED'
+    systemProperty 'spelet.retry.maxRetries', retryMaxRetries
+    jvmArgs '-Dfile.encoding=UTF-8', '--add-opens=java.base/java.lang=ALL-UNNAMED', '-XX:+EnableDynamicAgentLoading'
     dependsOn(playwrightInstall)
 
     retry {

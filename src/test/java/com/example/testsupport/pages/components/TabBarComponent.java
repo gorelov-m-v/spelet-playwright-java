@@ -4,6 +4,7 @@ import com.example.testsupport.framework.localization.LocalizationService;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
+import java.util.regex.Pattern;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -22,7 +23,9 @@ public class TabBarComponent extends BaseComponent {
     public TabBarComponent(Page page, LocalizationService ls) {
         super(page.locator("div.tab-bar__list"));
         String casinoText = ls.get("header.menu.casino");
-        this.casinoTab = root().getByRole(AriaRole.TAB, new Locator.GetByRoleOptions().setName(casinoText).setExact(true));
+        this.casinoTab = root().getByRole(AriaRole.TAB,
+                new Locator.GetByRoleOptions()
+                        .setName(Pattern.compile("^" + Pattern.quote(casinoText), Pattern.CASE_INSENSITIVE)));
         this.profileTab = root().getByRole(AriaRole.TAB, new Locator.GetByRoleOptions().setName("Profile"));
     }
 

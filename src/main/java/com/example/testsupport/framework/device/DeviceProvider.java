@@ -1,5 +1,6 @@
 package com.example.testsupport.framework.device;
 
+import java.util.Comparator;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.provider.Arguments;
@@ -18,10 +19,15 @@ public class DeviceProvider implements ArgumentsProvider {
     public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
         ApplicationContext ctx = SpringExtension.getApplicationContext(context);
         TestMatrixService service = ctx.getBean(TestMatrixService.class);
-        return service.getTestMatrix().map(values -> {
-            Device device = (Device) values.get(0);
-            String lang = (String) values.get(1);
-            return arguments(named(device.getName(), device), named(lang, lang));
-        });
+        return service.getTestMatrix()
+                .map(values -> new Object[]{(Device) values.get(0), (String) values.get(1)})
+                .sorted(
+                        Comparator.<Object[], String>comparing(a -> ((Device) a[0]).getName())
+                                .thenComparing(a -> (String) a[1])
+                )
+                .map(a -> arguments(
+                        named(((Device) a[0]).getName(), (Device) a[0]),
+                        named((String) a[1], (String) a[1])
+                ));
     }
 }

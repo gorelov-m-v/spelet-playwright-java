@@ -61,10 +61,12 @@ public class PlaywrightExtension implements BeforeAllCallback, BeforeEachCallbac
                 if (page == null) {
                     log.warn("No page available to capture failure artifacts.");
                 } else {
-                    String attempt = System.getProperty("org.gradle.test-retry.currentAttempt", "1");
-                    String max = System.getProperty("org.gradle.test-retry.maxRetries", "0");
-                    String suffix = String.format("_attempt-%s-of-%s", attempt,
-                            max.equals("0") ? "0" : String.valueOf(Integer.parseInt(max) + 1));
+                    int currentRetry = Integer.getInteger("org.gradle.test-retry.currentRetry", -1);
+                    int attemptNum = currentRetry + 2;
+                    int maxRetries = Integer.getInteger("org.gradle.test-retry.maxRetries",
+                            Integer.getInteger("spelet.retry.maxRetries", 0));
+                    int totalAttempts = maxRetries + 1;
+                    String suffix = String.format("_attempt-%d-of-%d", attemptNum, totalAttempts);
 
                     // 1. Attach URL and Screenshot
                     Allure.addAttachment("Current URL" + suffix, "text/plain", page.url());

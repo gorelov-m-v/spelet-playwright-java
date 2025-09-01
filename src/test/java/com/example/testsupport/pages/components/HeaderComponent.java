@@ -4,6 +4,7 @@ import com.example.testsupport.framework.localization.LocalizationService;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
+import java.util.regex.Pattern;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -23,7 +24,9 @@ public class HeaderComponent extends BaseComponent {
     public HeaderComponent(Page page, LocalizationService ls) {
         super(page.locator("header"));
         String casinoText = ls.get("header.menu.casino");
-        this.casinoLink = root().getByRole(AriaRole.LINK, new Locator.GetByRoleOptions().setName(casinoText).setExact(true));
+        this.casinoLink = root().getByRole(AriaRole.LINK,
+                new Locator.GetByRoleOptions()
+                        .setName(Pattern.compile("^" + Pattern.quote(casinoText), Pattern.CASE_INSENSITIVE)));
         this.logoLink = root().getByRole(AriaRole.LINK, new Locator.GetByRoleOptions().setName("Spelet"));
     }
 
