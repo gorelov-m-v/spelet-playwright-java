@@ -1,11 +1,18 @@
 package com.example.testsupport.framework.retry;
 
-import org.junit.jupiter.api.function.ThrowingSupplier;
+import io.qameta.allure.Allure;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 /**
  * Executes a callback with retry semantics defined by {@link RetryConfig}.
  */
 final class RetryExecutor {
+
+    private static final Logger log = LoggerFactory.getLogger(RetryExecutor.class);
 
     private RetryExecutor() {}
 
@@ -24,6 +31,16 @@ final class RetryExecutor {
                 if (!config.isRetryable(t) || attempts >= config.repeats()) {
                     throw t;
                 }
+
+                int currentAttempt = attempts + 1;
+                log.warn("[RETRY] Attempt {}/{} failed with '{}: {}'. Retrying...",
+                        currentAttempt, totalAttempts, t.getClass().getSimpleName(), t.getMessage());
+
+                try (StringWriter sw = new StringWriter(); PrintWriter pw = new PrintWriter(sw)) {
+                    t.printStackTrace(pw);
+                    Allure.addAttachment("Stacktrace on attempt " + currentAttempt, sw.toString());
+                }
+
                 if (config.suspend() > 0) {
                     try {
                         Thread.sleep(config.suspend());
