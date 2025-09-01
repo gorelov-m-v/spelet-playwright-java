@@ -18,7 +18,6 @@ import org.opentest4j.TestAbortedException;
 import io.qameta.allure.Allure;
 import io.qameta.allure.model.Status;
 import io.qameta.allure.model.StatusDetails;
-import io.qameta.allure.model.TestResult;
 
 import java.lang.reflect.Method;
 import java.util.*;
@@ -35,7 +34,7 @@ import static org.junit.platform.commons.util.AnnotationUtils.*;
  * Extension for {@link RetryableParameterizedTest}
  */
 public class RetryableParameterizedTestExtension implements TestTemplateInvocationContextProvider,
-        BeforeTestExecutionCallback, AfterTestExecutionCallback, TestExecutionExceptionHandler, TestWatcher {
+        BeforeTestExecutionCallback, AfterTestExecutionCallback, TestExecutionExceptionHandler {
 
     private int totalRepeats = 0;
     private int minSuccess = 1;
@@ -44,7 +43,6 @@ public class RetryableParameterizedTestExtension implements TestTemplateInvocati
     private final List<Boolean> historyExceptionAppear = Collections.synchronizedList(new ArrayList<>());
     private static final String METHOD_CONTEXT_KEY = "context";
     private long suspend = 0L;
-    private boolean retrying = false;
 
     @Override
     public boolean supportsTestTemplate(ExtensionContext extensionContext) {
@@ -133,54 +131,12 @@ public class RetryableParameterizedTestExtension implements TestTemplateInvocati
         repeatableExceptions.add(TestAbortedException.class);
     }
 
-    @Override
-    public void testAborted(ExtensionContext context, Throwable cause) {
-        if (retrying) {
-            Allure.getLifecycle().updateTestCase(testResult -> {
-                TestResult failedAttempt = new TestResult()
-                        .setUuid(UUID.randomUUID().toString())
-                        .setHistoryId(testResult.getHistoryId())
-                        .setTestCaseId(testResult.getTestCaseId())
-                        .setName(testResult.getName())
-                        .setFullName(testResult.getFullName())
-                        .setLinks(testResult.getLinks())
-                        .setLabels(testResult.getLabels())
-                        .setSteps(new ArrayList<>(testResult.getSteps()))
-                        .setAttachments(new ArrayList<>(testResult.getAttachments()))
-                        .setStatus(testResult.getStatus())
-                        .setStatusDetails(testResult.getStatusDetails())
-                        .setStart(testResult.getStart())
-                        .setStop(testResult.getStop());
-
-                Allure.getLifecycle().scheduleTestCase(failedAttempt);
-                Allure.getLifecycle().startTestCase(failedAttempt.getUuid());
-                Allure.getLifecycle().stopTestCase(failedAttempt.getUuid());
-                Allure.getLifecycle().writeTestCase(failedAttempt.getUuid());
-
-                testResult.getSteps().clear();
-                testResult.getAttachments().clear();
-                testResult.setStatus(null);
-                testResult.setStatusDetails(null);
-                testResult.setStart(null);
-                testResult.setStop(null);
-            });
-            retrying = false;
-        }
-    }
-
     //Записываем в historyExceptionAppear по конкретным аргументам!
     @Override
     public void afterTestExecution(ExtensionContext context) {
-        boolean exceptionAppeared = exceptionAppeared(context);
-        historyExceptionAppear.add(exceptionAppeared);
-    }
-
-    private boolean exceptionAppeared(ExtensionContext extensionContext) {
-        if (extensionContext.getExecutionException().isPresent()) {
-            Class<? extends Throwable> exception = extensionContext.getExecutionException().get().getClass();
-            return repeatableExceptions.stream().anyMatch(ex -> ex.isAssignableFrom(exception));
+        if (context.getExecutionException().isEmpty()) {
+            historyExceptionAppear.add(false);
         }
-        return false;
     }
 
     @Override
@@ -189,18 +145,29 @@ public class RetryableParameterizedTestExtension implements TestTemplateInvocati
             throw throwable;
         }
 
+        historyExceptionAppear.add(true);
         repeatableExceptionAppeared = true;
 
-        long successCount = historyExceptionAppear.stream().filter(exceptionAppeared -> !exceptionAppeared).count();
-        boolean canStillReachMinSuccess = isMinSuccessTargetStillReachable(minSuccess);
-
         Allure.getLifecycle().updateTestCase(tr -> {
+            try {
+                tr.getClass().getMethod("setRetry", Boolean.class).invoke(tr, true);
+            } catch (Exception ignored) {
+            }
             tr.setStatus(Status.FAILED);
             tr.setStatusDetails(new StatusDetails().setMessage(throwable.getMessage()));
         });
 
-        if (successCount < minSuccess && canStillReachMinSuccess) {
-            retrying = true;
+        long successCount = historyExceptionAppear.stream().filter(b -> !b).count();
+        boolean canStillReach = isMinSuccessTargetStillReachable(minSuccess);
+
+        if (successCount < minSuccess && canStillReach) {
+            if (suspend > 0) {
+                try {
+                    Thread.sleep(suspend);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                }
+            }
             throw new TestAbortedException("Retry due to repeatable exception", throwable);
         }
 
@@ -290,12 +257,8 @@ public class RetryableParameterizedTestExtension implements TestTemplateInvocati
 
         @Override
         public boolean hasNext() {
-            if (!historyExceptionAppear.isEmpty()
-                    && historyExceptionAppear.get(historyExceptionAppear.size() - 1)
-                    && currentIndex < totalRepeats) {
-                return true;
-            }
-            return invocationCount.get() >= paramsCount.get();
+            boolean needRetry = historyExceptionAppear.contains(true) && currentIndex < totalRepeats;
+            return needRetry || invocationCount.get() >= paramsCount.get();
         }
 
         /**

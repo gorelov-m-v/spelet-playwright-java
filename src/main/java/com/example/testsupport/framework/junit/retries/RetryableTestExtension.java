@@ -143,16 +143,11 @@ public class RetryableTestExtension implements TestTemplateInvocationContextProv
      */
     @Override
     public void afterTestExecution(ExtensionContext extensionContext) {
-        boolean exceptionAppeared = exceptionAppeared(extensionContext);
-        historyExceptionAppear.add(exceptionAppeared);
+        if (extensionContext.getExecutionException().isEmpty()) {
+            historyExceptionAppear.add(false);
+        }
     }
 
-    private boolean exceptionAppeared(ExtensionContext extensionContext) {
-        Class<? extends Throwable> exception = extensionContext.getExecutionException()
-                .orElse(new RepeatedIfException("There is no exception in context")).getClass();
-        return repeatableExceptions.stream()
-                .anyMatch(ex -> ex.isAssignableFrom(exception) && !RepeatedIfException.class.isAssignableFrom(exception));
-    }
 
     /**
      * Handler for display name
@@ -176,17 +171,29 @@ public class RetryableTestExtension implements TestTemplateInvocationContextProv
             throw throwable;
         }
 
+        historyExceptionAppear.add(true);
         repeatableExceptionAppeared = true;
 
-        long successCount = historyExceptionAppear.stream().filter(exceptionAppeared -> !exceptionAppeared).count();
-        boolean canStillReachMinSuccess = isMinSuccessTargetStillReachable(minSuccess);
-
         Allure.getLifecycle().updateTestCase(tr -> {
+            try {
+                tr.getClass().getMethod("setRetry", Boolean.class).invoke(tr, true);
+            } catch (Exception ignored) {
+            }
             tr.setStatus(Status.FAILED);
             tr.setStatusDetails(new StatusDetails().setMessage(throwable.getMessage()));
         });
 
-        if (successCount < minSuccess && canStillReachMinSuccess) {
+        long successCount = historyExceptionAppear.stream().filter(b -> !b).count();
+        boolean canStillReach = isMinSuccessTargetStillReachable(minSuccess);
+
+        if (successCount < minSuccess && canStillReach) {
+            if (suspend > 0) {
+                try {
+                    Thread.sleep(suspend);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                }
+            }
             throw new TestAbortedException("Retry due to repeatable exception", throwable);
         }
 
@@ -224,7 +231,10 @@ public class RetryableTestExtension implements TestTemplateInvocationContextProv
             if (currentIndex == 0) {
                 return true;
             }
-            return historyExceptionAppear.stream().anyMatch(ex -> ex) && currentIndex < totalTestRuns;
+            boolean lastFailed = historyExceptionAppear.get(historyExceptionAppear.size() - 1);
+            long successCount = historyExceptionAppear.stream().filter(b -> !b).count();
+            boolean needRetry = (lastFailed || successCount < minSuccess) && currentIndex < totalTestRuns;
+            return needRetry;
         }
 
         @Override
