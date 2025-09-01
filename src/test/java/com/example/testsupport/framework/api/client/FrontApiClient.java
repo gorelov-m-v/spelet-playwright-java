@@ -6,7 +6,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient(name = "frontApiClient", url = "${env.api.base-url}", configuration = GenericParamsInterceptor.class)
+@FeignClient(name = "frontApiClient", url = "${env.api.base-url}")
 public interface FrontApiClient {
 
     @GetMapping("/_front_api/api/v1/gambling/brands")
