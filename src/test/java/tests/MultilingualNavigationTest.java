@@ -30,7 +30,6 @@ class MultilingualNavigationTest extends BaseTest {
     @Autowired private FrontApiClient frontApiClient;
 
     @Story("Переход на страницу казино для всех поддерживаемых языков и устройств")
-    @DisplayName("Навигация на страницу казино")
     @ParameterizedTest(name = "[{index}] [Устройство: {0}, Язык: {1}]")
     @ArgumentsSource(DeviceProvider.class)
     void navigateToCasinoPageOnAllLanguagesAndDevices(Device device, String languageCode) {

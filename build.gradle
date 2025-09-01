@@ -61,14 +61,14 @@ dependencies {
     testAnnotationProcessor 'org.projectlombok:lombok'
 
     // JUnit API needed for main framework classes such as extensions
-    implementation platform('org.junit:junit-bom:5.10.0')
+    implementation(enforcedPlatform('org.junit:junit-bom:5.12.2'))
     implementation 'org.junit.jupiter:junit-jupiter-api'
     implementation 'org.junit.jupiter:junit-jupiter-params'
 
     // Allure commons used by framework utilities and listeners
     implementation 'io.qameta.allure:allure-java-commons:2.29.0'
 
-    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation(enforcedPlatform('org.junit:junit-bom:5.12.2'))
     testImplementation 'org.junit.jupiter:junit-jupiter'
 
     testImplementation 'io.qameta.allure:allure-junit5:2.29.0'
