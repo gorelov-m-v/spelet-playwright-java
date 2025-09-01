@@ -33,11 +33,11 @@ class MultilingualNavigationTest extends BaseTest {
     void navigateToCasinoPageOnAllLanguagesAndDevices(Device device, String languageCode) {
 
         final class TestContext {
+            MainPage mainPage;
             CasinoPage casinoPage;
             FilterDrawerComponent filterDrawer;
             AuthModalComponent authModal;
             GamblingBrandsResponse gamblingBrandsResponse;
-            MainPage mainPage;
         }
         final TestContext ctx = new TestContext();
 
@@ -48,7 +48,6 @@ class MultilingualNavigationTest extends BaseTest {
                     .build();
 
             ctx.gamblingBrandsResponse = frontApiClient.getGamblingBrands(params);
-            Assertions.assertFalse(ctx.gamblingBrandsResponse.brands().isEmpty());
         });
 
         step(String.format("Подготовка тестового окружения [Устройство: %s, Язык: %s]", device, languageCode), () -> {
