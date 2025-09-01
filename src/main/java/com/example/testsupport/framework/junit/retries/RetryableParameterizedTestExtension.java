@@ -34,7 +34,7 @@ import static org.junit.platform.commons.util.AnnotationUtils.*;
  * Extension for {@link RetryableParameterizedTest}
  */
 public class RetryableParameterizedTestExtension implements TestTemplateInvocationContextProvider,
-        BeforeTestExecutionCallback, AfterTestExecutionCallback, TestExecutionExceptionHandler, TestWatcher {
+        BeforeTestExecutionCallback, AfterTestExecutionCallback, TestExecutionExceptionHandler {
 
     private int totalRepeats = 0;
     private int minSuccess = 1;
@@ -124,6 +124,36 @@ public class RetryableParameterizedTestExtension implements TestTemplateInvocati
 
     @Override
     public void beforeTestExecution(ExtensionContext context) {
+        if (retrying) {
+            retrying = false;
+            Allure.getLifecycle().updateTestCase(testResult -> {
+                TestResult failedAttempt = new TestResult()
+                        .setUuid(UUID.randomUUID().toString())
+                        .setHistoryId(testResult.getHistoryId())
+                        .setTestCaseId(testResult.getTestCaseId())
+                        .setName(testResult.getName())
+                        .setFullName(testResult.getFullName())
+                        .setLinks(testResult.getLinks())
+                        .setLabels(testResult.getLabels())
+                        .setSteps(new ArrayList<>(testResult.getSteps()))
+                        .setAttachments(new ArrayList<>(testResult.getAttachments()))
+                        .setStatus(testResult.getStatus())
+                        .setStatusDetails(testResult.getStatusDetails())
+                        .setStart(testResult.getStart())
+                        .setStop(testResult.getStop());
+
+                Allure.getLifecycle().scheduleTestCase(failedAttempt);
+                Allure.getLifecycle().startTestCase(failedAttempt.getUuid());
+                Allure.getLifecycle().stopTestCase(failedAttempt.getUuid());
+                Allure.getLifecycle().writeTestCase(failedAttempt.getUuid());
+
+                testResult.getSteps().clear();
+                testResult.getAttachments().clear();
+                testResult.setStatus(null);
+                testResult.setStatusDetails(null);
+            });
+        }
+
         repeatableExceptions = Stream.of(context.getTestMethod()
                 .flatMap(testMethods -> findAnnotation(testMethods, RetryableParameterizedTest.class))
                 .orElseThrow(() -> new IllegalStateException("The extension should not be executed "))
@@ -163,40 +193,6 @@ public class RetryableParameterizedTestExtension implements TestTemplateInvocati
                 throw throwable;
             }
         }
-    }
-
-    @Override
-    public void testAborted(ExtensionContext context, Throwable cause) {
-        if (!retrying) {
-            return;
-        }
-        retrying = false;
-        Allure.getLifecycle().updateTestCase(testResult -> {
-            TestResult failedAttempt = new TestResult()
-                    .setUuid(UUID.randomUUID().toString())
-                    .setHistoryId(testResult.getHistoryId())
-                    .setTestCaseId(testResult.getTestCaseId())
-                    .setName(testResult.getName())
-                    .setFullName(testResult.getFullName())
-                    .setLinks(testResult.getLinks())
-                    .setLabels(testResult.getLabels())
-                    .setSteps(new ArrayList<>(testResult.getSteps()))
-                    .setAttachments(new ArrayList<>(testResult.getAttachments()))
-                    .setStatus(testResult.getStatus())
-                    .setStatusDetails(testResult.getStatusDetails())
-                    .setStart(testResult.getStart())
-                    .setStop(testResult.getStop());
-
-            Allure.getLifecycle().scheduleTestCase(failedAttempt);
-            Allure.getLifecycle().startTestCase(failedAttempt.getUuid());
-            Allure.getLifecycle().stopTestCase(failedAttempt.getUuid());
-            Allure.getLifecycle().writeTestCase(failedAttempt.getUuid());
-
-            testResult.getSteps().clear();
-            testResult.getAttachments().clear();
-            testResult.setStatus(null);
-            testResult.setStatusDetails(null);
-        });
     }
 
     /**
