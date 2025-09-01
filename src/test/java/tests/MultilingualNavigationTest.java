@@ -1,7 +1,9 @@
 package tests;
 
 import com.example.testsupport.framework.device.Device;
-import com.example.testsupport.framework.junit.retries.RetryableParameterizedTest;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ArgumentsSource;
+import com.example.testsupport.framework.device.DeviceProvider;
 import com.example.testsupport.pages.MainPage;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
@@ -29,7 +31,8 @@ class MultilingualNavigationTest extends BaseTest {
 
     @Story("Переход на страницу казино для всех поддерживаемых языков и устройств")
     @DisplayName("Навигация на страницу казино")
-    @RetryableParameterizedTest(name = "[Устройство: {0}, Язык: {1}]")
+    @ParameterizedTest(name = "[Устройство: {0}, Язык: {1}]")
+    @ArgumentsSource(DeviceProvider.class)
     void navigateToCasinoPageOnAllLanguagesAndDevices(Device device, String languageCode) {
 
         final class TestContext {

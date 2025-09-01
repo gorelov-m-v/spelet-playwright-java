@@ -29,46 +29,7 @@ class MultilingualNavigationTest extends BaseTest {
 
 ---
 
-## 2. `@RetryableTest` & `@RetryableParameterizedTest` — Встроенная отказоустойчивость
-
-**Проблема:**  
-E2E-тесты подвержены нестабильности (flakiness) из-за проблем с сетью или средой. Стандартные аннотации JUnit 5 не предоставляют механизма перезапуска, а использование сторонних библиотек требует сложной и многословной конфигурации.
-
-**Решение:**
-Созданы две аннотации-агрегаторы, которые инкапсулируют всю логику перезапуска:
-- [`@RetryableTest`](src/main/java/com/example/testsupport/framework/junit/retries/RetryableTest.java) — для обычных тестов (работает в паре с [`RetryableTestExtension`](src/main/java/com/example/testsupport/framework/junit/retries/RetryableTestExtension.java)).
-- [`@RetryableParameterizedTest`](src/main/java/com/example/testsupport/framework/junit/retries/RetryableParameterizedTest.java) — для параметризованных тестов (работает в паре с [`RetryableParameterizedTestExtension`](src/main/java/com/example/testsupport/framework/junit/retries/RetryableParameterizedTestExtension.java)).
-
-**Как это работает:**  
-Эти аннотации регистрируют кастомные JUnit-расширения, которые перехватывают исключения при падении теста. Если лимит попыток, заданный в YAML-конфигурации, не исчерпан, расширение генерирует для JUnit новый контекст запуска, эффективно заставляя его повторить упавший тест.
-
-**Как применять:**
-
-**До (многословно):**
-
-```java
-@TestTemplate
-@ArgumentsSource(DeviceProvider.class)
-@ExtendWith(RetryableParameterizedTestExtension.class)
-void navigationTest(Device device, String languageCode) {
-    // ...
-}
-```
-
-**После (одна аннотация):**
-
-```java
-@RetryableParameterizedTest(name = "[Устройство: {0}, Язык: {1}]")
-void navigationTest(Device device, String languageCode) {
-    // ...
-}
-```
-
-*Это делает любой тест отказоустойчивым одной строкой, повышая стабильность CI/CD.*
-
----
-
-## 3. Аннотации для декларативного API-клиента
+## 2. Аннотации для декларативного API-клиента
 
 **Проблема:**  
 Вызов API-методов с множеством необязательных параметров через стандартный Feign приводит к коду с большим количеством `null`, что нечитаемо и хрупко.
@@ -381,4 +342,10 @@ void fullCasinoFlowTest(Device device, String languageCode) {
 ```
 
 Этот паттерн рекомендуется использовать для всех тестов, содержащих более 2-3 взаимосвязанных шагов.
+
+## Testing
+
+### Retries
+
+Тесты запускаются с плагином Gradle Test Retry. Количество повторных запусков управляется в `gradle.properties` через свойства `retry.maxRetries`, `retry.maxFailures` и `retry.failOnPassedAfterRetry`.
 

@@ -100,7 +100,11 @@ public class PlaywrightManager {
                 .replaceAll("[^a-zA-Z0-9.-]", "_")
                 .replaceAll("\\s+", "_");
 
-        String traceName = "trace-" + sanitizedTestName + ".zip";
+        String attempt = System.getProperty("org.gradle.test-retry.currentAttempt", "1");
+        String max = System.getProperty("org.gradle.test-retry.maxRetries", "0");
+        String suffix = String.format("_attempt-%s-of-%s", attempt, max.equals("0") ? "0" : String.valueOf(Integer.parseInt(max) + 1));
+
+        String traceName = "trace-" + sanitizedTestName + suffix + ".zip";
         Path tracePath = Paths.get("build", "traces", traceName);
 
         if (context.get() != null) {
