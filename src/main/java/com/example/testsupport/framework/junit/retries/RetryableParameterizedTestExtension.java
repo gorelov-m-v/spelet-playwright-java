@@ -6,7 +6,6 @@ import io.github.artsok.internal.ParameterizedRepeatedIfExceptionsTestNameFormat
 import io.github.artsok.internal.ParameterizedRepeatedMethodContext;
 import io.github.artsok.internal.ParameterizedTestInvocationContext;
 import org.junit.jupiter.api.extension.*;
-import org.junit.jupiter.api.extension.TestWatcher;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
@@ -34,7 +33,7 @@ import static org.junit.platform.commons.util.AnnotationUtils.*;
  * Extension for {@link RetryableParameterizedTest}
  */
 public class RetryableParameterizedTestExtension implements TestTemplateInvocationContextProvider,
-        BeforeTestExecutionCallback, AfterTestExecutionCallback, TestExecutionExceptionHandler {
+        BeforeTestExecutionCallback, AfterTestExecutionCallback, AfterEachCallback, TestExecutionExceptionHandler {
 
     private int totalRepeats = 0;
     private int minSuccess = 1;
@@ -124,8 +123,17 @@ public class RetryableParameterizedTestExtension implements TestTemplateInvocati
 
     @Override
     public void beforeTestExecution(ExtensionContext context) {
+        repeatableExceptions = Stream.of(context.getTestMethod()
+                .flatMap(testMethods -> findAnnotation(testMethods, RetryableParameterizedTest.class))
+                .orElseThrow(() -> new IllegalStateException("The extension should not be executed "))
+                .exceptions()
+        ).collect(Collectors.toList());
+        repeatableExceptions.add(TestAbortedException.class);
+    }
+
+    @Override
+    public void afterEach(ExtensionContext context) {
         if (retrying) {
-            retrying = false;
             Allure.getLifecycle().updateTestCase(testResult -> {
                 TestResult failedAttempt = new TestResult()
                         .setUuid(UUID.randomUUID().toString())
@@ -152,14 +160,8 @@ public class RetryableParameterizedTestExtension implements TestTemplateInvocati
                 testResult.setStatus(null);
                 testResult.setStatusDetails(null);
             });
+            retrying = false;
         }
-
-        repeatableExceptions = Stream.of(context.getTestMethod()
-                .flatMap(testMethods -> findAnnotation(testMethods, RetryableParameterizedTest.class))
-                .orElseThrow(() -> new IllegalStateException("The extension should not be executed "))
-                .exceptions()
-        ).collect(Collectors.toList());
-        repeatableExceptions.add(TestAbortedException.class);
     }
 
     //Записываем в historyExceptionAppear по конкретным аргументам!
