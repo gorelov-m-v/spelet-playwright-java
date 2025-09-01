@@ -100,9 +100,6 @@ public class RetryableTestExtension implements TestTemplateInvocationContextProv
         configStore.put(TOTAL_RUNS_KEY, totalTestRuns);
         configStore.put(SUSPEND_KEY, suspend);
 
-        ExtensionContext.Store runStore = getRunStore(extensionContext);
-        runStore.put(HISTORY_KEY, Collections.synchronizedList(new ArrayList<>()));
-
         String displayName = extensionContext.getDisplayName();
         formatter = displayNameFormatter(annotationParams, displayName);
 
@@ -229,7 +226,11 @@ public class RetryableTestExtension implements TestTemplateInvocationContextProv
     }
 
     private ExtensionContext.Store getRunStore(ExtensionContext context) {
-        return context.getStore(ExtensionContext.Namespace.create(getClass(), context.getRequiredTestMethod(), "run"));
+        ExtensionContext methodContext = context;
+        while (methodContext.getParent().isPresent() && methodContext.getParent().get().getTestMethod().isPresent()) {
+            methodContext = methodContext.getParent().get();
+        }
+        return methodContext.getStore(ExtensionContext.Namespace.create(getClass(), methodContext.getUniqueId()));
     }
 
     @SuppressWarnings("unchecked")
