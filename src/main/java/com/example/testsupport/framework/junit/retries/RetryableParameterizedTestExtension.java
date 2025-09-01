@@ -6,6 +6,7 @@ import io.github.artsok.internal.ParameterizedRepeatedIfExceptionsTestNameFormat
 import io.github.artsok.internal.ParameterizedRepeatedMethodContext;
 import io.github.artsok.internal.ParameterizedTestInvocationContext;
 import org.junit.jupiter.api.extension.*;
+import org.junit.jupiter.api.extension.TestWatcher;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
@@ -33,7 +34,7 @@ import static org.junit.platform.commons.util.AnnotationUtils.*;
  * Extension for {@link RetryableParameterizedTest}
  */
 public class RetryableParameterizedTestExtension implements TestTemplateInvocationContextProvider,
-        BeforeTestExecutionCallback, AfterTestExecutionCallback, TestExecutionExceptionHandler {
+        BeforeTestExecutionCallback, AfterTestExecutionCallback, TestExecutionExceptionHandler, TestWatcher {
 
     private int totalRepeats = 0;
     private int minSuccess = 1;
@@ -42,6 +43,7 @@ public class RetryableParameterizedTestExtension implements TestTemplateInvocati
     private final List<Boolean> historyExceptionAppear = Collections.synchronizedList(new ArrayList<>());
     private static final String METHOD_CONTEXT_KEY = "context";
     private long suspend = 0L;
+    private boolean retrying = false;
 
     @Override
     public boolean supportsTestTemplate(ExtensionContext extensionContext) {
@@ -155,37 +157,46 @@ public class RetryableParameterizedTestExtension implements TestTemplateInvocati
         long currentSuccessCount = historyExceptionAppear.stream().filter(exceptionAppeared -> !exceptionAppeared).count();
         if (currentSuccessCount < minSuccess) {
             if (isMinSuccessTargetStillReachable(minSuccess)) {
-                Allure.getLifecycle().updateTestCase(testResult -> {
-                    TestResult failedAttempt = new TestResult()
-                            .setUuid(UUID.randomUUID().toString())
-                            .setHistoryId(testResult.getHistoryId())
-                            .setTestCaseId(testResult.getTestCaseId())
-                            .setName(testResult.getName())
-                            .setFullName(testResult.getFullName())
-                            .setLinks(testResult.getLinks())
-                            .setLabels(testResult.getLabels())
-                            .setSteps(new ArrayList<>(testResult.getSteps()))
-                            .setAttachments(new ArrayList<>(testResult.getAttachments()))
-                            .setStatus(testResult.getStatus())
-                            .setStatusDetails(testResult.getStatusDetails())
-                            .setStart(testResult.getStart())
-                            .setStop(testResult.getStop());
-
-                    Allure.getLifecycle().scheduleTestCase(failedAttempt);
-                    Allure.getLifecycle().startTestCase(failedAttempt.getUuid());
-                    Allure.getLifecycle().stopTestCase(failedAttempt.getUuid());
-                    Allure.getLifecycle().writeTestCase(failedAttempt.getUuid());
-
-                    testResult.getSteps().clear();
-                    testResult.getAttachments().clear();
-                    testResult.setStatus(null);
-                    testResult.setStatusDetails(null);
-                });
+                retrying = true;
                 throw new TestAbortedException("Do not fail completely, but repeat the test", throwable);
             } else {
                 throw throwable;
             }
         }
+    }
+
+    @Override
+    public void testAborted(ExtensionContext context, Throwable cause) {
+        if (!retrying) {
+            return;
+        }
+        retrying = false;
+        Allure.getLifecycle().updateTestCase(testResult -> {
+            TestResult failedAttempt = new TestResult()
+                    .setUuid(UUID.randomUUID().toString())
+                    .setHistoryId(testResult.getHistoryId())
+                    .setTestCaseId(testResult.getTestCaseId())
+                    .setName(testResult.getName())
+                    .setFullName(testResult.getFullName())
+                    .setLinks(testResult.getLinks())
+                    .setLabels(testResult.getLabels())
+                    .setSteps(new ArrayList<>(testResult.getSteps()))
+                    .setAttachments(new ArrayList<>(testResult.getAttachments()))
+                    .setStatus(testResult.getStatus())
+                    .setStatusDetails(testResult.getStatusDetails())
+                    .setStart(testResult.getStart())
+                    .setStop(testResult.getStop());
+
+            Allure.getLifecycle().scheduleTestCase(failedAttempt);
+            Allure.getLifecycle().startTestCase(failedAttempt.getUuid());
+            Allure.getLifecycle().stopTestCase(failedAttempt.getUuid());
+            Allure.getLifecycle().writeTestCase(failedAttempt.getUuid());
+
+            testResult.getSteps().clear();
+            testResult.getAttachments().clear();
+            testResult.setStatus(null);
+            testResult.setStatusDetails(null);
+        });
     }
 
     /**
