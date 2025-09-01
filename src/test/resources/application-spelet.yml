@@ -2,9 +2,6 @@ env:
   parallelism:
     strategy: fixed
     threads: 4
-  retries:
-      enabled: true
-      count: 2
   api:
     baseUrl: https://spelet.lv
   browser:
