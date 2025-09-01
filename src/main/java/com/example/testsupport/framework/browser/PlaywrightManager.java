@@ -57,6 +57,8 @@ public class PlaywrightManager {
                 .setSnapshots(true)
                 .setSources(true));
         page.set(context.get().newPage());
+        page.get().setDefaultTimeout(30_000);
+        page.get().setDefaultNavigationTimeout(60_000);
         page.get().onConsoleMessage(msg -> consoleMessages.get().add("[" + msg.type() + "] " + msg.text()));
     }
 

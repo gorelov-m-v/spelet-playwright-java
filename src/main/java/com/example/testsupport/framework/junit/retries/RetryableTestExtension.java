@@ -25,6 +25,9 @@ import org.junit.jupiter.api.extension.*;
 import org.junit.platform.commons.util.Preconditions;
 import org.junit.platform.commons.util.StringUtils;
 import org.opentest4j.TestAbortedException;
+import io.qameta.allure.Allure;
+import io.qameta.allure.model.Status;
+import io.qameta.allure.model.StatusDetails;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -172,16 +175,22 @@ public class RetryableTestExtension implements TestTemplateInvocationContextProv
         if (appearedExceptionDoesNotAllowRepetitions(throwable)) {
             throw throwable;
         }
+
         repeatableExceptionAppeared = true;
 
-        long currentSuccessCount = historyExceptionAppear.stream().filter(exceptionAppeared -> !exceptionAppeared).count();
-        if (currentSuccessCount < minSuccess) {
-            if (isMinSuccessTargetStillReachable(minSuccess)) {
-                throw new TestAbortedException("Do not fail completely, but repeat the test", throwable);
-            } else {
-                throw throwable;
-            }
+        long successCount = historyExceptionAppear.stream().filter(exceptionAppeared -> !exceptionAppeared).count();
+        boolean canStillReachMinSuccess = isMinSuccessTargetStillReachable(minSuccess);
+
+        Allure.getLifecycle().updateTestCase(tr -> {
+            tr.setStatus(Status.FAILED);
+            tr.setStatusDetails(new StatusDetails().setMessage(throwable.getMessage()));
+        });
+
+        if (successCount < minSuccess && canStillReachMinSuccess) {
+            throw new TestAbortedException("Retry due to repeatable exception", throwable);
         }
+
+        throw throwable;
     }
 
     /**

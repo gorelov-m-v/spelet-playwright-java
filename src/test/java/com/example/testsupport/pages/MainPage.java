@@ -5,6 +5,7 @@ import com.example.testsupport.framework.localization.LocalizationService;
 import com.example.testsupport.pages.components.HeaderComponent;
 import com.example.testsupport.pages.components.TabBarComponent;
 import com.microsoft.playwright.Page;
+import java.util.regex.Pattern;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import static com.example.testsupport.framework.utils.AllureHelper.step;
 import static com.example.testsupport.framework.utils.Breakpoints.MOBILE;
+import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -41,7 +43,8 @@ public class MainPage extends BasePage<MainPage> {
             } else {
                 header().clickCasino();
             }
-            step("Ожидание URL страницы 'Казино'", () -> page.waitForURL("**/casino"));
+            step("Ожидание URL страницы 'Казино'", () ->
+                    assertThat(page).hasURL(Pattern.compile(".*/(lv|ru|en)?/?casino/?$")));
             return casinoPageProvider.getObject().verifyIsLoaded();
         });
     }
