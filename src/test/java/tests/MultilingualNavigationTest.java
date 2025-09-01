@@ -1,7 +1,7 @@
 package tests;
 
 import com.example.testsupport.framework.device.Device;
-import com.example.testsupport.framework.junit.retries.RetryableParameterizedTest;
+import com.example.testsupport.framework.device.DeviceProvider;
 import com.example.testsupport.pages.MainPage;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
@@ -14,6 +14,8 @@ import com.example.testsupport.framework.api.client.params.GamblingBrandsParams;
 import com.example.testsupport.framework.api.dto.gambling.GamblingBrandsResponse;
 import io.qameta.allure.*;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.example.testsupport.framework.allure.Suite;
 
@@ -29,7 +31,8 @@ class MultilingualNavigationTest extends BaseTest {
 
     @Story("Переход на страницу казино для всех поддерживаемых языков и устройств")
     @DisplayName("Навигация на страницу казино")
-    @RetryableParameterizedTest(name = "[Устройство: {0}, Язык: {1}]")
+    @ParameterizedTest(name = "[Устройство: {0}, Язык: {1}]")
+    @ArgumentsSource(DeviceProvider.class)
     void navigateToCasinoPageOnAllLanguagesAndDevices(Device device, String languageCode) {
 
         final class TestContext {
