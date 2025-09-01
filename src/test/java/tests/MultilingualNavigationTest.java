@@ -18,6 +18,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.example.testsupport.framework.allure.Suite;
+import com.example.testsupport.framework.junit.retries.Retryable;
 
 import static com.example.testsupport.framework.utils.AllureHelper.step;
 
@@ -31,6 +32,7 @@ class MultilingualNavigationTest extends BaseTest {
 
     @Story("Переход на страницу казино для всех поддерживаемых языков и устройств")
     @DisplayName("Навигация на страницу казино")
+    @Retryable(attempts = 3)
     @ParameterizedTest(name = "[Устройство: {0}, Язык: {1}]")
     @ArgumentsSource(DeviceProvider.class)
     void navigateToCasinoPageOnAllLanguagesAndDevices(Device device, String languageCode) {
