@@ -145,7 +145,7 @@ public class RetryableParameterizedTestExtension implements TestTemplateInvocati
     private boolean exceptionAppeared(ExtensionContext extensionContext) {
         if (extensionContext.getExecutionException().isPresent()) {
             Throwable exception = extensionContext.getExecutionException().get();
-            List<Class<? extends Throwable>> repeatableExceptions = getStore(extensionContext).get(REPEATABLE_EXCEPTIONS_KEY, List.class);
+            List<Class<? extends Throwable>> repeatableExceptions = getConfigStore(extensionContext).get(REPEATABLE_EXCEPTIONS_KEY, List.class);
             return isExceptionRetryable(exception, repeatableExceptions);
         }
         return false;
@@ -178,7 +178,7 @@ public class RetryableParameterizedTestExtension implements TestTemplateInvocati
      */
     private boolean isMinSuccessTargetStillReachable(ExtensionContext context, final long minSuccessCount) {
         List<Boolean> history = getHistory(context);
-        int totalRepeats = getStore(context).get(TOTAL_REPEATS_KEY, Integer.class);
+        int totalRepeats = getConfigStore(context).get(TOTAL_REPEATS_KEY, Integer.class);
         return history.stream().filter(bool -> bool).count() <= totalRepeats - minSuccessCount;
     }
 

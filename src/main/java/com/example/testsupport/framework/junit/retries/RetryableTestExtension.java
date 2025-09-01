@@ -223,12 +223,14 @@ public class RetryableTestExtension implements TestTemplateInvocationContextProv
     }
 
     private ExtensionContext.Store getStore(ExtensionContext context) {
-        return context.getStore(ExtensionContext.Namespace.create(getClass(), context.getUniqueId()));
+        return context.getStore(ExtensionContext.Namespace.create(getClass(), context.getRequiredTestMethod()));
     }
 
     @SuppressWarnings("unchecked")
     private List<Boolean> getHistory(ExtensionContext context) {
-        return (List<Boolean>) getStore(context).get(HISTORY_KEY, List.class);
+        ExtensionContext.Store store = getStore(context);
+        return (List<Boolean>) store.getOrComputeIfAbsent(HISTORY_KEY,
+                key -> Collections.synchronizedList(new ArrayList<>()), List.class);
     }
 
     private void setRepeatableExceptionAppeared(ExtensionContext context, boolean appeared) {
