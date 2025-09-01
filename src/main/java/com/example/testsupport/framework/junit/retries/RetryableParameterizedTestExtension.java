@@ -15,6 +15,8 @@ import org.junit.platform.commons.util.ExceptionUtils;
 import org.junit.platform.commons.util.Preconditions;
 import org.junit.platform.commons.util.ReflectionUtils;
 import org.opentest4j.TestAbortedException;
+import io.qameta.allure.Allure;
+import io.qameta.allure.model.TestResult;
 
 import java.lang.reflect.Method;
 import java.util.*;
@@ -153,6 +155,32 @@ public class RetryableParameterizedTestExtension implements TestTemplateInvocati
         long currentSuccessCount = historyExceptionAppear.stream().filter(exceptionAppeared -> !exceptionAppeared).count();
         if (currentSuccessCount < minSuccess) {
             if (isMinSuccessTargetStillReachable(minSuccess)) {
+                Allure.getLifecycle().updateTestCase(testResult -> {
+                    TestResult failedAttempt = new TestResult()
+                            .setUuid(UUID.randomUUID().toString())
+                            .setHistoryId(testResult.getHistoryId())
+                            .setTestCaseId(testResult.getTestCaseId())
+                            .setName(testResult.getName())
+                            .setFullName(testResult.getFullName())
+                            .setLinks(testResult.getLinks())
+                            .setLabels(testResult.getLabels())
+                            .setSteps(new ArrayList<>(testResult.getSteps()))
+                            .setAttachments(new ArrayList<>(testResult.getAttachments()))
+                            .setStatus(testResult.getStatus())
+                            .setStatusDetails(testResult.getStatusDetails())
+                            .setStart(testResult.getStart())
+                            .setStop(testResult.getStop());
+
+                    Allure.getLifecycle().scheduleTestCase(failedAttempt);
+                    Allure.getLifecycle().startTestCase(failedAttempt.getUuid());
+                    Allure.getLifecycle().stopTestCase(failedAttempt.getUuid());
+                    Allure.getLifecycle().writeTestCase(failedAttempt.getUuid());
+
+                    testResult.getSteps().clear();
+                    testResult.getAttachments().clear();
+                    testResult.setStatus(null);
+                    testResult.setStatusDetails(null);
+                });
                 throw new TestAbortedException("Do not fail completely, but repeat the test", throwable);
             } else {
                 throw throwable;
