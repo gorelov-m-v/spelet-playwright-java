@@ -33,7 +33,7 @@ import static org.junit.platform.commons.util.AnnotationUtils.*;
  * Extension for {@link RetryableParameterizedTest}
  */
 public class RetryableParameterizedTestExtension implements TestTemplateInvocationContextProvider,
-        BeforeTestExecutionCallback, AfterTestExecutionCallback, AfterEachCallback, TestExecutionExceptionHandler {
+        BeforeTestExecutionCallback, AfterTestExecutionCallback, TestExecutionExceptionHandler, TestWatcher {
 
     private int totalRepeats = 0;
     private int minSuccess = 1;
@@ -132,7 +132,7 @@ public class RetryableParameterizedTestExtension implements TestTemplateInvocati
     }
 
     @Override
-    public void afterEach(ExtensionContext context) {
+    public void testAborted(ExtensionContext context, Throwable cause) {
         if (retrying) {
             Allure.getLifecycle().updateTestCase(testResult -> {
                 TestResult failedAttempt = new TestResult()
@@ -159,6 +159,8 @@ public class RetryableParameterizedTestExtension implements TestTemplateInvocati
                 testResult.getAttachments().clear();
                 testResult.setStatus(null);
                 testResult.setStatusDetails(null);
+                testResult.setStart(null);
+                testResult.setStop(null);
             });
             retrying = false;
         }
