@@ -6,7 +6,6 @@ import com.example.testsupport.framework.device.Device;
 import com.example.testsupport.framework.listeners.PlaywrightExtension;
 import com.example.testsupport.framework.localization.LocalizationService;
 import com.example.testsupport.framework.allure.CustomSuiteExtension;
-import com.example.testsupport.framework.retry.RetryableExtension;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,7 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import static com.example.testsupport.framework.utils.AllureHelper.step;
 
 @SpringBootTest(classes = TestApplication.class)
-@ExtendWith({PlaywrightExtension.class, CustomSuiteExtension.class, RetryableExtension.class})
+@ExtendWith({PlaywrightExtension.class, CustomSuiteExtension.class})
 public abstract class BaseTest {
 
     @Autowired protected PlaywrightManager playwrightManager;
