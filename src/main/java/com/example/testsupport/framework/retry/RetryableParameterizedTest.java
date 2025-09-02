@@ -2,6 +2,7 @@ package com.example.testsupport.framework.retry;
 
 import org.junit.jupiter.api.TestTemplate;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.provider.ArgumentsProvider;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -11,10 +12,9 @@ import java.lang.annotation.Target;
 /**
  * Marker annotation enabling retry mechanism for parameterized tests.
  * <p>
- * This annotation deliberately does <strong>not</strong> declare
- * {@code org.junit.jupiter.params.provider.ArgumentsSource} to ensure that
- * data providers are specified explicitly on each test method and to avoid
- * recursive parameter resolution.
+ * Instead of using JUnit's {@code @ArgumentsSource} on the test method, the
+ * {@link ArgumentsProvider} is supplied via the {@link #source()} attribute to
+ * avoid double resolution of arguments.
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
@@ -28,4 +28,6 @@ public @interface RetryableParameterizedTest {
 
     String name() default "[{index}] {arguments}";
     String repeatedName() default "{displayName} (retry {currentRepetition}/{totalRepetitions})";
+
+    Class<? extends ArgumentsProvider> source();
 }

@@ -3,7 +3,6 @@ package com.example.testsupport.framework.retry;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
-import org.junit.jupiter.params.provider.ArgumentsSource;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,6 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class RetryLogicTest {
 
     private static final Map<String, AtomicInteger> attemptCounters = new ConcurrentHashMap<>();
+
     @DisplayName("Обычный flaky-тест должен пройти после ретрая")
     @RetryableTest(repeats = 2)
     void whenTestIsFlaky_itShouldSucceed() {
@@ -22,8 +22,7 @@ public class RetryLogicTest {
     }
 
     @DisplayName("Параметризованный flaky-тест")
-    @RetryableParameterizedTest(repeats = 3)
-    @ArgumentsSource(FlakyTestArgumentProvider.class)
+    @RetryableParameterizedTest(repeats = 3, source = FlakyTestArgumentProvider.class)
     void whenParameterizedIsFlaky_eachCaseIsHandledCorrectly(String scenario, int failures) {
         int attempt = attemptCounters.computeIfAbsent(scenario, k -> new AtomicInteger()).incrementAndGet();
         if (failures == -1 || attempt <= failures) {

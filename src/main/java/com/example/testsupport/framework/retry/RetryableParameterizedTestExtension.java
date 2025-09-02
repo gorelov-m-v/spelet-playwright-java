@@ -3,7 +3,6 @@ package com.example.testsupport.framework.retry;
 import org.junit.jupiter.api.extension.*;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
-import org.junit.jupiter.params.provider.ArgumentsSource;
 
 import org.opentest4j.TestAbortedException;
 
@@ -62,15 +61,13 @@ public class RetryableParameterizedTestExtension implements TestTemplateInvocati
         Config config = new Config(annotation.repeats(), annotation.minSuccess(), annotation.suspend(), annotation.exceptions());
         getConfigStore(context).put(CONFIG_KEY, config);
 
-        // Collect arguments from all @ArgumentsSource annotations
+        // Instantiate ArgumentsProvider from annotation
         List<Arguments> arguments = new ArrayList<>();
-        for (ArgumentsSource src : method.getAnnotationsByType(ArgumentsSource.class)) {
-            try {
-                ArgumentsProvider provider = src.value().getDeclaredConstructor().newInstance();
-                provider.provideArguments(context).forEach(arguments::add);
-            } catch (Exception e) {
-                throw new ExtensionConfigurationException("Failed to instantiate ArgumentsProvider", e);
-            }
+        try {
+            ArgumentsProvider provider = annotation.source().getDeclaredConstructor().newInstance();
+            provider.provideArguments(context).forEach(arguments::add);
+        } catch (Exception e) {
+            throw new ExtensionConfigurationException("Failed to instantiate ArgumentsProvider", e);
         }
 
         // Build dynamic stream for each argument set
