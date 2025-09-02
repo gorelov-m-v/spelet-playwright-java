@@ -10,6 +10,11 @@ import java.lang.annotation.Target;
 
 /**
  * Marker annotation enabling retry mechanism for parameterized tests.
+ * <p>
+ * This annotation deliberately does <strong>not</strong> declare
+ * {@code org.junit.jupiter.params.provider.ArgumentsSource} to ensure that
+ * data providers are specified explicitly on each test method and to avoid
+ * recursive parameter resolution.
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
