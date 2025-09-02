@@ -31,11 +31,17 @@ class MultilingualNavigationTest extends BaseTest {
 
 ## 2. Стратегия обработки нестабильных тестов
 
-Кастомные аннотации `@RetryableTest` и `@RetryableParameterizedTest` были удалены из проекта из-за сложности поддержки.
-На текущем этапе команда сосредоточена на написании стабильных тестов и анализе причин нестабильности.
-При необходимости перезапуска упавших тестов можно рассмотреть готовые решения,
-например [JUnit Pioneer](https://junit-pioneer.org/) с аннотацией `@RetryingTest`
-или конфигурацию повторов на уровне Gradle через `test.retry`.
+Для повторного запуска нестабильных тестов используется лёгкая аннотация [`@Retryable`](src/main/java/com/example/testsupport/framework/retry/Retryable.java) и расширение [`RetryableExtension`](src/main/java/com/example/testsupport/framework/retry/RetryableExtension.java), основанные на JUnit 5 `InvocationInterceptor`.
+Аннотация указывает число повторов и, при необходимости, паузу между попытками.
+
+Пример использования:
+
+```java
+@Retryable(repeats = 2)
+void flakyTest() { /* test code */ }
+```
+
+Каждая попытка отображается в Allure как вложенный шаг со стек-трейсом ошибки. Механизм одинаково работает для обычных и параметризованных тестов.
 
 ---
 
