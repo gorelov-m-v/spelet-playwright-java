@@ -14,8 +14,8 @@ import com.example.testsupport.framework.api.client.params.GamblingBrandsParams;
 import com.example.testsupport.framework.api.dto.gambling.GamblingBrandsResponse;
 import io.qameta.allure.*;
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
+import com.example.testsupport.framework.retry.RetryableParameterizedTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.example.testsupport.framework.allure.Suite;
 
@@ -31,7 +31,7 @@ class MultilingualNavigationTest extends BaseTest {
 
     @Story("Переход на страницу казино для всех поддерживаемых языков и устройств")
     @DisplayName("Навигация на страницу казино")
-    @ParameterizedTest(name = "[Устройство: {0}, Язык: {1}]")
+    @RetryableParameterizedTest(repeats = 2, name = "[Устройство: {0}, Язык: {1}]")
     @ArgumentsSource(DeviceProvider.class)
     void navigateToCasinoPageOnAllLanguagesAndDevices(Device device, String languageCode) {
 
@@ -43,6 +43,10 @@ class MultilingualNavigationTest extends BaseTest {
             GamblingBrandsResponse gamblingBrandsResponse;
         }
         final TestContext ctx = new TestContext();
+
+        if ("lv".equals(languageCode)) {
+            step("Intentional failure for lv", () -> Assertions.fail("Broken locator for lv"));
+        }
 
         step("Получаем список брендов через API", () -> {
             var params = GamblingBrandsParams.builder()
