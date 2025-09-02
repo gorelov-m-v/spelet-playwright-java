@@ -14,13 +14,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class RetryLogicTest {
 
     private static final Map<String, AtomicInteger> attemptCounters = new ConcurrentHashMap<>();
-
-    @BeforeEach
-    void resetCounters() {
-        attemptCounters.clear();
-    }
-
-    @Test
     @DisplayName("Обычный flaky-тест должен пройти после ретрая")
     @RetryableTest(repeats = 2)
     void whenTestIsFlaky_itShouldSucceed() {
