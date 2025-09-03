@@ -130,15 +130,6 @@ public class RetryableExtension implements InvocationInterceptor {
     }
 
     private int resolveConfiguredRepeats(ExtensionContext context) {
-        String sysProp = System.getProperty("test.retry");
-        if (sysProp != null && !sysProp.isBlank()) {
-            try {
-                return Integer.parseInt(sysProp);
-            } catch (NumberFormatException ignored) {
-                // fall through
-            }
-        }
-
         try {
             ApplicationContext spring = SpringExtension.getApplicationContext(context);
             String prop = spring.getEnvironment().getProperty("test.retry");
@@ -149,7 +140,9 @@ public class RetryableExtension implements InvocationInterceptor {
             // spring context might be unavailable
         }
 
-        String profile = System.getProperty("spring.profiles.active", "").trim();
+        String profile = java.util.Optional.ofNullable(System.getenv("SPRING_PROFILES_ACTIVE"))
+                .map(String::trim)
+                .orElse("");
         String resource = "application" + (profile.isEmpty() ? "" : "-" + profile) + ".yml";
         try (java.io.InputStream is = getClass().getClassLoader().getResourceAsStream(resource)) {
             if (is != null) {
