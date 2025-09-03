@@ -18,3 +18,6 @@ env:
       - name: "Desktop FullHD"
         width: 1920
         height: 1080
+
+test:
+  retry: 0

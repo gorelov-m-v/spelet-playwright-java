@@ -6,10 +6,14 @@ import io.qameta.allure.model.StepResult;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.InvocationInterceptor;
 import org.junit.jupiter.api.extension.ReflectiveInvocationContext;
+import org.yaml.snakeyaml.Yaml;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.lang.annotation.Annotation;
+import java.util.Map;
 import java.util.Optional;
 
 public class RetryableExtension implements InvocationInterceptor {
@@ -19,10 +23,60 @@ public class RetryableExtension implements InvocationInterceptor {
                                     ReflectiveInvocationContext<Method> invocationContext,
                                     ExtensionContext extensionContext) throws Throwable {
         Optional<Retryable> annotation = findAnnotation(extensionContext);
+
+        final int configuredRepeats;
+        {
+            int repeats = 0;
+            String profile = System.getProperty("spring.profiles.active", "spelet");
+            String fileName = String.format("application-%s.yml", profile);
+            try (InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(fileName)) {
+                if (is != null) {
+                    Yaml yaml = new Yaml();
+                    Map<String, Object> root = yaml.load(is);
+                    Object testSection = root.get("test");
+                    if (testSection instanceof Map<?, ?> testMap) {
+                        Object retryValue = testMap.get("retry");
+                        if (retryValue != null) {
+                            repeats = Integer.parseInt(retryValue.toString());
+                        }
+                    }
+                }
+            } catch (Exception ignored) {
+                // ignore and keep default 0
+            }
+            configuredRepeats = repeats;
+        }
+
         if (annotation.isEmpty()) {
-            invocation.proceed();
+            if (configuredRepeats > 0) {
+                Retryable retryable = new Retryable() {
+                    @Override
+                    public int repeats() {
+                        return configuredRepeats;
+                    }
+
+                    @Override
+                    public long suspend() {
+                        return 0L;
+                    }
+
+                    @Override
+                    public Class<? extends Throwable>[] onExceptions() {
+                        return new Class[]{Throwable.class};
+                    }
+
+                    @Override
+                    public Class<? extends Annotation> annotationType() {
+                        return Retryable.class;
+                    }
+                };
+                executeWithRetries(invocation, invocationContext, extensionContext, retryable);
+            } else {
+                invocation.proceed();
+            }
             return;
         }
+
         executeWithRetries(invocation, invocationContext, extensionContext, annotation.get());
     }
 
