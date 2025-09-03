@@ -151,7 +151,9 @@ public class RetryableExtension implements InvocationInterceptor {
             // spring context might be unavailable
         }
 
-        String profile = java.util.Optional.ofNullable(System.getenv("SPRING_PROFILES_ACTIVE"))
+        String profile = java.util.Optional
+                .ofNullable(System.getProperty("spring.profiles.active"))
+                .or(() -> java.util.Optional.ofNullable(System.getenv("SPRING_PROFILES_ACTIVE")))
                 .map(String::trim)
                 .orElse("");
         String resource = "application" + (profile.isEmpty() ? "" : "-" + profile) + ".yml";
