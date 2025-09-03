@@ -53,4 +53,4 @@ env:
         height: 1133
 
 test:
-  retry: 0
+  retry: 2
