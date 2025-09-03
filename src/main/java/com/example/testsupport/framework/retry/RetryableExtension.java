@@ -20,6 +20,20 @@ public class RetryableExtension implements InvocationInterceptor {
     public void interceptTestMethod(Invocation<Void> invocation,
                                     ReflectiveInvocationContext<Method> invocationContext,
                                     ExtensionContext extensionContext) throws Throwable {
+        handleInvocation(invocation, invocationContext, extensionContext);
+    }
+
+    @Override
+    public void interceptTestTemplateMethod(Invocation<Void> invocation,
+                                            ReflectiveInvocationContext<Method> invocationContext,
+                                            ExtensionContext extensionContext) throws Throwable {
+        // отдельная обработка для параметризованных тестов
+        handleInvocation(invocation, invocationContext, extensionContext);
+    }
+
+    private void handleInvocation(Invocation<Void> invocation,
+                                  ReflectiveInvocationContext<Method> invocationContext,
+                                  ExtensionContext extensionContext) throws Throwable {
         Optional<Retryable> annotation = findAnnotation(extensionContext);
 
         int configuredRepeats = resolveConfiguredRepeats(extensionContext);
@@ -55,14 +69,6 @@ public class RetryableExtension implements InvocationInterceptor {
         }
 
         executeWithRetries(invocation, invocationContext, extensionContext, annotation.get());
-    }
-
-    @Override
-    public void interceptTestTemplateMethod(Invocation<Void> invocation,
-                                            ReflectiveInvocationContext<Method> invocationContext,
-                                            ExtensionContext extensionContext) throws Throwable {
-        // Эта же логика работает и для параметризованных тестов
-        interceptTestMethod(invocation, invocationContext, extensionContext);
     }
 
     private void executeWithRetries(Invocation<Void> invocation,
