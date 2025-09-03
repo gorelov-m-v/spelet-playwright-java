@@ -6,6 +6,8 @@ import io.qameta.allure.model.StepResult;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.InvocationInterceptor;
 import org.junit.jupiter.api.extension.ReflectiveInvocationContext;
+import org.springframework.context.ApplicationContext;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
@@ -20,7 +22,7 @@ public class RetryableExtension implements InvocationInterceptor {
                                     ExtensionContext extensionContext) throws Throwable {
         Optional<Retryable> annotation = findAnnotation(extensionContext);
 
-        int configuredRepeats = Integer.parseInt(System.getProperty("test.retry", "0"));
+        int configuredRepeats = resolveConfiguredRepeats(extensionContext);
 
         if (annotation.isEmpty()) {
             if (configuredRepeats > 0) {
@@ -125,6 +127,20 @@ public class RetryableExtension implements InvocationInterceptor {
     private Optional<Retryable> findAnnotation(ExtensionContext context) {
         return context.getElement()
             .map(el -> el.getAnnotation(Retryable.class));
+    }
+
+    private int resolveConfiguredRepeats(ExtensionContext context) {
+        String sysProp = System.getProperty("test.retry");
+        if (sysProp != null && !sysProp.isBlank()) {
+            return Integer.parseInt(sysProp);
+        }
+        try {
+            ApplicationContext spring = SpringExtension.getApplicationContext(context);
+            String prop = spring.getEnvironment().getProperty("test.retry", "0");
+            return Integer.parseInt(prop);
+        } catch (Exception ignored) {
+            return 0;
+        }
     }
 
     private boolean isExceptionRetryable(Throwable throwable, Class<? extends Throwable>[] retryableExceptions) {
