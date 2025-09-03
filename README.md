@@ -37,6 +37,9 @@ class MultilingualNavigationTest extends BaseTest {
 `RetryableExtension`. Оно читает свойство `test.retry` (например, при запуске через
 `-Dtest.retry=2` или в `application-<profile>.yml`) и повторяет каждый тест указанное
 число раз. В этом случае аннотация `@Retryable` становится необязательной.
+Нет необходимости выставлять `System.setProperty` внутри самих тестов — расширение
+автоматически читает значение из системных свойств или конфигурационных YAML-файлов
+активного профиля.
 Также можно рассмотреть сторонние решения, например
 [JUnit Pioneer](https://junit-pioneer.org/) с аннотацией `@RetryingTest`.
 

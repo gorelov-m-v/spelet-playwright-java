@@ -17,16 +17,6 @@ class RetryPropertyTest {
     private static int attempts = 0;
     private static final Map<Integer, Integer> paramAttempts = new HashMap<>();
 
-    @BeforeAll
-    static void enableRetries() {
-        System.setProperty("test.retry", "1");
-    }
-
-    @AfterAll
-    static void disableRetries() {
-        System.clearProperty("test.retry");
-    }
-
     @Test
     @DisplayName("Flaky-тест повторяется без @Retryable, если задан test.retry")
     void flakyTestRetriesWithoutAnnotation() {

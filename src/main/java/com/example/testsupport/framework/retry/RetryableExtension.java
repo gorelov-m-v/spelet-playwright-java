@@ -132,15 +132,44 @@ public class RetryableExtension implements InvocationInterceptor {
     private int resolveConfiguredRepeats(ExtensionContext context) {
         String sysProp = System.getProperty("test.retry");
         if (sysProp != null && !sysProp.isBlank()) {
-            return Integer.parseInt(sysProp);
+            try {
+                return Integer.parseInt(sysProp);
+            } catch (NumberFormatException ignored) {
+                // fall through
+            }
         }
+
         try {
             ApplicationContext spring = SpringExtension.getApplicationContext(context);
-            String prop = spring.getEnvironment().getProperty("test.retry", "0");
-            return Integer.parseInt(prop);
+            String prop = spring.getEnvironment().getProperty("test.retry");
+            if (prop != null && !prop.isBlank()) {
+                return Integer.parseInt(prop);
+            }
         } catch (Exception ignored) {
-            return 0;
+            // spring context might be unavailable
         }
+
+        String profile = System.getProperty("spring.profiles.active", "").trim();
+        String resource = "application" + (profile.isEmpty() ? "" : "-" + profile) + ".yml";
+        try (java.io.InputStream is = getClass().getClassLoader().getResourceAsStream(resource)) {
+            if (is != null) {
+                org.yaml.snakeyaml.Yaml yaml = new org.yaml.snakeyaml.Yaml();
+                Object obj = yaml.load(is);
+                if (obj instanceof java.util.Map<?,?> map) {
+                    Object test = map.get("test");
+                    if (test instanceof java.util.Map<?,?> tmap) {
+                        Object retry = tmap.get("retry");
+                        if (retry != null) {
+                            return Integer.parseInt(retry.toString());
+                        }
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+            // ignore
+        }
+
+        return 0;
     }
 
     private boolean isExceptionRetryable(Throwable throwable, Class<? extends Throwable>[] retryableExceptions) {
