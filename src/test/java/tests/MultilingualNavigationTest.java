@@ -12,6 +12,7 @@ import com.example.testsupport.pages.components.AuthModalComponent;
 import com.example.testsupport.framework.api.client.FrontApiClient;
 import com.example.testsupport.framework.api.client.params.GamblingBrandsParams;
 import com.example.testsupport.framework.api.dto.gambling.GamblingBrandsResponse;
+import java.util.concurrent.ThreadLocalRandom;
 import io.qameta.allure.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -71,8 +72,10 @@ class MultilingualNavigationTest extends BaseTest {
                     .verifyIsLoaded();
         });
 
-        step("Выбираем провайдера 'Play'n Go'", () -> {
-            ctx.filterDrawer.selectProvider("Play'n Go");
+        step("Выбираем случайного провайдера", () -> {
+            var brands = ctx.gamblingBrandsResponse.brands();
+            var randomBrandName = brands.get(ThreadLocalRandom.current().nextInt(brands.size())).name();
+            ctx.filterDrawer.selectProvider(randomBrandName);
         });
 
         step("Применяем фильтры", () -> {
