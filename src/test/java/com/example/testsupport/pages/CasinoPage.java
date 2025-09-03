@@ -30,6 +30,7 @@ public class CasinoPage extends BasePage<CasinoPage> {
     private final Locator desktopFilterButton;
     private final Locator searchInput;
     private final Locator gameCards;
+    private final Locator lobbyButton;
     private final ObjectProvider<FilterDrawerComponent> filterDrawerComponentProvider;
     private final ObjectProvider<AuthModalComponent> authModalComponentProvider;
 
@@ -49,6 +50,7 @@ public class CasinoPage extends BasePage<CasinoPage> {
         String searchLabel = ls.get("casino.search.input");
         this.searchInput = page.getByRole(AriaRole.SEARCHBOX, new Page.GetByRoleOptions().setName(searchLabel).setExact(true));
         this.gameCards = page.locator(".GameCard__root");
+        this.lobbyButton = page.locator(".navigationTab__root--isSelected_true");
     }
 
     /**
@@ -83,7 +85,7 @@ public class CasinoPage extends BasePage<CasinoPage> {
     public CasinoPage verifyIsLoaded() {
         return step("Проверка загрузки страницы 'Казино'", () -> {
             header().verifyLogoVisible();
-            verifyUrlContains(getExpectedPath());
+            assertThat(lobbyButton).isVisible();
             return this;
         });
     }
