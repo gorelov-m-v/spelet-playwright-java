@@ -51,3 +51,6 @@ env:
       - name: "iPad Mini"
         width: 744
         height: 1133
+
+test:
+  retry: 2
