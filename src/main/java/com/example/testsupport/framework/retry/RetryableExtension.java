@@ -130,6 +130,11 @@ public class RetryableExtension implements InvocationInterceptor {
     }
 
     private int resolveConfiguredRepeats(ExtensionContext context) {
+        String sys = System.getProperty("test.retry");
+        if (sys != null && !sys.isBlank()) {
+            return Integer.parseInt(sys);
+        }
+
         try {
             ApplicationContext spring = SpringExtension.getApplicationContext(context);
             String prop = spring.getEnvironment().getProperty("test.retry");
