@@ -47,6 +47,7 @@ class MultilingualNavigationTest extends BaseTest {
             GamblingBrandsResponse gamblingBrandsResponse;
             GamblingGamesResponse gamblingGamesResponse;
             Brand randomBrand;
+            String firstGameName;
         }
         final TestContext ctx = new TestContext();
 
@@ -86,12 +87,6 @@ class MultilingualNavigationTest extends BaseTest {
         step("Получаем список игр бренда", () -> {
             var params = GamblingGamesParams.builder()
                     .brandAliasArray(ctx.randomBrand.alias())
-                    .categoryAliasArray("test")
-                    .search("test")
-                    .deviceType("mobile")
-                    .showRestricted(true)
-                    .page(1)
-                    .perPage(24)
                     .build();
 
             var response = frontApiClient.getGamblingGames(params);
@@ -104,13 +99,14 @@ class MultilingualNavigationTest extends BaseTest {
                     .verifyIsLoaded();
         });
 
-        step("Ищем игру 'Book of Dead'", () -> {
-            ctx.casinoPage.typeInSearch("Book of Dead")
-                    .waitForGameVisible("Book of Dead");
+        step("Ищем первую игру из списка", () -> {
+            ctx.firstGameName = ctx.gamblingGamesResponse.games().get(0).name();
+            ctx.casinoPage.typeInSearch(ctx.firstGameName)
+                    .waitForGameVisible(ctx.firstGameName);
         });
 
-        step("Запускаем игру 'Book of Dead'", () -> {
-            ctx.authModal = ctx.casinoPage.clickPlay("Book of Dead")
+        step(String.format("Запускаем игру '%s'", ctx.firstGameName), () -> {
+            ctx.authModal = ctx.casinoPage.clickPlay(ctx.firstGameName)
                     .verifyIsLoaded();
         });
     }
