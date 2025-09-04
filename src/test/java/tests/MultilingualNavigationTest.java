@@ -46,6 +46,8 @@ class MultilingualNavigationTest extends BaseTest {
             AuthModalComponent authModal;
             GamblingBrandsResponse gamblingBrandsResponse;
             GamblingGamesResponse gamblingGamesResponse;
+            Brand randomBrand;
+            String firstGameName;
         }
         final TestContext ctx = new TestContext();
 
@@ -76,16 +78,15 @@ class MultilingualNavigationTest extends BaseTest {
                     .verifyIsLoaded();
         });
 
-        Brand randomBrand = step("Выбираем случайный бренд", () -> {
+        step("Выбираем случайный бренд", () -> {
             var brands = ctx.gamblingBrandsResponse.brands();
-            var brand = brands.get(ThreadLocalRandom.current().nextInt(brands.size()));
-            ctx.filterDrawer.selectProvider(brand.name());
-            return brand;
+            ctx.randomBrand = brands.get(ThreadLocalRandom.current().nextInt(brands.size()));
+            ctx.filterDrawer.selectProvider(ctx.randomBrand.name());
         });
 
         step("Получаем список игр бренда", () -> {
             var params = GamblingGamesParams.builder()
-                    .brandAliasArray(randomBrand.alias())
+                    .brandAliasArray(ctx.randomBrand.alias())
                     .build();
 
             var response = frontApiClient.getGamblingGames(params);
@@ -99,14 +100,13 @@ class MultilingualNavigationTest extends BaseTest {
         });
 
         step("Ищем первую игру из списка", () -> {
-            var gameName = ctx.gamblingGamesResponse.games().getFirst().name();
-            ctx.casinoPage.typeInSearch(gameName)
-                    .waitForGameVisible(gameName);
+            ctx.firstGameName = ctx.gamblingGamesResponse.games().getFirst().name();
+            ctx.casinoPage.typeInSearch(ctx.firstGameName)
+                    .waitForGameVisible(ctx.firstGameName);
         });
 
-        step("Запускаем игру '" + ctx.gamblingGamesResponse.games().getFirst().name() + "'", () -> {
-            var gameName = ctx.gamblingGamesResponse.games().getFirst().name();
-            ctx.authModal = ctx.casinoPage.clickPlay(gameName)
+        step("Запускаем игру '" + ctx.firstGameName + "'", () -> {
+            ctx.authModal = ctx.casinoPage.clickPlay(ctx.firstGameName)
                     .verifyIsLoaded();
         });
     }
