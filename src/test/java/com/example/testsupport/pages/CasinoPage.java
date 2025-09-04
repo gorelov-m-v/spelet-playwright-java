@@ -175,13 +175,13 @@ public class CasinoPage extends BasePage<CasinoPage> {
         return step("Запуск случайной игры из первого ряда", () -> {
             int width = page.viewportSize() != null ? page.viewportSize().width : Integer.MAX_VALUE;
             int firstRowSize;
-            if (width >= 1280) {
+            if (width >= Breakpoints.DESKTOP_LARGE) {
                 firstRowSize = 6;
-            } else if (width >= 940) {
+            } else if (width >= Breakpoints.DESKTOP_MEDIUM) {
                 firstRowSize = 5;
-            } else if (width >= 768) {
+            } else if (width >= Breakpoints.TABLET) {
                 firstRowSize = 4;
-            } else if (width >= 480) {
+            } else if (width >= Breakpoints.MOBILE_SMALL) {
                 firstRowSize = 3;
             } else {
                 firstRowSize = 2;
