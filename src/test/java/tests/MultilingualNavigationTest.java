@@ -12,6 +12,9 @@ import com.example.testsupport.pages.components.AuthModalComponent;
 import com.example.testsupport.framework.api.client.FrontApiClient;
 import com.example.testsupport.framework.api.client.params.GamblingBrandsParams;
 import com.example.testsupport.framework.api.dto.gambling.GamblingBrandsResponse;
+import com.example.testsupport.framework.api.client.params.GamblingGamesParams;
+import com.example.testsupport.framework.api.dto.gambling.GamblingGamesResponse;
+import com.example.testsupport.framework.api.dto.gambling.Brand;
 import java.util.concurrent.ThreadLocalRandom;
 import io.qameta.allure.*;
 import org.junit.jupiter.api.*;
@@ -42,6 +45,8 @@ class MultilingualNavigationTest extends BaseTest {
             FilterDrawerComponent filterDrawer;
             AuthModalComponent authModal;
             GamblingBrandsResponse gamblingBrandsResponse;
+            GamblingGamesResponse gamblingGamesResponse;
+            Brand randomBrand;
         }
         final TestContext ctx = new TestContext();
 
@@ -72,10 +77,26 @@ class MultilingualNavigationTest extends BaseTest {
                     .verifyIsLoaded();
         });
 
-        step("Выбираем случайного провайдера", () -> {
+        step("Выбираем случайный бренд", () -> {
             var brands = ctx.gamblingBrandsResponse.brands();
-            var randomBrandName = brands.get(ThreadLocalRandom.current().nextInt(brands.size())).name();
-            ctx.filterDrawer.selectProvider(randomBrandName);
+            ctx.randomBrand = brands.get(ThreadLocalRandom.current().nextInt(brands.size()));
+            ctx.filterDrawer.selectProvider(ctx.randomBrand.name());
+        });
+
+        step("Получаем список игр бренда", () -> {
+            var params = GamblingGamesParams.builder()
+                    .brandAliasArray(ctx.randomBrand.alias())
+                    .categoryAliasArray("test")
+                    .search("test")
+                    .deviceType("mobile")
+                    .showRestricted(true)
+                    .page(1)
+                    .perPage(24)
+                    .build();
+
+            var response = frontApiClient.getGamblingGames(params);
+            Assertions.assertEquals(200, response.getStatusCode().value());
+            ctx.gamblingGamesResponse = response.getBody();
         });
 
         step("Применяем фильтры", () -> {
