@@ -14,6 +14,10 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import com.example.testsupport.framework.api.dto.gambling.Game;
+
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static com.example.testsupport.framework.utils.AllureHelper.step;
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -158,6 +162,33 @@ public class CasinoPage extends BasePage<CasinoPage> {
             Locator card = gameCards.filter(new Locator.FilterOptions().setHasText(gameName)).first();
             card.getByRole(AriaRole.BUTTON).click();
             return authModalComponentProvider.getObject();
+        });
+    }
+
+    /**
+     * Launches a random game from the first row based on the viewport width.
+     *
+     * @param games list of games returned for the selected brand
+     * @return authorization modal component
+     */
+    public AuthModalComponent clickRandomGameFromFirstRow(List<Game> games) {
+        return step("Запуск случайной игры из первого ряда", () -> {
+            int width = page.viewportSize() != null ? page.viewportSize().width : Integer.MAX_VALUE;
+            int firstRowSize;
+            if (width >= 1280) {
+                firstRowSize = 6;
+            } else if (width >= 940) {
+                firstRowSize = 5;
+            } else if (width >= 768) {
+                firstRowSize = 4;
+            } else if (width >= 480) {
+                firstRowSize = 3;
+            } else {
+                firstRowSize = 2;
+            }
+            int size = Math.min(firstRowSize, games.size());
+            Game game = games.get(ThreadLocalRandom.current().nextInt(size));
+            return clickPlay(game.name());
         });
     }
 }
