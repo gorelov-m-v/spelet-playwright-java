@@ -50,7 +50,8 @@ public class CasinoPage extends BasePage<CasinoPage> {
         String searchLabel = ls.get("casino.search.input");
         this.searchInput = page.getByRole(AriaRole.SEARCHBOX, new Page.GetByRoleOptions().setName(searchLabel).setExact(true));
         this.gameCards = page.locator(".GameCard__root");
-        this.lobbyButton = page.locator(".navigationTab__root--isSelected_true").first();
+        this.lobbyButton = page.locator(
+                ".navigationTab__root--isSelected_true.navigationTab__root--size_md").first();
     }
 
     /**
