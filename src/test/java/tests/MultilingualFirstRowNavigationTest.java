@@ -11,7 +11,6 @@ import com.example.testsupport.pages.components.FilterDrawerComponent;
 import com.example.testsupport.pages.components.AuthModalComponent;
 import com.example.testsupport.framework.api.client.FrontApiClient;
 import com.example.testsupport.framework.api.client.params.GamblingBrandsParams;
-import com.example.testsupport.framework.api.client.params.GamblingGamesParams;
 import com.example.testsupport.framework.api.dto.gambling.GamblingBrandsResponse;
 import com.example.testsupport.framework.api.dto.gambling.Brand;
 import com.example.testsupport.framework.api.dto.gambling.GamblingGamesResponse;
@@ -84,10 +83,7 @@ class MultilingualFirstRowNavigationTest extends BaseTest {
         });
 
         step("Получаем список игр бренда", () -> {
-            var params = GamblingGamesParams.builder()
-                    .brandAliasArray(randomBrand.alias())
-                    .build();
-            var response = frontApiClient.getGamblingGames(params);
+              var response = frontApiClient.getGamblingGames(randomBrand.alias());
             Assertions.assertEquals(200, response.getStatusCode().value());
             ctx.gamblingGamesResponse = response.getBody();
         });
