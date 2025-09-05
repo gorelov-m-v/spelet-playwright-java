@@ -4,6 +4,7 @@ import com.example.testsupport.framework.api.client.annotations.RequestHeaderPar
 import com.example.testsupport.framework.api.client.annotations.RequestQueryParam;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
+import feign.template.QueryTemplate;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -17,19 +18,11 @@ public class GenericParamsInterceptor implements RequestInterceptor {
 
     @Override
     public void apply(RequestTemplate template) {
-        Map<String, Collection<?>> rawQueries = getRawQueries(template);
-        if (!rawQueries.containsKey("params")) {
+        Object params = extractParams(template);
+        clearParamsQuery(template);
+        if (params == null) {
             return;
         }
-
-        Collection<?> paramsCollection = rawQueries.get("params");
-        if (paramsCollection == null || paramsCollection.isEmpty()) {
-            clearParamsQuery(template, rawQueries);
-            return;
-        }
-
-        Object params = paramsCollection.iterator().next();
-        clearParamsQuery(template, rawQueries);
 
         for (Field field : params.getClass().getDeclaredFields()) {
             field.setAccessible(true);
@@ -52,21 +45,43 @@ public class GenericParamsInterceptor implements RequestInterceptor {
         }
     }
 
-    private Map<String, Collection<?>> getRawQueries(RequestTemplate template) {
+    private Object extractParams(RequestTemplate template) {
+        Map<String, Object> rawQueries = getRawQueries(template);
+        Object value = rawQueries.get("params");
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Collection<?> collection) {
+            return collection.isEmpty() ? null : collection.iterator().next();
+        }
+        if (value instanceof QueryTemplate queryTemplate) {
+            try {
+                Field valuesField = QueryTemplate.class.getDeclaredField("values");
+                valuesField.setAccessible(true);
+                Object vals = valuesField.get(queryTemplate);
+                if (vals instanceof Collection<?> coll) {
+                    return coll.isEmpty() ? null : coll.iterator().next();
+                }
+            } catch (ReflectiveOperationException ignored) {
+                // ignore reflection issues
+            }
+        }
+        return null;
+    }
+
+    private Map<String, Object> getRawQueries(RequestTemplate template) {
         try {
             Field field = RequestTemplate.class.getDeclaredField("queries");
             field.setAccessible(true);
             //noinspection unchecked
-            return (Map<String, Collection<?>>) field.get(template);
+            return (Map<String, Object>) field.get(template);
         } catch (ReflectiveOperationException e) {
             return new LinkedHashMap<>();
         }
     }
 
-    private void clearParamsQuery(RequestTemplate template, Map<String, Collection<?>> queries) {
+    private void clearParamsQuery(RequestTemplate template) {
+        Map<String, Object> queries = getRawQueries(template);
         queries.remove("params");
-        // cast to required type
-        //noinspection unchecked
-        template.queries((Map) new LinkedHashMap<>(queries));
     }
 }

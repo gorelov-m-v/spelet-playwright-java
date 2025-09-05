@@ -2,10 +2,10 @@ package com.example.testsupport.framework.api.client;
 
 import com.example.testsupport.framework.api.client.params.GamblingBrandsParams;
 import feign.RequestTemplate;
+import feign.template.QueryTemplate;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Field;
-import java.util.Collection;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -25,9 +25,13 @@ class GenericParamsInterceptorTest {
                 .build();
 
         RequestTemplate template = new RequestTemplate();
-        Map<String, Collection<?>> raw = new LinkedHashMap<>();
-        raw.put("params", Collections.singleton(params));
-        Field field = RequestTemplate.class.getDeclaredField("queries");
+        QueryTemplate qt = QueryTemplate.create("params", Collections.emptyList(), StandardCharsets.UTF_8);
+        java.lang.reflect.Field valuesField = QueryTemplate.class.getDeclaredField("values");
+        valuesField.setAccessible(true);
+        valuesField.set(qt, Collections.singletonList(params));
+        Map<String, Object> raw = new LinkedHashMap<>();
+        raw.put("params", qt);
+        java.lang.reflect.Field field = RequestTemplate.class.getDeclaredField("queries");
         field.setAccessible(true);
         field.set(template, raw);
 
