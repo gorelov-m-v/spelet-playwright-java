@@ -1,7 +1,6 @@
 package com.example.testsupport.framework.api.client;
 
 import com.example.testsupport.framework.api.client.params.GamblingBrandsParams;
-import com.example.testsupport.framework.api.client.params.GamblingGamesParams;
 import com.example.testsupport.framework.api.dto.gambling.GamblingBrandsResponse;
 import com.example.testsupport.framework.api.dto.gambling.GamblingGamesResponse;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -16,6 +15,6 @@ public interface FrontApiClient {
     GamblingBrandsResponse getGamblingBrands(@RequestParam("params") GamblingBrandsParams params);
 
     @GetMapping("/_front_api/api/v1/gambling/games")
-    ResponseEntity<GamblingGamesResponse> getGamblingGames(@RequestParam("params") GamblingGamesParams params);
+    ResponseEntity<GamblingGamesResponse> getGamblingGames(@RequestParam("brandAliasArray") String brandAlias);
 }
 

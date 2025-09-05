@@ -12,7 +12,6 @@ import com.example.testsupport.pages.components.AuthModalComponent;
 import com.example.testsupport.framework.api.client.FrontApiClient;
 import com.example.testsupport.framework.api.client.params.GamblingBrandsParams;
 import com.example.testsupport.framework.api.dto.gambling.GamblingBrandsResponse;
-import com.example.testsupport.framework.api.client.params.GamblingGamesParams;
 import com.example.testsupport.framework.api.dto.gambling.GamblingGamesResponse;
 import com.example.testsupport.framework.api.dto.gambling.Brand;
 import java.util.concurrent.ThreadLocalRandom;
@@ -45,10 +44,9 @@ class MultilingualFirstRowNavigationTest extends BaseTest {
             FilterDrawerComponent filterDrawer;
             AuthModalComponent authModal;
             GamblingBrandsResponse gamblingBrandsResponse;
-            GamblingGamesResponse gamblingGamesResponse;
-            Brand randomBrand;
-        }
-        final TestContext ctx = new TestContext();
+             GamblingGamesResponse gamblingGamesResponse;
+         }
+         final TestContext ctx = new TestContext();
 
         step("Получаем список брендов через API", () -> {
             var params = GamblingBrandsParams.builder()
@@ -77,18 +75,15 @@ class MultilingualFirstRowNavigationTest extends BaseTest {
                     .verifyIsLoaded();
         });
 
-        step("Выбираем случайный бренд", () -> {
+        Brand randomBrand = step("Выбираем случайный бренд", () -> {
             var brands = ctx.gamblingBrandsResponse.brands();
-            ctx.randomBrand = brands.get(ThreadLocalRandom.current().nextInt(brands.size()));
-            ctx.filterDrawer.selectProvider(ctx.randomBrand.name());
+            var brand = brands.get(ThreadLocalRandom.current().nextInt(brands.size()));
+            ctx.filterDrawer.selectProvider(brand.name());
+            return brand;
         });
 
         step("Получаем список игр бренда", () -> {
-            var params = GamblingGamesParams.builder()
-                    .brandAliasArray(ctx.randomBrand.alias())
-                    .build();
-
-            var response = frontApiClient.getGamblingGames(params);
+            var response = frontApiClient.getGamblingGames(randomBrand.alias());
             Assertions.assertEquals(200, response.getStatusCode().value());
             ctx.gamblingGamesResponse = response.getBody();
         });

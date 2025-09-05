@@ -12,7 +12,6 @@ import com.example.testsupport.pages.components.AuthModalComponent;
 import com.example.testsupport.framework.api.client.FrontApiClient;
 import com.example.testsupport.framework.api.client.params.GamblingBrandsParams;
 import com.example.testsupport.framework.api.dto.gambling.GamblingBrandsResponse;
-import com.example.testsupport.framework.api.client.params.GamblingGamesParams;
 import com.example.testsupport.framework.api.dto.gambling.GamblingGamesResponse;
 import com.example.testsupport.framework.api.dto.gambling.Brand;
 import java.util.concurrent.ThreadLocalRandom;
@@ -45,11 +44,9 @@ class MultilingualNavigationTest extends BaseTest {
             FilterDrawerComponent filterDrawer;
             AuthModalComponent authModal;
             GamblingBrandsResponse gamblingBrandsResponse;
-            GamblingGamesResponse gamblingGamesResponse;
-            Brand randomBrand;
-            String firstGameName;
-        }
-        final TestContext ctx = new TestContext();
+             GamblingGamesResponse gamblingGamesResponse;
+         }
+         final TestContext ctx = new TestContext();
 
         step("Получаем список брендов через API", () -> {
             var params = GamblingBrandsParams.builder()
@@ -78,18 +75,15 @@ class MultilingualNavigationTest extends BaseTest {
                     .verifyIsLoaded();
         });
 
-        step("Выбираем случайный бренд", () -> {
+        Brand randomBrand = step("Выбираем случайный бренд", () -> {
             var brands = ctx.gamblingBrandsResponse.brands();
-            ctx.randomBrand = brands.get(ThreadLocalRandom.current().nextInt(brands.size()));
-            ctx.filterDrawer.selectProvider(ctx.randomBrand.name());
+            var brand = brands.get(ThreadLocalRandom.current().nextInt(brands.size()));
+            ctx.filterDrawer.selectProvider(brand.name());
+            return brand;
         });
 
         step("Получаем список игр бренда", () -> {
-            var params = GamblingGamesParams.builder()
-                    .brandAliasArray(ctx.randomBrand.alias())
-                    .build();
-
-            var response = frontApiClient.getGamblingGames(params);
+            var response = frontApiClient.getGamblingGames(randomBrand.alias());
             Assertions.assertEquals(200, response.getStatusCode().value());
             ctx.gamblingGamesResponse = response.getBody();
         });
@@ -99,14 +93,15 @@ class MultilingualNavigationTest extends BaseTest {
                     .verifyIsLoaded();
         });
 
-        step("Ищем первую игру из списка", () -> {
-            ctx.firstGameName = ctx.gamblingGamesResponse.games().getFirst().name();
-            ctx.casinoPage.typeInSearch(ctx.firstGameName)
-                    .waitForGameVisible(ctx.firstGameName);
+        String firstGameName = step("Ищем первую игру из списка", () -> {
+            var name = ctx.gamblingGamesResponse.games().getFirst().name();
+            ctx.casinoPage.typeInSearch(name)
+                    .waitForGameVisible(name);
+            return name;
         });
 
-        step("Запускаем игру '" + ctx.firstGameName + "'", () -> {
-            ctx.authModal = ctx.casinoPage.clickPlay(ctx.firstGameName)
+        step("Запускаем игру '" + firstGameName + "'", () -> {
+            ctx.authModal = ctx.casinoPage.clickPlay(firstGameName)
                     .verifyIsLoaded();
         });
     }
