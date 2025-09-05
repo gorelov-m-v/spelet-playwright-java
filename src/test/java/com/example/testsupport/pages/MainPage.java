@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import static com.example.testsupport.framework.utils.AllureHelper.step;
-import static com.example.testsupport.framework.utils.Breakpoints.MOBILE;
+import static com.example.testsupport.framework.utils.Breakpoints.LG;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -36,7 +36,7 @@ public class MainPage extends BasePage<MainPage> {
     public CasinoPage navigateToCasino() {
         return step("Навигация на страницу 'Казино'", () -> {
             int currentWidth = page.viewportSize().width;
-            if (currentWidth < MOBILE) {
+            if (currentWidth < LG) {
                 tabBar().clickCasino();
             } else {
                 header().clickCasino();

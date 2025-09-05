@@ -17,18 +17,19 @@ public class GenericParamsInterceptor implements RequestInterceptor {
 
     @Override
     public void apply(RequestTemplate template) {
-        if (!template.queries().containsKey("params")) {
+        Map<String, Collection<?>> rawQueries = getRawQueries(template);
+        if (!rawQueries.containsKey("params")) {
             return;
         }
 
-        Collection<?> paramsCollection = template.queries().get("params");
+        Collection<?> paramsCollection = rawQueries.get("params");
         if (paramsCollection == null || paramsCollection.isEmpty()) {
-            clearParamsQuery(template);
+            clearParamsQuery(template, rawQueries);
             return;
         }
 
         Object params = paramsCollection.iterator().next();
-        clearParamsQuery(template);
+        clearParamsQuery(template, rawQueries);
 
         for (Field field : params.getClass().getDeclaredFields()) {
             field.setAccessible(true);
@@ -51,9 +52,21 @@ public class GenericParamsInterceptor implements RequestInterceptor {
         }
     }
 
-    private void clearParamsQuery(RequestTemplate template) {
-        Map<String, Collection<String>> queries = new LinkedHashMap<>(template.queries());
+    private Map<String, Collection<?>> getRawQueries(RequestTemplate template) {
+        try {
+            Field field = RequestTemplate.class.getDeclaredField("queries");
+            field.setAccessible(true);
+            //noinspection unchecked
+            return (Map<String, Collection<?>>) field.get(template);
+        } catch (ReflectiveOperationException e) {
+            return new LinkedHashMap<>();
+        }
+    }
+
+    private void clearParamsQuery(RequestTemplate template, Map<String, Collection<?>> queries) {
         queries.remove("params");
-        template.queries(queries);
+        // cast to required type
+        //noinspection unchecked
+        template.queries((Map) new LinkedHashMap<>(queries));
     }
 }

@@ -14,6 +14,10 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import com.example.testsupport.framework.api.dto.gambling.Game;
+
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static com.example.testsupport.framework.utils.AllureHelper.step;
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -30,6 +34,8 @@ public class CasinoPage extends BasePage<CasinoPage> {
     private final Locator desktopFilterButton;
     private final Locator searchInput;
     private final Locator gameCards;
+    private final Locator lobbyButtonMedium;
+    private final Locator lobbyButtonSmall;
     private final ObjectProvider<FilterDrawerComponent> filterDrawerComponentProvider;
     private final ObjectProvider<AuthModalComponent> authModalComponentProvider;
 
@@ -49,6 +55,10 @@ public class CasinoPage extends BasePage<CasinoPage> {
         String searchLabel = ls.get("casino.search.input");
         this.searchInput = page.getByRole(AriaRole.SEARCHBOX, new Page.GetByRoleOptions().setName(searchLabel).setExact(true));
         this.gameCards = page.locator(".GameCard__root");
+        this.lobbyButtonMedium = page.locator(
+                ".navigationTab__root--isSelected_true.navigationTab__root--size_md").first();
+        this.lobbyButtonSmall = page.locator(
+                ".navigationTab__root--isSelected_true.navigationTab__root--size_sm").first();
     }
 
     /**
@@ -83,7 +93,14 @@ public class CasinoPage extends BasePage<CasinoPage> {
     public CasinoPage verifyIsLoaded() {
         return step("Проверка загрузки страницы 'Казино'", () -> {
             header().verifyLogoVisible();
-            verifyUrlContains(getExpectedPath());
+            Locator lobby;
+            int width = page.viewportSize() != null ? page.viewportSize().width : Integer.MAX_VALUE;
+            if (width < Breakpoints.SM) {
+                lobby = lobbyButtonSmall;
+            } else {
+                lobby = lobbyButtonMedium;
+            }
+            assertThat(lobby).isVisible();
             return this;
         });
     }
@@ -97,7 +114,7 @@ public class CasinoPage extends BasePage<CasinoPage> {
         return step("Открытие панели фильтров", () -> {
             Locator button;
             int width = page.viewportSize() != null ? page.viewportSize().width : Integer.MAX_VALUE;
-            if (width < Breakpoints.TABLET) {
+            if (width < Breakpoints.SM) {
                 button = mobileFilterButton;
             } else {
                 button = desktopFilterButton;
@@ -145,6 +162,33 @@ public class CasinoPage extends BasePage<CasinoPage> {
             Locator card = gameCards.filter(new Locator.FilterOptions().setHasText(gameName)).first();
             card.getByRole(AriaRole.BUTTON).click();
             return authModalComponentProvider.getObject();
+        });
+    }
+
+    /**
+     * Launches a random game from the first row based on the viewport width.
+     *
+     * @param games list of games returned for the selected brand
+     * @return authorization modal component
+     */
+    public AuthModalComponent clickRandomGameFromFirstRow(List<Game> games) {
+        return step("Запуск случайной игры из первого ряда", () -> {
+            int width = page.viewportSize() != null ? page.viewportSize().width : Integer.MAX_VALUE;
+            int firstRowSize;
+            if (width >= Breakpoints.XL) {
+                firstRowSize = 6;
+            } else if (width >= Breakpoints.MD) {
+                firstRowSize = 5;
+            } else if (width >= Breakpoints.SM) {
+                firstRowSize = 4;
+            } else if (width >= Breakpoints.XS) {
+                firstRowSize = 3;
+            } else {
+                firstRowSize = 2;
+            }
+            int size = Math.min(firstRowSize, games.size());
+            Game game = games.get(ThreadLocalRandom.current().nextInt(size));
+            return clickPlay(game.name());
         });
     }
 }

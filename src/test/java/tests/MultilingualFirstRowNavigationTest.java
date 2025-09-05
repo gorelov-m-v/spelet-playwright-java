@@ -29,15 +29,15 @@ import static com.example.testsupport.framework.utils.AllureHelper.step;
 @Feature("Навигация по шапке")
 @Suite("Навигация и базовый флоу казино")
 @Execution(ExecutionMode.CONCURRENT)
-class MultilingualNavigationTest extends BaseTest {
+class MultilingualFirstRowNavigationTest extends BaseTest {
     @Autowired private ObjectProvider<MainPage> mainPageProvider;
     @Autowired private FrontApiClient frontApiClient;
 
     @Story("Переход на страницу казино для всех поддерживаемых языков и устройств")
-    @DisplayName("Навигация на страницу казино")
+    @DisplayName("Навигация на страницу казино и запуск игры из первого ряда")
     @ParameterizedTest(name = "[Устройство: {0}, Язык: {1}]")
     @ArgumentsSource(DeviceProvider.class)
-    void navigateToCasinoPageOnAllLanguagesAndDevices(Device device, String languageCode) {
+    void navigateToCasinoPageAndLaunchFirstRowGame(Device device, String languageCode) {
 
         final class TestContext {
             MainPage mainPage;
@@ -97,15 +97,8 @@ class MultilingualNavigationTest extends BaseTest {
                     .verifyIsLoaded();
         });
 
-        String firstGameName = step("Ищем первую игру из списка", () -> {
-            var name = ctx.gamblingGamesResponse.games().getFirst().name();
-            ctx.casinoPage.typeInSearch(name)
-                    .waitForGameVisible(name);
-            return name;
-        });
-
-        step("Запускаем игру '" + firstGameName + "'", () -> {
-            ctx.authModal = ctx.casinoPage.clickPlay(firstGameName)
+        step("Запускаем случайную игру из первого ряда", () -> {
+            ctx.authModal = ctx.casinoPage.clickRandomGameFromFirstRow(ctx.gamblingGamesResponse.games())
                     .verifyIsLoaded();
         });
     }
