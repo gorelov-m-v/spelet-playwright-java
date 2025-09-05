@@ -95,7 +95,7 @@ public class CasinoPage extends BasePage<CasinoPage> {
             header().verifyLogoVisible();
             Locator lobby;
             int width = page.viewportSize() != null ? page.viewportSize().width : Integer.MAX_VALUE;
-            if (width < Breakpoints.TABLET) {
+            if (width < Breakpoints.SM) {
                 lobby = lobbyButtonSmall;
             } else {
                 lobby = lobbyButtonMedium;
@@ -114,7 +114,7 @@ public class CasinoPage extends BasePage<CasinoPage> {
         return step("Открытие панели фильтров", () -> {
             Locator button;
             int width = page.viewportSize() != null ? page.viewportSize().width : Integer.MAX_VALUE;
-            if (width < Breakpoints.TABLET) {
+            if (width < Breakpoints.SM) {
                 button = mobileFilterButton;
             } else {
                 button = desktopFilterButton;
@@ -175,13 +175,13 @@ public class CasinoPage extends BasePage<CasinoPage> {
         return step("Запуск случайной игры из первого ряда", () -> {
             int width = page.viewportSize() != null ? page.viewportSize().width : Integer.MAX_VALUE;
             int firstRowSize;
-            if (width >= Breakpoints.DESKTOP_LARGE) {
+            if (width >= Breakpoints.XL) {
                 firstRowSize = 6;
-            } else if (width >= Breakpoints.DESKTOP_MEDIUM) {
+            } else if (width >= Breakpoints.MD) {
                 firstRowSize = 5;
-            } else if (width >= Breakpoints.TABLET) {
+            } else if (width >= Breakpoints.SM) {
                 firstRowSize = 4;
-            } else if (width >= Breakpoints.MOBILE_SMALL) {
+            } else if (width >= Breakpoints.XS) {
                 firstRowSize = 3;
             } else {
                 firstRowSize = 2;

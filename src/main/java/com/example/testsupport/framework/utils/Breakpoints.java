@@ -7,27 +7,27 @@ public final class Breakpoints {
     private Breakpoints() {}
 
     /**
-     * Large desktop width.
+     * Extra Small: Телефоны в портретной ориентации.
      */
-    public static final int DESKTOP_LARGE = 1280;
+    public static final int XS = 480;
 
     /**
-     * Medium desktop or laptop width.
+     * Small: Планшеты в портретной ориентации.
      */
-    public static final int DESKTOP_MEDIUM = 940;
+    public static final int SM = 768;
 
     /**
-     * Width below which layout switches to mobile navigation.
+     * Medium: Небольшие ноутбуки.
      */
-    public static final int MOBILE = 960;
+    public static final int MD = 940;
 
     /**
-     * Width below which certain buttons collapse to icon-only variants.
+     * Large: Стандартные ноутбуки (часто точка перелома для главной навигации).
      */
-    public static final int TABLET = 768;
+    public static final int LG = 960;
 
     /**
-     * Small mobile devices width.
+     * Extra Large: Десктопы и большие экраны.
      */
-    public static final int MOBILE_SMALL = 480;
+    public static final int XL = 1280;
 }
