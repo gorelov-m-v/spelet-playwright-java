@@ -46,6 +46,7 @@ dependencies {
     compileOnly 'io.github.openfeign:feign-okhttp'
     testImplementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
     testImplementation 'io.github.openfeign:feign-okhttp'
+    testImplementation 'io.github.openfeign:feign-mock'
 
     // Lombok
     compileOnly 'org.projectlombok:lombok'
