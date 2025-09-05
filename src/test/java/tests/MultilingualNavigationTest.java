@@ -12,8 +12,9 @@ import com.example.testsupport.pages.components.AuthModalComponent;
 import com.example.testsupport.framework.api.client.FrontApiClient;
 import com.example.testsupport.framework.api.client.params.GamblingBrandsParams;
 import com.example.testsupport.framework.api.dto.gambling.GamblingBrandsResponse;
-import com.example.testsupport.framework.api.dto.gambling.GamblingGamesResponse;
 import com.example.testsupport.framework.api.dto.gambling.Brand;
+import com.example.testsupport.framework.api.dto.gambling.GamblingGamesResponse;
+import com.example.testsupport.framework.api.client.params.GamblingGamesParams;
 import java.util.concurrent.ThreadLocalRandom;
 import io.qameta.allure.*;
 import org.junit.jupiter.api.*;
@@ -83,7 +84,10 @@ class MultilingualNavigationTest extends BaseTest {
         });
 
         step("Получаем список игр бренда", () -> {
-            var response = frontApiClient.getGamblingGames(randomBrand.alias());
+            var params = GamblingGamesParams.builder()
+                    .brandAliasArray(randomBrand.alias())
+                    .build();
+            var response = frontApiClient.getGamblingGames(params);
             Assertions.assertEquals(200, response.getStatusCode().value());
             ctx.gamblingGamesResponse = response.getBody();
         });
