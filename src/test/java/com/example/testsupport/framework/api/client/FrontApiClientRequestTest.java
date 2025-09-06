@@ -4,6 +4,7 @@ import com.example.testsupport.framework.api.client.annotations.RequestHeaderPar
 import com.example.testsupport.framework.api.client.annotations.RequestQueryParam;
 import com.example.testsupport.framework.api.client.params.GamblingBrandsParams;
 import com.example.testsupport.framework.api.client.params.GamblingGamesParams;
+import com.example.testsupport.framework.allure.Suite;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
@@ -11,15 +12,21 @@ import okhttp3.Request;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Suite("Сборка HTTP-запросов")
+@DisplayName("FrontApiClientRequest")
 class FrontApiClientRequestTest {
 
     @Test
+    @Tag("Unit-test")
+    @DisplayName("Собирает запрос к API брендов из аннотированных полей")
     void buildsHttpRequestWithAnnotatedParams() throws Exception {
         try (MockWebServer server = new MockWebServer()) {
             server.enqueue(new MockResponse().setResponseCode(200));
@@ -71,6 +78,8 @@ class FrontApiClientRequestTest {
     }
 
     @Test
+    @Tag("Unit-test")
+    @DisplayName("Собирает запрос к API игр из аннотированных полей")
     void buildsGamesRequestWithAnnotatedParams() throws Exception {
         try (MockWebServer server = new MockWebServer()) {
             server.enqueue(new MockResponse().setResponseCode(200));

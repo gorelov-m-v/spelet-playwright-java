@@ -10,7 +10,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.example.testsupport.framework.allure.Suite;
+
 @DisplayName("Проверка механизма ретраев (InvocationInterceptor)")
+@Suite("Механизм ретраев")
 @ExtendWith(RetryableExtension.class)
 public class RetryLogicTest {
 
@@ -22,6 +25,7 @@ public class RetryLogicTest {
     }
 
     @Test
+    @Tag("Unit-test")
     @DisplayName("Flaky-тест должен пройти после 1 перезапуска")
     @Retryable(repeats = 1)
     void whenTestIsFlaky_itShouldSucceed() {
@@ -33,6 +37,7 @@ public class RetryLogicTest {
     }
 
     @Test
+    @Tag("Unit-test")
     @DisplayName("Тест, который всегда падает, должен остаться FAILED")
     @Retryable(repeats = 2)
     void whenTestAlwaysFails_itShouldRemainFailed() {
@@ -47,6 +52,7 @@ public class RetryLogicTest {
 
     @DisplayName("Параметризованный flaky-тест")
     @ParameterizedTest
+    @Tag("Unit-test")
     @ValueSource(strings = {"A", "B"})
     @Retryable(repeats = 2)
     void whenParameterizedIsFlaky_invocationsAreIsolated(String scenario) {
@@ -60,6 +66,7 @@ public class RetryLogicTest {
     }
 
     @Test
+    @Tag("Unit-test")
     @DisplayName("Фильтр по исключениям не должен перезапускать тест с другой ошибкой")
     @Retryable(repeats = 5, onExceptions = {IOException.class}) // Ждем только IOException
     void whenExceptionTypeDoesNotMatch_itShouldNotRetry() {

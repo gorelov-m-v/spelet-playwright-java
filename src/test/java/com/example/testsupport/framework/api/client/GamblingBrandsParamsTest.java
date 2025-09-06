@@ -3,15 +3,22 @@ package com.example.testsupport.framework.api.client;
 import com.example.testsupport.framework.api.client.annotations.RequestHeaderParam;
 import com.example.testsupport.framework.api.client.annotations.RequestQueryParam;
 import com.example.testsupport.framework.api.client.params.GamblingBrandsParams;
+import com.example.testsupport.framework.allure.Suite;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Suite("Параметры брендов")
+@DisplayName("Аннотации параметров брендов")
 class GamblingBrandsParamsTest {
 
     @Test
+    @Tag("Unit-test")
+    @DisplayName("Все поля помечены корректными аннотациями")
     void fieldsAreAnnotated() throws Exception {
         assertHeader("platformNodeId", "Platform-NodeId");
         assertHeader("platformLocale", "Platform-Locale");

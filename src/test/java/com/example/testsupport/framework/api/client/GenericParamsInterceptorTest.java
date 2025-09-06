@@ -2,8 +2,11 @@ package com.example.testsupport.framework.api.client;
 
 import com.example.testsupport.framework.api.client.params.GamblingBrandsParams;
 import com.example.testsupport.framework.api.client.params.GamblingGamesParams;
+import com.example.testsupport.framework.allure.Suite;
 import feign.RequestTemplate;
 import feign.template.QueryTemplate;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -13,9 +16,13 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Suite("Перехватчик параметров")
+@DisplayName("GenericParamsInterceptor")
 class GenericParamsInterceptorTest {
 
     @Test
+    @Tag("Unit-test")
+    @DisplayName("Картографирует поля параметров и удаляет placeholder")
     void mapsFieldsAndClearsParams() throws Exception {
         GamblingBrandsParams params = GamblingBrandsParams.builder()
                 .platformNodeId("node-1")
@@ -47,6 +54,8 @@ class GenericParamsInterceptorTest {
     }
 
     @Test
+    @Tag("Unit-test")
+    @DisplayName("Игнорирует шаблон без параметров")
     void ignoresWhenNoParamsPresent() {
         RequestTemplate template = new RequestTemplate();
         new GenericParamsInterceptor().apply(template);
@@ -54,6 +63,8 @@ class GenericParamsInterceptorTest {
     }
 
     @Test
+    @Tag("Unit-test")
+    @DisplayName("Картографирует параметры игр")
     void mapsGameParams() throws Exception {
         GamblingGamesParams params = GamblingGamesParams.builder()
                 .brandAliasArray("brand-1")
