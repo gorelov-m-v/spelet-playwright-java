@@ -5,9 +5,7 @@ import com.example.testsupport.framework.api.client.annotations.RequestQueryPara
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
 import java.lang.reflect.Field;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.Objects;
 
 /**
  * Generic interceptor that maps annotated fields of parameter objects to
@@ -17,19 +15,13 @@ public class GenericParamsInterceptor implements RequestInterceptor {
 
     @Override
     public void apply(RequestTemplate template) {
-        if (!template.queries().containsKey("params")) {
+        // 1. Extract parameter object from the template body
+        Object params = template.body();
+        if (Objects.isNull(params)) {
             return;
         }
 
-        Collection<?> paramsCollection = template.queries().get("params");
-        if (paramsCollection == null || paramsCollection.isEmpty()) {
-            clearParamsQuery(template);
-            return;
-        }
-
-        Object params = paramsCollection.iterator().next();
-        clearParamsQuery(template);
-
+        // 2. Map annotated fields to query params and headers
         for (Field field : params.getClass().getDeclaredFields()) {
             field.setAccessible(true);
             try {
@@ -49,11 +41,9 @@ public class GenericParamsInterceptor implements RequestInterceptor {
                 // ignore inaccessible field
             }
         }
-    }
 
-    private void clearParamsQuery(RequestTemplate template) {
-        Map<String, Collection<String>> queries = new LinkedHashMap<>(template.queries());
-        queries.remove("params");
-        template.queries(queries);
+        // 3. Clear the body to avoid sending GET request with body
+        template.body((String) null);
     }
 }
+
