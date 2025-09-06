@@ -4,14 +4,20 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import io.qameta.allure.Epic;
+import com.example.testsupport.framework.allure.Suite;
+import com.example.testsupport.framework.allure.CustomSuiteExtension;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Epic("Unit-tests")
+@Suite("Unit-tests: Retry")
+@Tag("Unit-test")
 @DisplayName("Проверка механизма ретраев (InvocationInterceptor)")
-@ExtendWith(RetryableExtension.class)
+@ExtendWith({RetryableExtension.class, CustomSuiteExtension.class})
 public class RetryLogicTest {
 
     private static final Map<String, AtomicInteger> counters = new ConcurrentHashMap<>();
@@ -41,7 +47,6 @@ public class RetryLogicTest {
             System.out.printf("Always-fails тест, попытка #%d%n", attempt);
             Assertions.fail("Постоянное падение на попытке " + attempt);
         });
-        // Проверяем, что было ровно 3 попытки (1 + 2 ретрая)
         Assertions.assertEquals(3, counters.get("alwaysFails").get());
     }
 
@@ -52,8 +57,6 @@ public class RetryLogicTest {
     void whenParameterizedIsFlaky_invocationsAreIsolated(String scenario) {
         int attempt = counters.computeIfAbsent(scenario, k -> new AtomicInteger(0)).incrementAndGet();
         System.out.printf("Параметризованный тест (сценарий %s), попытка #%d%n", scenario, attempt);
-
-        // Только сценарий A является "flaky"
         if (scenario.equals("A") && attempt < 2) {
             Assertions.fail("Сценарий A падает на попытке " + attempt);
         }
@@ -61,13 +64,12 @@ public class RetryLogicTest {
 
     @Test
     @DisplayName("Фильтр по исключениям не должен перезапускать тест с другой ошибкой")
-    @Retryable(repeats = 5, onExceptions = {IOException.class}) // Ждем только IOException
+    @Retryable(repeats = 5, onExceptions = {IOException.class})
     void whenExceptionTypeDoesNotMatch_itShouldNotRetry() {
          Assertions.assertThrows(AssertionError.class, () -> {
             counters.computeIfAbsent("wrongException", k -> new AtomicInteger(0)).incrementAndGet();
             Assertions.fail("Эта ошибка не IOException, ретрая быть не должно");
         });
-        // Проверяем, что была ровно 1 попытка
         Assertions.assertEquals(1, counters.get("wrongException").get());
     }
 }

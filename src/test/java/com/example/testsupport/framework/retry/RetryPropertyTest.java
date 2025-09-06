@@ -6,12 +6,14 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import java.util.HashMap;
 import java.util.Map;
+import io.qameta.allure.Epic;
+import com.example.testsupport.framework.allure.Suite;
+import com.example.testsupport.framework.allure.CustomSuiteExtension;
 
-/**
- * Демонстрирует, что настройка test.retry позволяет перезапускать
- * flaky-тесты без аннотации @Retryable.
- */
-@ExtendWith(RetryableExtension.class)
+@Epic("Unit-tests")
+@Suite("Unit-tests: Retry")
+@Tag("Unit-test")
+@ExtendWith({RetryableExtension.class, CustomSuiteExtension.class})
 class RetryPropertyTest {
 
     private static int attempts = 0;
