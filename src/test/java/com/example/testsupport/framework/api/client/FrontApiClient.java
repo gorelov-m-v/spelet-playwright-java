@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface FrontApiClient {
 
     @GetMapping("/_front_api/api/v1/gambling/brands")
-    GamblingBrandsResponse getGamblingBrands(@RequestParam("params") GamblingBrandsParams params);
+    GamblingBrandsResponse getGamblingBrands(GamblingBrandsParams params);
 
     @GetMapping("/_front_api/api/v1/gambling/games")
     ResponseEntity<GamblingGamesResponse> getGamblingGames(@RequestParam("brandAliasArray") String brandAlias);

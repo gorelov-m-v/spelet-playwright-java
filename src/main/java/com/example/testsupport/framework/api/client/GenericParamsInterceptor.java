@@ -2,13 +2,11 @@ package com.example.testsupport.framework.api.client;
 
 import com.example.testsupport.framework.api.client.annotations.RequestHeaderParam;
 import com.example.testsupport.framework.api.client.annotations.RequestQueryParam;
+import feign.Request;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
-import feign.template.QueryTemplate;
 import java.lang.reflect.Field;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.Objects;
 
 /**
  * Generic interceptor that maps annotated fields of parameter objects to
@@ -19,8 +17,7 @@ public class GenericParamsInterceptor implements RequestInterceptor {
     @Override
     public void apply(RequestTemplate template) {
         Object params = extractParams(template);
-        clearParamsQuery(template);
-        if (params == null) {
+        if (Objects.isNull(params)) {
             return;
         }
 
@@ -40,48 +37,34 @@ public class GenericParamsInterceptor implements RequestInterceptor {
                     template.header(headerAnn.value(), value.toString());
                 }
             } catch (IllegalAccessException ignored) {
-                // ignore inaccessible field
+                // ignore inaccessible fields
             }
         }
+
+        clearBody(template);
     }
 
     private Object extractParams(RequestTemplate template) {
-        Map<String, Object> rawQueries = getRawQueries(template);
-        Object value = rawQueries.get("params");
-        if (value == null) {
+        try {
+            Field field = RequestTemplate.class.getDeclaredField("body");
+            field.setAccessible(true);
+            Object value = field.get(template);
+            if (value instanceof Request.Body) {
+                return null;
+            }
+            return value;
+        } catch (ReflectiveOperationException e) {
             return null;
         }
-        if (value instanceof Collection<?> collection) {
-            return collection.isEmpty() ? null : collection.iterator().next();
-        }
-        if (value instanceof QueryTemplate queryTemplate) {
-            try {
-                Field valuesField = QueryTemplate.class.getDeclaredField("values");
-                valuesField.setAccessible(true);
-                Object vals = valuesField.get(queryTemplate);
-                if (vals instanceof Collection<?> coll) {
-                    return coll.isEmpty() ? null : coll.iterator().next();
-                }
-            } catch (ReflectiveOperationException ignored) {
-                // ignore reflection issues
-            }
-        }
-        return null;
     }
 
-    private Map<String, Object> getRawQueries(RequestTemplate template) {
+    private void clearBody(RequestTemplate template) {
         try {
-            Field field = RequestTemplate.class.getDeclaredField("queries");
+            Field field = RequestTemplate.class.getDeclaredField("body");
             field.setAccessible(true);
-            //noinspection unchecked
-            return (Map<String, Object>) field.get(template);
-        } catch (ReflectiveOperationException e) {
-            return new LinkedHashMap<>();
+            field.set(template, Request.Body.empty());
+        } catch (ReflectiveOperationException ignored) {
+            // ignore
         }
-    }
-
-    private void clearParamsQuery(RequestTemplate template) {
-        Map<String, Object> queries = getRawQueries(template);
-        queries.remove("params");
     }
 }
