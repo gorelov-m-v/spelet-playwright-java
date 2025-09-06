@@ -8,8 +8,8 @@ import java.lang.reflect.Field;
 import java.util.Objects;
 
 /**
- * Generic interceptor that maps annotated fields of parameter objects to
- * request query parameters and headers.
+ * Generic interceptor that maps annotated fields of a parameter object
+ * (passed in the request body placeholder) to request query parameters and headers.
  */
 public class GenericParamsInterceptor implements RequestInterceptor {
 
@@ -42,8 +42,8 @@ public class GenericParamsInterceptor implements RequestInterceptor {
             }
         }
 
-        // 3. Clear the body to avoid sending GET request with body
-        template.body((String) null);
+        // 3. Clear the body using the byte-array overload
+        template.body((byte[]) null, null);
     }
 }
 
