@@ -1,7 +1,6 @@
 package com.example.testsupport.framework.api.client;
 
 import com.example.testsupport.framework.api.client.params.GamblingBrandsParams;
-import com.example.testsupport.framework.api.client.params.GamblingGamesParams;
 import com.example.testsupport.framework.allure.Suite;
 import feign.RequestTemplate;
 import feign.template.QueryTemplate;
@@ -62,28 +61,4 @@ class GenericParamsInterceptorTest {
         assertTrue(template.queries().isEmpty());
     }
 
-    @Test
-    @Tag("Unit-test")
-    @DisplayName("Картографирует параметры игр")
-    void mapsGameParams() throws Exception {
-        GamblingGamesParams params = GamblingGamesParams.builder()
-                .brandAliasArray("brand-1")
-                .build();
-
-        RequestTemplate template = new RequestTemplate();
-        QueryTemplate qt = QueryTemplate.create("params", Collections.emptyList(), StandardCharsets.UTF_8);
-        java.lang.reflect.Field valuesField = QueryTemplate.class.getDeclaredField("values");
-        valuesField.setAccessible(true);
-        valuesField.set(qt, Collections.singletonList(params));
-        Map<String, Object> raw = new LinkedHashMap<>();
-        raw.put("params", qt);
-        java.lang.reflect.Field field = RequestTemplate.class.getDeclaredField("queries");
-        field.setAccessible(true);
-        field.set(template, raw);
-
-        new GenericParamsInterceptor().apply(template);
-
-        assertEquals("brand-1", template.queries().get("brandAliasArray").iterator().next());
-        assertFalse(template.queries().containsKey("params"));
-    }
 }

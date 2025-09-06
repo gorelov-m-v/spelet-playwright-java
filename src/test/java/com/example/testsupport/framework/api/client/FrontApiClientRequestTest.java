@@ -3,7 +3,6 @@ package com.example.testsupport.framework.api.client;
 import com.example.testsupport.framework.api.client.annotations.RequestHeaderParam;
 import com.example.testsupport.framework.api.client.annotations.RequestQueryParam;
 import com.example.testsupport.framework.api.client.params.GamblingBrandsParams;
-import com.example.testsupport.framework.api.client.params.GamblingGamesParams;
 import com.example.testsupport.framework.allure.Suite;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
@@ -77,44 +76,4 @@ class FrontApiClientRequestTest {
         }
     }
 
-    @Test
-    @Tag("Unit-test")
-    @DisplayName("Собирает запрос к API игр из аннотированных полей")
-    void buildsGamesRequestWithAnnotatedParams() throws Exception {
-        try (MockWebServer server = new MockWebServer()) {
-            server.enqueue(new MockResponse().setResponseCode(200));
-            server.start();
-
-            GamblingGamesParams params = GamblingGamesParams.builder()
-                    .brandAliasArray("brand-1")
-                    .build();
-
-            HttpUrl.Builder urlBuilder = server.url("/_front_api/api/v1/gambling/games").newBuilder();
-            Headers.Builder headersBuilder = new Headers.Builder();
-
-            for (Field field : GamblingGamesParams.class.getDeclaredFields()) {
-                field.setAccessible(true);
-                Object value = field.get(params);
-                if (value == null) {
-                    continue;
-                }
-                RequestQueryParam queryAnn = field.getAnnotation(RequestQueryParam.class);
-                if (queryAnn != null) {
-                    urlBuilder.addQueryParameter(queryAnn.value(), value.toString());
-                }
-            }
-
-            Request request = new Request.Builder()
-                    .url(urlBuilder.build())
-                    .headers(headersBuilder.build())
-                    .build();
-
-            new OkHttpClient().newCall(request).execute();
-
-            RecordedRequest recorded = server.takeRequest();
-            assertNotNull(recorded);
-            HttpUrl url = recorded.getRequestUrl();
-            assertEquals("brand-1", url.queryParameter("brandAliasArray"));
-        }
-    }
 }

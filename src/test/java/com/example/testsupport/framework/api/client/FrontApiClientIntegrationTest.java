@@ -1,6 +1,5 @@
 package com.example.testsupport.framework.api.client;
 
-import com.example.testsupport.framework.api.client.params.GamblingGamesParams;
 import com.example.testsupport.framework.allure.Suite;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -48,9 +47,7 @@ class FrontApiClientIntegrationTest {
                 .addHeader("Content-Type", "application/json")
                 .setBody("{\"total\":0,\"games\":[]}"));
 
-        client.getGamblingGames(GamblingGamesParams.builder()
-                .brandAliasArray("brand-1")
-                .build());
+        client.getGamblingGames("brand-1");
 
         RecordedRequest request = server.takeRequest();
         assertEquals("/_front_api/api/v1/gambling/games?brandAliasArray=brand-1", request.getPath());
