@@ -17,10 +17,16 @@ public class GenericParamsInterceptor implements RequestInterceptor {
     @Override
     public void apply(RequestTemplate template) {
         Object params = extractParams(template);
-        if (Objects.isNull(params)) {
-            return;
+        if (Objects.nonNull(params)) {
+            mapParams(params, template);
         }
 
+        if ("GET".equalsIgnoreCase(template.method())) {
+            clearBody(template);
+        }
+    }
+
+    void mapParams(Object params, RequestTemplate template) {
         for (Field field : params.getClass().getDeclaredFields()) {
             field.setAccessible(true);
             try {
@@ -40,8 +46,6 @@ public class GenericParamsInterceptor implements RequestInterceptor {
                 // ignore inaccessible fields
             }
         }
-
-        clearBody(template);
     }
 
     private Object extractParams(RequestTemplate template) {
@@ -49,10 +53,7 @@ public class GenericParamsInterceptor implements RequestInterceptor {
             Field field = RequestTemplate.class.getDeclaredField("body");
             field.setAccessible(true);
             Object value = field.get(template);
-            if (value instanceof Request.Body) {
-                return null;
-            }
-            return value;
+            return (value instanceof Request.Body) ? null : value;
         } catch (ReflectiveOperationException e) {
             return null;
         }
@@ -62,7 +63,7 @@ public class GenericParamsInterceptor implements RequestInterceptor {
         try {
             Field field = RequestTemplate.class.getDeclaredField("body");
             field.setAccessible(true);
-            field.set(template, Request.Body.empty());
+            field.set(template, null);
         } catch (ReflectiveOperationException ignored) {
             // ignore
         }
