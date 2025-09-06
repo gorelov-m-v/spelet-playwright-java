@@ -45,6 +45,10 @@ class GenericParamsInterceptorTest {
         assertEquals("slots", template.queries().get("categoryAlias").iterator().next());
         assertEquals("node-1", template.headers().get("Platform-NodeId").iterator().next());
         assertEquals("en-US", template.headers().get("Platform-Locale").iterator().next());
-        assertNull(bodyField.get(template));
+        Object body = bodyField.get(template);
+        assertNotNull(body);
+        assertTrue(body instanceof Request.Body);
+        assertNull(((Request.Body) body).asBytes());
+        assertEquals(0, ((Request.Body) body).length());
     }
 }

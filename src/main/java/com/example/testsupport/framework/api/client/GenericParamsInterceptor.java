@@ -63,7 +63,7 @@ public class GenericParamsInterceptor implements RequestInterceptor {
         try {
             Field field = RequestTemplate.class.getDeclaredField("body");
             field.setAccessible(true);
-            field.set(template, null);
+            field.set(template, Request.Body.empty());
         } catch (ReflectiveOperationException ignored) {
             // ignore
         }
