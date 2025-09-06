@@ -44,203 +44,53 @@ class MultilingualNavigationTest extends BaseTest {
 
 ---
 
-## 3. Аннотации для декларативного API-клиента
+## 3. Декларативный API-клиент на OpenFeign
 
-**Проблема:**  
-Вызов API-методов с множеством необязательных параметров через стандартный Feign приводит к коду с большим количеством `null`, что нечитаемо и хрупко.
+**Проблема:**
+Вызов API-методов с множеством необязательных параметров через стандартный Feign приводит к перегруженным сигнатурам и обилию `null`.
 
-**Решение:**  
-Реализован паттерн Builder в связке с универсальным Feign-интерцептором и кастомными аннотациями для описания параметров запроса.
+**Решение:**
+Использовать Lombok Builder для формирования запросов и встроенные возможности OpenFeign:
+- `@SpringQueryMap` разворачивает поля объекта в query-параметры.
+- `@RequestHeader` явно описывает HTTP-заголовки.
 
-Аннотации: [`@RequestQueryParam`](src/main/java/com/example/testsupport/framework/api/client/annotations/RequestQueryParam.java), [`@RequestHeaderParam`](src/main/java/com/example/testsupport/framework/api/client/annotations/RequestHeaderParam.java)
-Перехватчик: [`GenericParamsInterceptor`](src/main/java/com/example/testsupport/framework/api/client/GenericParamsInterceptor.java)
-
-**Как это работает (пошагово):**
-
-### Шаг 1: Описываем параметры запроса с помощью DTO и аннотаций
-
-Для каждого API-эндпоинта создается POJO-класс, поля которого представляют все возможные параметры и помечаются нашими аннотациями.
+### Шаг 1: DTO для query-параметров
 
 ```java
 @Getter
 @Builder
 public class GamblingBrandsParams {
-    // Это поле будет преобразовано в HTTP-заголовок "Platform-Locale"
-    @RequestHeaderParam("Platform-Locale")
-    private String platformLocale;
-    // Это поле станет query-параметром "?categoryAlias=..."
-    @RequestQueryParam("categoryAlias")
+    private String deviceType;
+    private Boolean showRestricted;
     private String categoryAlias;
 }
 ```
 
-### Шаг 2: Создаем лаконичный Feign-интерфейс
-
-Метод клиента теперь принимает всего один DTO-объект.
-
-[`FrontApiClient.java`](src/test/java/com/example/testsupport/framework/api/client/FrontApiClient.java)
+### Шаг 2: Описание интерфейса клиента
 
 ```java
-@FeignClient(name = "frontApiClient", configuration = GenericParamsInterceptor.class)
-public interface FrontApiClient {
-    @GetMapping("/gambling/brands")
-    GamblingBrandsResponse getGamblingBrands(@RequestParam("params") GamblingBrandsParams params);
-}
-```
-
-### Шаг 3: Используем Builder в тестах
-
-Вместо передачи `null` мы декларативно конструируем запрос.
-
-**Было (хрупко и нечитаемо):**
-
-```java
-// Легко ошибиться, передавая null для всех необязательных параметров.
-GamblingBrandsResponse response = frontApiClient.getGamblingBrands(
-    null, "lv", null, null, "new");
-```
-
-**Стало (декларативно и безопасно):**
-
-```java
-// Создаем запрос, указывая параметры по имени. Код самодокументируемый.
-var params = GamblingBrandsParams.builder()
-        .platformLocale("lv")
-        .categoryAlias("new")
-        .build();
-GamblingBrandsResponse response = frontApiClient.getGamblingBrands(params);
-```
-
-### Шаг 4: Магия "под капотом"
-
-[`GenericParamsInterceptor`](src/main/java/com/example/testsupport/framework/api/client/GenericParamsInterceptor.java) перехватывает запрос и, используя рефлексию, динамически добавляет в него только те параметры и заголовки, которые были заданы в билдере.
-
----
-
-## 4. 📞 Декларативный API-клиент на OpenFeign
-
-Для взаимодействия с API и подготовки состояний перед UI-тестами в фреймворке реализован мощный и удобный HTTP-клиент на базе Spring Cloud OpenFeign. Этот подход позволяет описывать API как простые Java-интерфейсы, полностью абстрагируясь от низкоуровневой реализации HTTP-запросов.
-
-### 1. Конфигурация клиента
-
-Вся настройка клиента централизована и управляется Spring.
-
-**Включение Feign:** В главной тестовой конфигурации `TestConfig.java` активируется сканер Feign-клиентов:
-
-```java
-@Configuration
-@EnableFeignClients(basePackages = "com/example/testsupport/framework/api/client")
-public class TestConfig { /* ... */ }
-```
-
-**Настройка HTTP-слоя и логирования:** В классе `AllureFeignLoggerConfig.java` определяется HTTP-клиент (OkHttp) и регистрируется кастомный логгер, который детально записывает каждый запрос и ответ в Allure-отчет.
-
-```java
-@Configuration
-public class AllureFeignLoggerConfig {
-    @Bean
-    public Client feignClient() {
-        // Используем надежный OkHttp с таймаутами и пулом соединений
-        return new OkHttpClient(...);
-    }
-
-    @Bean
-    public FeignBuilderCustomizer allureFeignLoggerCustomizer(...) {
-        // Подключаем логгер, который аттачит запросы/ответы к Allure
-        return builder -> builder.logger(new AllureFeignLogger(...));
-    }
-}
-```
-
-### 2. Описание API-эндпоинта
-
-Создание нового API-вызова сводится к описанию его в нескольких декларативных классах, без написания императивной логики.
-
-**Шаг 1: Описываем DTO для ответа**
-
-Это простые record или POJO, которые точно повторяют структуру JSON-ответа от сервера.
-
-[`GamblingBrandsResponse.java`](src/test/java/com/example/testsupport/framework/api/dto/gambling/GamblingBrandsResponse.java) и
-[`Brand.java`](src/test/java/com/example/testsupport/framework/api/dto/gambling/Brand.java)
-
-```java
-public record GamblingBrandsResponse(List<Brand> brands) {}
-
-public record Brand(
-        String id,
-        String name,
-        String alias,
-        String icon,
-        String logo,
-        String colorLogo
-) {}
-```
-
-**Шаг 2: Описываем параметры запроса с помощью DTO и аннотаций**
-
-Для каждого API-эндпоинта создается POJO-класс, поля которого представляют все возможные параметры и помечаются кастомными аннотациями `@RequestQueryParam` и `@RequestHeaderParam`.
-
-[`GamblingBrandsParams.java`](src/test/java/com/example/testsupport/framework/api/client/params/GamblingBrandsParams.java)
-
-```java
-@Getter
-@Builder
-public class GamblingBrandsParams {
-    @RequestHeaderParam("Platform-Locale")
-    private String platformLocale;
-
-    @RequestQueryParam("categoryAlias")
-    private String categoryAlias;
-}
-```
-
-**Шаг 3: Описываем метод в интерфейсе клиента**
-
-В главном интерфейсе `FrontApiClient.java` добавляется новый метод. Он принимает всего один DTO-объект с параметрами. Вся магия по сборке реального HTTP-запроса инкапсулирована в универсальном перехватчике `GenericParamsInterceptor`.
-
-[`FrontApiClient.java`](src/test/java/com/example/testsupport/framework/api/client/FrontApiClient.java)
-
-```java
-@FeignClient(name = "...", configuration = GenericParamsInterceptor.class)
+@FeignClient(name = "frontApiClient", url = "${env.api.base-url}")
 public interface FrontApiClient {
     @GetMapping("/_front_api/api/v1/gambling/brands")
-    GamblingBrandsResponse getGamblingBrands(@RequestParam("params") GamblingBrandsParams params);
+    GamblingBrandsResponse getGamblingBrands(
+            @RequestHeader("Platform-Locale") String platformLocale,
+            @SpringQueryMap GamblingBrandsParams params);
 }
 ```
 
-### 3. Использование в тесте
-
-Благодаря паттерну Builder, вызов API в тесте становится чистым, декларативным и типобезопасным.
-
-[`MultilingualNavigationTest.java`](src/test/java/tests/MultilingualNavigationTest.java)
+### Шаг 3: Использование в тесте
 
 ```java
-@Autowired
-private FrontApiClient frontApiClient;
+var params = GamblingBrandsParams.builder()
+        .categoryAlias("new")
+        .build();
 
-@Test
-void apiIntegrationTest() {
-    step("Получаем список брендов через API", () -> {
-        // 1. Декларативно собираем запрос, указывая только нужные параметры
-        var params = GamblingBrandsParams.builder()
-                .platformLocale("lv")
-                .categoryAlias("new")
-                .build();
-
-        // 2. Вызываем метод клиента
-        GamblingBrandsResponse response = frontApiClient.getGamblingBrands(params);
-
-        // 3. Проверяем результат
-        Assertions.assertFalse(response.brands().isEmpty());
-    });
-}
+GamblingBrandsResponse response = frontApiClient.getGamblingBrands("lv", params);
 ```
 
-*Результат: В Allure-отчете для этого шага будет автоматически создан аттачмент с полным текстом HTTP-запроса и ответа, что делает отладку тривиальной.*
-
+*Такой подход использует только стандартный функционал Feign и не требует дополнительных интерцепторов.*
 
 ---
-
 ## 🎨 Кодстайл: DTO и неизменяемость (Records vs Lombok)
 
 Фреймворк придерживается прагматичного подхода к созданию DTO и выбирает инструмент под задачу. Ниже описаны основные правила, примеры и аргументация.
@@ -286,16 +136,13 @@ public record Brand(
 @Getter
 @Builder
 public class GamblingBrandsParams {
-    @RequestHeaderParam("Platform-Locale")
-    private String platformLocale;
-
-    @RequestQueryParam("categoryAlias")
+    private String deviceType;
+    private Boolean showRestricted;
     private String categoryAlias;
 }
 
 // Использование в тесте
 var params = GamblingBrandsParams.builder()
-        .platformLocale("lv")
         .categoryAlias("new")
         .build();
 ```

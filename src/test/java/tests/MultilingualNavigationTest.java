@@ -46,11 +46,10 @@ class MultilingualNavigationTest extends BaseTest {
 
         step("Получаем список брендов через API", () -> {
             var params = GamblingBrandsParams.builder()
-                    .platformLocale(languageCode)
                     .categoryAlias("new")
                     .build();
 
-            ctx.gamblingBrandsResponse = frontApiClient.getGamblingBrands(params);
+            ctx.gamblingBrandsResponse = frontApiClient.getGamblingBrands(languageCode, params);
         });
 
         step(String.format("Подготовка тестового окружения [Устройство: %s, Язык: %s]", device, languageCode), () -> {
