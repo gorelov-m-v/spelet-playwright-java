@@ -5,9 +5,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.function.Function;
 import org.springframework.stereotype.Service;
 
 /**
@@ -27,39 +27,46 @@ public class TestMatrixService {
      * Returns a stream of device/language combinations.
      */
     public Stream<List<Object>> getTestMatrix() {
+        return getDevices().flatMap(device -> getLanguages().map(lang -> List.of(device, lang)));
+    }
+
+    /**
+     * Returns a stream of devices configured for tests, optionally filtered by the
+     * {@code test.devices} system property.
+     */
+    public Stream<Device> getDevices() {
         List<Device> allDevices = config.getTestDevices().getPlatforms();
         if (allDevices == null || allDevices.isEmpty()) {
             throw new IllegalStateException("No test devices configured under env.test-devices.platforms");
         }
+        String filter = System.getProperty("test.devices");
+        if (filter == null || filter.isBlank()) {
+            return allDevices.stream();
+        }
+        Set<String> requested = Arrays.stream(filter.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toSet());
+        Map<String, Device> deviceMap = allDevices.stream()
+                .collect(Collectors.toMap(Device::getName, Function.identity()));
+        List<String> missing = requested.stream()
+                .filter(name -> !deviceMap.containsKey(name))
+                .toList();
+        if (!missing.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Device(s) not found in configuration: " + String.join(", ", missing));
+        }
+        return requested.stream().map(deviceMap::get);
+    }
+
+    /**
+     * Returns a stream of languages configured for browser tests.
+     */
+    public Stream<String> getLanguages() {
         List<String> languages = config.getBrowser().getLanguages();
         if (languages == null || languages.isEmpty()) {
             languages = List.of("lv", "ru", "en");
         }
-        final List<String> finalLanguages = languages;
-
-        String filter = System.getProperty("test.devices");
-        List<Device> devices;
-        if (filter == null || filter.isBlank()) {
-            devices = allDevices;
-        } else {
-            Set<String> requested = Arrays.stream(filter.split(","))
-                    .map(String::trim)
-                    .filter(s -> !s.isEmpty())
-                    .collect(Collectors.toSet());
-            Map<String, Device> deviceMap = allDevices.stream()
-                    .collect(Collectors.toMap(Device::getName, Function.identity()));
-            List<String> missing = requested.stream()
-                    .filter(name -> !deviceMap.containsKey(name))
-                    .toList();
-            if (!missing.isEmpty()) {
-                throw new IllegalArgumentException(
-                        "Device(s) not found in configuration: " + String.join(", ", missing));
-            }
-            devices = requested.stream().map(deviceMap::get).toList();
-        }
-
-        return devices.stream()
-                .flatMap(device -> finalLanguages.stream()
-                        .map(lang -> List.of(device, lang)));
+        return languages.stream();
     }
 }
