@@ -1,7 +1,11 @@
 package com.example.testsupport.framework.api.client;
 
 import com.example.testsupport.framework.api.client.params.GamblingBrandsParams;
+import com.example.testsupport.framework.api.client.params.GamblingCategoriesParams;
+import com.example.testsupport.framework.api.client.params.GamblingGamesParams;
 import com.example.testsupport.framework.api.dto.gambling.GamblingBrandsResponse;
+import com.example.testsupport.framework.api.dto.gambling.GamblingCategoriesResponse;
+import com.example.testsupport.framework.api.dto.gambling.GamblingGamesResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,5 +18,15 @@ public interface FrontApiClient {
     GamblingBrandsResponse getGamblingBrands(
             @RequestHeader("Platform-Locale") String platformLocale,
             @SpringQueryMap GamblingBrandsParams params);
+
+    @GetMapping("/_front_api/api/v2/gambling/categories")
+    GamblingCategoriesResponse getGamblingCategories(
+            @RequestHeader("Platform-Locale") String platformLocale,
+            @SpringQueryMap GamblingCategoriesParams params);
+
+    @GetMapping("/_front_api/api/v1/gambling/games")
+    GamblingGamesResponse getGamblingGames(
+            @RequestHeader("Platform-Locale") String platformLocale,
+            @SpringQueryMap GamblingGamesParams params);
 }
 

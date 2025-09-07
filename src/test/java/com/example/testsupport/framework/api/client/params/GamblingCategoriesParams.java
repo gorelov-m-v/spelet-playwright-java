@@ -5,15 +5,16 @@ import lombok.Getter;
 
 
 /**
- * Query parameters for fetching gambling brands.
+ * Query parameters for fetching gambling categories.
  */
 @Getter
 @Builder
-public class GamblingBrandsParams {
+public class GamblingCategoriesParams {
 
     private DeviceType deviceType;
 
-    private Boolean showRestricted;
+    private String categoryAliasArray;
 
-    private String categoryAlias;
+    private Boolean showRestricted;
 }
+
