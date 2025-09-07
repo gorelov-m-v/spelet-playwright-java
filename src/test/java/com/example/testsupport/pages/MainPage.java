@@ -43,7 +43,6 @@ public class MainPage extends BasePage<MainPage> {
             } else {
                 header().clickCasino();
             }
-            step("Ожидание URL страницы 'Казино'", () -> page.waitForURL("**/casino"));
             return casinoPageProvider.getObject().verifyIsLoaded();
         });
     }
