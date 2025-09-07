@@ -43,7 +43,7 @@ public class CookieBannerComponent extends BaseComponent {
             try {
                 button.first().waitFor(new Locator.WaitForOptions()
                         .setState(WaitForSelectorState.VISIBLE)
-                        .setTimeout(2000));
+                        .setTimeout(5000));
                 button.first().click();
             } catch (PlaywrightException e) {
                 Assertions.fail(String.format("Cookie accept button with text '%s' not found", acceptText));

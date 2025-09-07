@@ -105,8 +105,8 @@ public class CasinoPage extends BasePage<CasinoPage> {
     @Override
     public CasinoPage verifyIsLoaded() {
         return step("Проверка загрузки страницы 'Казино'", () -> {
-            verifyUrl();
             verifyLobbyButton();
+            verifyUrl();
             return this;
         });
     }
