@@ -58,24 +58,12 @@ public class CasinoPage extends BasePage<CasinoPage> {
     }
 
     /**
-     * Returns the expected relative path for the casino page based on language.
-     *
-     * @return expected path like "/casino" or "/ru/casino"
-     */
-    public String getExpectedPath() {
-        String lang = ls.getCurrentLangCode();
-        if (lang == null || lang.equals(config.getBrowser().getDefaultLanguage())) {
-            return "/casino";
-        }
-        return "/" + lang + "/casino";
-    }
-
-    /**
      * Verifies that current URL contains expected path.
      */
+    @Override
     public CasinoPage verifyUrl() {
         return step("Проверка URL страницы 'Казино'", () -> {
-            verifyUrlContains(getExpectedPath());
+            verifyUrlContains(getLocalizedPath("/casino"));
             return this;
         });
     }

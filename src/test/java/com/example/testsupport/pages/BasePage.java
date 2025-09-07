@@ -84,5 +84,29 @@ public abstract class BasePage<T extends BasePage<T>> {
         );
     }
 
+    /**
+     * Builds a language-aware path for URL verification.
+     *
+     * @param path page-specific path starting with '/'
+     * @return localized path, e.g. "/casino" or "/ru/casino"
+     */
+    protected String getLocalizedPath(String path) {
+        String lang = ls.getCurrentLangCode();
+        if (lang == null || lang.equals(config.getBrowser().getDefaultLanguage())) {
+            return path;
+        }
+        if ("/".equals(path)) {
+            return "/" + lang + "/";
+        }
+        return "/" + lang + path;
+    }
+
+    /**
+     * Verifies that current URL contains the expected path.
+     *
+     * @return current page object
+     */
+    public abstract T verifyUrl();
+
     public abstract T verifyIsLoaded();
 }
