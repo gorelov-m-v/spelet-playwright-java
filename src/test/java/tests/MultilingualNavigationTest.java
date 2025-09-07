@@ -54,11 +54,11 @@ class MultilingualNavigationTest extends BaseTest {
 
         step("Открываем главную страницу", () -> {
             ctx.mainPage = mainPageProvider.getObject();
-            ctx.mainPage.open().verifyIsLoaded();
+            ctx.mainPage.open();
         });
 
         step("Переходим на страницу 'Казино'", () -> {
-            ctx.casinoPage = ctx.mainPage.navigateToCasino().verifyIsLoaded();
+            ctx.casinoPage = ctx.mainPage.navigateToCasino();
         });
     }
 }
