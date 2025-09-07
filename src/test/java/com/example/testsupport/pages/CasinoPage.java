@@ -81,6 +81,23 @@ public class CasinoPage extends BasePage<CasinoPage> {
     }
 
     /**
+     * Verifies that the lobby button is visible for the current viewport width.
+     */
+    public CasinoPage verifyLobbyButton() {
+        return step("Проверка кнопки 'Лобби'", () -> {
+            Locator lobbyButton;
+            int width = page.viewportSize() != null ? page.viewportSize().width : Integer.MAX_VALUE;
+            if (width < Breakpoints.TABLET) {
+                lobbyButton = mobileLobbyButton;
+            } else {
+                lobbyButton = desktopLobbyButton;
+            }
+            assertThat(lobbyButton).isVisible();
+            return this;
+        });
+    }
+
+    /**
      * Verifies that the casino page is loaded.
      *
      * @return current page object
@@ -89,16 +106,7 @@ public class CasinoPage extends BasePage<CasinoPage> {
     public CasinoPage verifyIsLoaded() {
         return step("Проверка загрузки страницы 'Казино'", () -> {
             verifyUrl();
-            step("Проверка кнопки 'Лобби'", () -> {
-                Locator lobbyButton;
-                int width = page.viewportSize() != null ? page.viewportSize().width : Integer.MAX_VALUE;
-                if (width < Breakpoints.TABLET) {
-                    lobbyButton = mobileLobbyButton;
-                } else {
-                    lobbyButton = desktopLobbyButton;
-                }
-                assertThat(lobbyButton).isVisible();
-            });
+            verifyLobbyButton();
             return this;
         });
     }
