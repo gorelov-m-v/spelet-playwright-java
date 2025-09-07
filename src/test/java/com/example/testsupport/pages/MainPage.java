@@ -31,6 +31,14 @@ public class MainPage extends BasePage<MainPage> {
         this.casinoPageProvider = casinoPageProvider;
     }
 
+    @Override
+    public MainPage verifyUrl() {
+        return step("Проверка URL главной страницы", () -> {
+            verifyUrlContains(getExpectedPath());
+            return this;
+        });
+    }
+
     /**
      * Navigates to the casino page through the menu, adapting to screen size.
      */
@@ -56,7 +64,7 @@ public class MainPage extends BasePage<MainPage> {
     public MainPage verifyIsLoaded() {
         return step("Проверка загрузки главной страницы", () -> {
             header().verifyLogoVisible();
-            verifyUrlContains("/");
+            verifyUrl();
             return this;
         });
     }
