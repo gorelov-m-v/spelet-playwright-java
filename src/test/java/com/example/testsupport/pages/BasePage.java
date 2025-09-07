@@ -86,9 +86,14 @@ public abstract class BasePage<T extends BasePage<T>> {
         } catch (Exception e) {
             acceptText = "Accept";
         }
-        Locator button = page.locator(String.format("button:has-text('%s')", acceptText));
-        if (button.first().isVisible()) {
-            button.first().click();
+        Locator button = page.getByRole(
+                com.microsoft.playwright.options.AriaRole.BUTTON,
+                new Page.GetByRoleOptions().setName(acceptText)
+        );
+        try {
+            button.first().click(new Locator.ClickOptions().setTimeout(1000));
+        } catch (Exception ignored) {
+            // cookie banner not present
         }
     }
 }
