@@ -68,6 +68,7 @@ public class MainPage extends BasePage<MainPage> {
     public MainPage open() {
         return step("Открыть главную страницу", () -> {
             super.open();
+            acceptCookiesIfPresent();
             return verifyIsLoaded();
         });
     }

@@ -4,7 +4,9 @@ import com.example.testsupport.config.EnvironmentConfig;
 import com.example.testsupport.framework.localization.LocalizationService;
 import com.example.testsupport.pages.components.HeaderComponent;
 import com.example.testsupport.pages.components.TabBarComponent;
+import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
+import com.microsoft.playwright.options.AriaRole;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.factory.ObjectProvider;
 
@@ -77,4 +79,18 @@ public abstract class BasePage<T extends BasePage<T>> {
     }
 
     public abstract T verifyIsLoaded();
+
+    protected void acceptCookiesIfPresent() {
+        String acceptText;
+        try {
+            acceptText = ls.get("cookies.accept");
+        } catch (Exception e) {
+            acceptText = "Accept";
+        }
+        Locator button = page.getByRole(AriaRole.BUTTON,
+                new Page.GetByRoleOptions().setName(acceptText).setExact(true));
+        if (button.count() > 0) {
+            button.click();
+        }
+    }
 }
