@@ -101,6 +101,8 @@ class MultilingualNavigationTest extends BaseTest {
                     .map(GameCategory::name)
                     .toList();
             List<String> uiCategories = ctx.casinoPage.getCategoryTitles();
+            System.out.println("API categories: " + apiCategories);
+            System.out.println("UI categories: " + uiCategories);
             Assertions.assertIterableEquals(apiCategories, uiCategories);
         });
     }
