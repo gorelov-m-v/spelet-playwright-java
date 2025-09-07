@@ -90,10 +90,10 @@ public abstract class BasePage<T extends BasePage<T>> {
                 com.microsoft.playwright.options.AriaRole.BUTTON,
                 new Page.GetByRoleOptions().setName(acceptText)
         );
-        try {
-            button.first().click(new Locator.ClickOptions().setTimeout(1000));
-        } catch (Exception ignored) {
-            // cookie banner not present
-        }
+        Assertions.assertTrue(
+                button.count() > 0,
+                String.format("Cookie accept button with text '%s' not found", acceptText)
+        );
+        button.first().click();
     }
 }
