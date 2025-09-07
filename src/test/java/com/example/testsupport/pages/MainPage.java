@@ -2,6 +2,7 @@ package com.example.testsupport.pages;
 
 import com.example.testsupport.config.EnvironmentConfig;
 import com.example.testsupport.framework.localization.LocalizationService;
+import com.example.testsupport.pages.components.CookieBannerComponent;
 import com.example.testsupport.pages.components.HeaderComponent;
 import com.example.testsupport.pages.components.TabBarComponent;
 import com.microsoft.playwright.Page;
@@ -24,8 +25,9 @@ public class MainPage extends BasePage<MainPage> {
                     ObjectProvider<CasinoPage> casinoPageProvider,
                     EnvironmentConfig config,
                     ObjectProvider<HeaderComponent> headerProvider,
-                    ObjectProvider<TabBarComponent> tabBarProvider) {
-        super(page, ls, config, headerProvider, tabBarProvider);
+                    ObjectProvider<TabBarComponent> tabBarProvider,
+                    ObjectProvider<CookieBannerComponent> cookieBannerProvider) {
+        super(page, ls, config, headerProvider, tabBarProvider, cookieBannerProvider);
         this.casinoPageProvider = casinoPageProvider;
     }
 
@@ -41,7 +43,6 @@ public class MainPage extends BasePage<MainPage> {
             } else {
                 header().clickCasino();
             }
-            step("Ожидание URL страницы 'Казино'", () -> page.waitForURL("**/casino"));
             return casinoPageProvider.getObject().verifyIsLoaded();
         });
     }
@@ -68,6 +69,7 @@ public class MainPage extends BasePage<MainPage> {
     public MainPage open() {
         return step("Открыть главную страницу", () -> {
             super.open();
+            cookieBanner().acceptIfPresent();
             return verifyIsLoaded();
         });
     }

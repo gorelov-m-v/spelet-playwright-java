@@ -7,6 +7,7 @@ import com.example.testsupport.pages.components.FilterDrawerComponent;
 import com.example.testsupport.pages.components.AuthModalComponent;
 import com.example.testsupport.pages.components.HeaderComponent;
 import com.example.testsupport.pages.components.TabBarComponent;
+import com.example.testsupport.pages.components.CookieBannerComponent;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
@@ -28,6 +29,8 @@ public class CasinoPage extends BasePage<CasinoPage> {
 
     private final Locator mobileFilterButton;
     private final Locator desktopFilterButton;
+    private final Locator mobileLobbyButton;
+    private final Locator desktopLobbyButton;
     private final Locator searchInput;
     private final Locator gameCards;
     private final ObjectProvider<FilterDrawerComponent> filterDrawerComponentProvider;
@@ -39,13 +42,16 @@ public class CasinoPage extends BasePage<CasinoPage> {
                       ObjectProvider<FilterDrawerComponent> filterDrawerComponentProvider,
                       ObjectProvider<AuthModalComponent> authModalComponentProvider,
                       ObjectProvider<HeaderComponent> headerProvider,
-                      ObjectProvider<TabBarComponent> tabBarProvider) {
-        super(page, ls, config, headerProvider, tabBarProvider);
+                      ObjectProvider<TabBarComponent> tabBarProvider,
+                      ObjectProvider<CookieBannerComponent> cookieBannerProvider) {
+        super(page, ls, config, headerProvider, tabBarProvider, cookieBannerProvider);
         this.filterDrawerComponentProvider = filterDrawerComponentProvider;
         this.authModalComponentProvider = authModalComponentProvider;
         this.mobileFilterButton = page.locator("div.d_block.pos_relative.w768\\:d_none > button");
         String buttonText = ls.get("casino.filters.button");
         this.desktopFilterButton = page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName(buttonText).setExact(true));
+        this.mobileLobbyButton = page.locator("div.navigationTab__root--size_sm.navigationTab__root--isIcon_true.navigationTab__root--isSelected_true");
+        this.desktopLobbyButton = page.locator("div.navigationTab__root--size_md.navigationTab__root--isIcon_true.navigationTab__root--isSelected_true");
         String searchLabel = ls.get("casino.search.input");
         this.searchInput = page.getByRole(AriaRole.SEARCHBOX, new Page.GetByRoleOptions().setName(searchLabel).setExact(true));
         this.gameCards = page.locator(".GameCard__root");
@@ -75,6 +81,23 @@ public class CasinoPage extends BasePage<CasinoPage> {
     }
 
     /**
+     * Verifies that the lobby button is visible for the current viewport width.
+     */
+    public CasinoPage verifyLobbyButton() {
+        return step("Проверка кнопки 'Лобби'", () -> {
+            Locator lobbyButton;
+            int width = page.viewportSize() != null ? page.viewportSize().width : Integer.MAX_VALUE;
+            if (width < Breakpoints.TABLET) {
+                lobbyButton = mobileLobbyButton;
+            } else {
+                lobbyButton = desktopLobbyButton;
+            }
+            assertThat(lobbyButton).isVisible();
+            return this;
+        });
+    }
+
+    /**
      * Verifies that the casino page is loaded.
      *
      * @return current page object
@@ -82,8 +105,8 @@ public class CasinoPage extends BasePage<CasinoPage> {
     @Override
     public CasinoPage verifyIsLoaded() {
         return step("Проверка загрузки страницы 'Казино'", () -> {
-            header().verifyLogoVisible();
-            verifyUrlContains(getExpectedPath());
+            verifyLobbyButton();
+            verifyUrl();
             return this;
         });
     }

@@ -2,6 +2,7 @@ package com.example.testsupport.pages;
 
 import com.example.testsupport.config.EnvironmentConfig;
 import com.example.testsupport.framework.localization.LocalizationService;
+import com.example.testsupport.pages.components.CookieBannerComponent;
 import com.example.testsupport.pages.components.HeaderComponent;
 import com.example.testsupport.pages.components.TabBarComponent;
 import com.microsoft.playwright.Page;
@@ -17,18 +18,21 @@ public abstract class BasePage<T extends BasePage<T>> {
     protected final EnvironmentConfig config;
     private final HeaderComponent header;
     private final TabBarComponent tabBar;
+    private final CookieBannerComponent cookieBanner;
 
     @SuppressWarnings("resource")
     protected BasePage(Page page,
                        LocalizationService ls,
                        EnvironmentConfig config,
                        ObjectProvider<HeaderComponent> headerProvider,
-                       ObjectProvider<TabBarComponent> tabBarProvider) {
+                       ObjectProvider<TabBarComponent> tabBarProvider,
+                       ObjectProvider<CookieBannerComponent> cookieBannerProvider) {
         this.page = page;
         this.ls = ls;
         this.config = config;
         this.header = headerProvider.getObject();
         this.tabBar = tabBarProvider.getObject();
+        this.cookieBanner = cookieBannerProvider.getObject();
     }
 
     public HeaderComponent header() {
@@ -37,6 +41,10 @@ public abstract class BasePage<T extends BasePage<T>> {
 
     public TabBarComponent tabBar() {
         return tabBar;
+    }
+
+    public CookieBannerComponent cookieBanner() {
+        return cookieBanner;
     }
 
     @SuppressWarnings("unchecked")

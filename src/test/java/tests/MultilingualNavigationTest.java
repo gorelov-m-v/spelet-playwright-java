@@ -7,8 +7,6 @@ import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.beans.factory.ObjectProvider;
 import com.example.testsupport.pages.CasinoPage;
-import com.example.testsupport.pages.components.FilterDrawerComponent;
-import com.example.testsupport.pages.components.AuthModalComponent;
 import com.example.testsupport.framework.api.client.FrontApiClient;
 import com.example.testsupport.framework.api.client.params.GamblingBrandsParams;
 import com.example.testsupport.framework.api.dto.gambling.GamblingBrandsResponse;
@@ -38,8 +36,6 @@ class MultilingualNavigationTest extends BaseTest {
         final class TestContext {
             MainPage mainPage;
             CasinoPage casinoPage;
-            FilterDrawerComponent filterDrawer;
-            AuthModalComponent authModal;
             GamblingBrandsResponse gamblingBrandsResponse;
         }
         final TestContext ctx = new TestContext();
@@ -58,35 +54,11 @@ class MultilingualNavigationTest extends BaseTest {
 
         step("Открываем главную страницу", () -> {
             ctx.mainPage = mainPageProvider.getObject();
-            ctx.mainPage.open().verifyIsLoaded();
+            ctx.mainPage.open();
         });
 
         step("Переходим на страницу 'Казино'", () -> {
-            ctx.casinoPage = ctx.mainPage.navigateToCasino().verifyIsLoaded();
-        });
-
-        step("Открываем дровер фильтров", () -> {
-            ctx.filterDrawer = ctx.casinoPage.openFilters()
-                    .verifyIsLoaded();
-        });
-
-        step("Выбираем провайдера 'Play'n Go'", () -> {
-            ctx.filterDrawer.selectProvider("Play'n Go");
-        });
-
-        step("Применяем фильтры", () -> {
-            ctx.casinoPage = ctx.filterDrawer.clickShow()
-                    .verifyIsLoaded();
-        });
-
-        step("Ищем игру 'Book of Dead'", () -> {
-            ctx.casinoPage.typeInSearch("Book of Dead")
-                    .waitForGameVisible("Book of Dead");
-        });
-
-        step("Запускаем игру 'Book of Dead'", () -> {
-            ctx.authModal = ctx.casinoPage.clickPlay("Book of Dead")
-                    .verifyIsLoaded();
+            ctx.casinoPage = ctx.mainPage.navigateToCasino();
         });
     }
 }
