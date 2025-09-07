@@ -88,15 +88,17 @@ public class CasinoPage extends BasePage<CasinoPage> {
     @Override
     public CasinoPage verifyIsLoaded() {
         return step("Проверка загрузки страницы 'Казино'", () -> {
-            verifyUrlContains(getExpectedPath());
-            Locator lobbyButton;
-            int width = page.viewportSize() != null ? page.viewportSize().width : Integer.MAX_VALUE;
-            if (width < Breakpoints.TABLET) {
-                lobbyButton = mobileLobbyButton;
-            } else {
-                lobbyButton = desktopLobbyButton;
-            }
-            assertThat(lobbyButton).isVisible();
+            verifyUrl();
+            step("Проверка кнопки 'Лобби'", () -> {
+                Locator lobbyButton;
+                int width = page.viewportSize() != null ? page.viewportSize().width : Integer.MAX_VALUE;
+                if (width < Breakpoints.TABLET) {
+                    lobbyButton = mobileLobbyButton;
+                } else {
+                    lobbyButton = desktopLobbyButton;
+                }
+                assertThat(lobbyButton).isVisible();
+            });
             return this;
         });
     }
