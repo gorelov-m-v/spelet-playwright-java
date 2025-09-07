@@ -1,7 +1,7 @@
 env:
   parallelism:
     strategy: fixed
-    threads: 4
+    threads: 2
   api:
     baseUrl: https://demo.spelet.lv
   browser:
