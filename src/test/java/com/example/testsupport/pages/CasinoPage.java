@@ -138,6 +138,19 @@ public class CasinoPage extends BasePage<CasinoPage> {
     }
 
     /**
+     * Returns a list of navigation panel category titles displayed on the page.
+     *
+     * @return list of navigation category titles in display order
+     */
+    public List<String> getNavigationCategoryTitles() {
+        return step("Получение категорий навигационной панели", () -> {
+            Locator navigationCategories = page.locator("div.d_flex.gap_1.ov-x_auto.pos_relative").first()
+                    .locator("span.navigationTab__text");
+            return navigationCategories.allInnerTexts();
+        });
+    }
+
+    /**
      * Types the given query into the casino search field.
      *
      * @param query game name or part of it

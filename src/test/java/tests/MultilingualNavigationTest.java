@@ -110,6 +110,17 @@ class MultilingualNavigationTest extends BaseTest {
             System.out.println("UI categories: " + uiCategories);
             Assertions.assertIterableEquals(apiCategories, uiCategories);
         });
+
+        step("Сравниваем навигационные категории из API и интерфейса", () -> {
+            List<String> apiNavigationCategories = ctx.gamblingCategoriesResponse.gameCategories().stream()
+                    .filter(gc -> gc.type() == GameCategoryType.NAVIGATION_PANEL)
+                    .map(GameCategory::name)
+                    .toList();
+            List<String> uiNavigationCategories = ctx.casinoPage.getNavigationCategoryTitles();
+            System.out.println("API navigation categories: " + apiNavigationCategories);
+            System.out.println("UI navigation categories: " + uiNavigationCategories);
+            Assertions.assertIterableEquals(apiNavigationCategories, uiNavigationCategories);
+        });
     }
 }
 
