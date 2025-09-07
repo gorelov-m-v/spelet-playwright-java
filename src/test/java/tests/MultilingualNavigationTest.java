@@ -15,12 +15,14 @@ import com.example.testsupport.framework.api.client.params.DeviceType;
 import com.example.testsupport.framework.api.dto.gambling.GamblingBrandsResponse;
 import com.example.testsupport.framework.api.dto.gambling.GamblingCategoriesResponse;
 import com.example.testsupport.framework.api.dto.gambling.GamblingGamesResponse;
+import com.example.testsupport.framework.api.dto.gambling.GameCategory;
 import io.qameta.allure.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.example.testsupport.framework.allure.Suite;
+import java.util.List;
 
 import static com.example.testsupport.framework.utils.AllureHelper.step;
 
@@ -90,6 +92,14 @@ class MultilingualNavigationTest extends BaseTest {
 
         step("Переходим на страницу 'Казино'", () -> {
             ctx.casinoPage = ctx.mainPage.navigateToCasino();
+        });
+
+        step("Сравниваем категории из API и интерфейса", () -> {
+            List<String> apiCategories = ctx.gamblingCategoriesResponse.gameCategories().stream()
+                    .map(GameCategory::name)
+                    .toList();
+            List<String> uiCategories = ctx.casinoPage.getCategoryTitles();
+            Assertions.assertIterableEquals(apiCategories, uiCategories);
         });
     }
 }

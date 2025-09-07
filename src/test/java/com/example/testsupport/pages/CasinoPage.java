@@ -11,6 +11,7 @@ import com.example.testsupport.pages.components.CookieBannerComponent;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
+import java.util.List;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
@@ -120,6 +121,18 @@ public class CasinoPage extends BasePage<CasinoPage> {
             }
             button.click();
             return filterDrawerComponentProvider.getObject();
+        });
+    }
+
+    /**
+     * Returns a list of horizontal category titles displayed on the page.
+     *
+     * @return list of category titles in display order
+     */
+    public List<String> getCategoryTitles() {
+        return step("Получение списка горизонтальных категорий", () -> {
+            Locator categories = page.locator("div[role='tablist'][aria-orientation='horizontal'] [role='tab']");
+            return categories.allTextContents();
         });
     }
 
