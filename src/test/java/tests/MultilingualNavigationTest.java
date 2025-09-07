@@ -16,6 +16,7 @@ import com.example.testsupport.framework.api.dto.gambling.GamblingBrandsResponse
 import com.example.testsupport.framework.api.dto.gambling.GamblingCategoriesResponse;
 import com.example.testsupport.framework.api.dto.gambling.GamblingGamesResponse;
 import com.example.testsupport.framework.api.dto.gambling.GameCategory;
+import com.example.testsupport.framework.api.dto.gambling.GameCategoryType;
 import io.qameta.allure.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -96,6 +97,7 @@ class MultilingualNavigationTest extends BaseTest {
 
         step("Сравниваем категории из API и интерфейса", () -> {
             List<String> apiCategories = ctx.gamblingCategoriesResponse.gameCategories().stream()
+                    .filter(gc -> gc.type() == GameCategoryType.HORIZONTAL)
                     .map(GameCategory::name)
                     .toList();
             List<String> uiCategories = ctx.casinoPage.getCategoryTitles();
