@@ -100,6 +100,22 @@ var params = GamblingCategoriesParams.builder()
 GamblingCategoriesResponse categories = frontApiClient.getGamblingCategories("lv", params);
 ```
 
+### Пример: получение списка игр
+
+```java
+var params = GamblingGamesParams.builder()
+        .brandAliasArray("1")
+        .categoryAliasArray("2")
+        .search("123")
+        .deviceType(DeviceType.MOBILE)
+        .showRestricted(true)
+        .page(1)
+        .perPage(24)
+        .build();
+
+GamblingGamesResponse games = frontApiClient.getGamblingGames("lv", params);
+```
+
 *Такой подход использует только стандартный функционал Feign и не требует дополнительных интерцепторов.*
 
 ---

@@ -10,9 +10,11 @@ import com.example.testsupport.pages.CasinoPage;
 import com.example.testsupport.framework.api.client.FrontApiClient;
 import com.example.testsupport.framework.api.client.params.GamblingBrandsParams;
 import com.example.testsupport.framework.api.client.params.GamblingCategoriesParams;
+import com.example.testsupport.framework.api.client.params.GamblingGamesParams;
 import com.example.testsupport.framework.api.client.params.DeviceType;
 import com.example.testsupport.framework.api.dto.gambling.GamblingBrandsResponse;
 import com.example.testsupport.framework.api.dto.gambling.GamblingCategoriesResponse;
+import com.example.testsupport.framework.api.dto.gambling.GamblingGamesResponse;
 import io.qameta.allure.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -40,6 +42,7 @@ class MultilingualNavigationTest extends BaseTest {
             MainPage mainPage;
             CasinoPage casinoPage;
             GamblingCategoriesResponse gamblingCategoriesResponse;
+            GamblingGamesResponse gamblingGamesResponse;
             GamblingBrandsResponse gamblingBrandsResponse;
         }
         final TestContext ctx = new TestContext();
@@ -52,6 +55,20 @@ class MultilingualNavigationTest extends BaseTest {
                     .build();
 
             ctx.gamblingCategoriesResponse = frontApiClient.getGamblingCategories(languageCode, params);
+        });
+
+        step("Получаем список игр через API", () -> {
+            var params = GamblingGamesParams.builder()
+                    .brandAliasArray("1")
+                    .categoryAliasArray("2")
+                    .search("123")
+                    .deviceType(DeviceType.MOBILE)
+                    .showRestricted(true)
+                    .page(1)
+                    .perPage(24)
+                    .build();
+
+            ctx.gamblingGamesResponse = frontApiClient.getGamblingGames(languageCode, params);
         });
 
         step("Получаем список брендов через API", () -> {
