@@ -17,38 +17,38 @@ import io.qameta.allure.Story;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.TestInstance;
+import org.junitpioneer.jupiter.cartesian.ArgumentSets;
 import org.junitpioneer.jupiter.cartesian.CartesianTest;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.stream.Stream;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 
 import static com.example.testsupport.framework.utils.AllureHelper.step;
 
 @Epic("Spelet.lv")
 @Feature("Навигация по шапке")
 @Suite("Навигация и базовый флоу казино")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class MultilingualNavigationTest extends BaseTest {
     @Autowired private ObjectProvider<MainPage> mainPageProvider;
     @Autowired private FrontApiClient frontApiClient;
     @Autowired private TestMatrixService testMatrixService;
 
     @BeforeAll
-    static void beforeAllTests() {
+    void beforeAllTests() {
         SuccessTracker.clear();
     }
 
     @Story("Переход на страницу казино для всех поддерживаемых языков и устройств")
     @DisplayName("Навигация на страницу казино")
     @CartesianTest(name = "[Устройство: {0}, Язык: {1}] - Попытка {2}")
+    @CartesianTest.MethodFactory("deviceLanguageProvider")
     void navigateToCasinoPageOnAllLanguagesAndDevices(
-            @DeviceSource Device device,
-            @LanguageSource String languageCode,
-            @CartesianTest.Values(ints = {1, 2, 3}) int attempt
+            Device device,
+            String languageCode,
+            int attempt
     ) {
         String testCaseId = device.getName() + "-" + languageCode;
 
@@ -103,21 +103,10 @@ class MultilingualNavigationTest extends BaseTest {
         }
     }
 
-    Stream<Device> deviceProvider() {
-        return testMatrixService.getDevices();
+    ArgumentSets deviceLanguageProvider() {
+        return ArgumentSets
+                .argumentsForFirstParameter(testMatrixService.getDevices())
+                .argumentsForNextParameter(testMatrixService.getLanguages())
+                .argumentsForNextParameter(Stream.of(1, 2, 3));
     }
-
-    Stream<String> languageProvider() {
-        return testMatrixService.getLanguages();
-    }
-
-    @Target(ElementType.PARAMETER)
-    @Retention(RetentionPolicy.RUNTIME)
-    @CartesianTest.MethodFactory("deviceProvider")
-    public @interface DeviceSource {}
-
-    @Target(ElementType.PARAMETER)
-    @Retention(RetentionPolicy.RUNTIME)
-    @CartesianTest.MethodFactory("languageProvider")
-    public @interface LanguageSource {}
 }
