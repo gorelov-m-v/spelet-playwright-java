@@ -34,7 +34,7 @@ public class MainPage extends BasePage<MainPage> {
     @Override
     public MainPage verifyUrl() {
         return step("Проверка URL главной страницы", () -> {
-            verifyUrlContains(getLocalizedPath("/"));
+            verifyUrlContains(getExpectedPath());
             return this;
         });
     }

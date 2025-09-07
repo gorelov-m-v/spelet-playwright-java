@@ -57,13 +57,18 @@ public class CasinoPage extends BasePage<CasinoPage> {
         this.gameCards = page.locator(".GameCard__root");
     }
 
+    @Override
+    protected String getExpectedPath() {
+        return getLocalizedPath("/casino");
+    }
+
     /**
      * Verifies that current URL contains expected path.
      */
     @Override
     public CasinoPage verifyUrl() {
         return step("Проверка URL страницы 'Казино'", () -> {
-            verifyUrlContains(getLocalizedPath("/casino"));
+            verifyUrlContains(getExpectedPath());
             return this;
         });
     }

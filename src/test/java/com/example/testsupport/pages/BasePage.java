@@ -102,6 +102,22 @@ public abstract class BasePage<T extends BasePage<T>> {
     }
 
     /**
+     * Computes the expected path for the current page.
+     * <p>
+     * By default, returns the localized root path like "/" or "/en".
+     * Individual pages can override this to provide their own paths.
+     *
+     * @return expected path portion of the URL
+     */
+    protected String getExpectedPath() {
+        String lang = ls.getCurrentLangCode();
+        if (lang == null || lang.equals(config.getBrowser().getDefaultLanguage())) {
+            return "/";
+        }
+        return "/" + lang;
+    }
+
+    /**
      * Verifies that current URL contains the expected path.
      *
      * @return current page object
