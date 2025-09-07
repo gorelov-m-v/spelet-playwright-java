@@ -2,9 +2,9 @@ package com.example.testsupport.pages;
 
 import com.example.testsupport.config.EnvironmentConfig;
 import com.example.testsupport.framework.localization.LocalizationService;
+import com.example.testsupport.pages.components.CookieBannerComponent;
 import com.example.testsupport.pages.components.HeaderComponent;
 import com.example.testsupport.pages.components.TabBarComponent;
-import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.factory.ObjectProvider;
@@ -18,18 +18,21 @@ public abstract class BasePage<T extends BasePage<T>> {
     protected final EnvironmentConfig config;
     private final HeaderComponent header;
     private final TabBarComponent tabBar;
+    private final CookieBannerComponent cookieBanner;
 
     @SuppressWarnings("resource")
     protected BasePage(Page page,
                        LocalizationService ls,
                        EnvironmentConfig config,
                        ObjectProvider<HeaderComponent> headerProvider,
-                       ObjectProvider<TabBarComponent> tabBarProvider) {
+                       ObjectProvider<TabBarComponent> tabBarProvider,
+                       ObjectProvider<CookieBannerComponent> cookieBannerProvider) {
         this.page = page;
         this.ls = ls;
         this.config = config;
         this.header = headerProvider.getObject();
         this.tabBar = tabBarProvider.getObject();
+        this.cookieBanner = cookieBannerProvider.getObject();
     }
 
     public HeaderComponent header() {
@@ -38,6 +41,10 @@ public abstract class BasePage<T extends BasePage<T>> {
 
     public TabBarComponent tabBar() {
         return tabBar;
+    }
+
+    public CookieBannerComponent cookieBanner() {
+        return cookieBanner;
     }
 
     @SuppressWarnings("unchecked")
@@ -78,25 +85,4 @@ public abstract class BasePage<T extends BasePage<T>> {
     }
 
     public abstract T verifyIsLoaded();
-
-    protected void acceptCookiesIfPresent() {
-        String acceptText;
-        try {
-            acceptText = ls.get("cookies.accept");
-        } catch (Exception e) {
-            acceptText = "Accept";
-        }
-        Locator button = page.getByRole(
-                com.microsoft.playwright.options.AriaRole.BUTTON,
-                new Page.GetByRoleOptions().setName(acceptText)
-        );
-        try {
-            button.first().waitFor(new Locator.WaitForOptions()
-                    .setState(com.microsoft.playwright.options.WaitForSelectorState.VISIBLE)
-                    .setTimeout(2000));
-            button.first().click();
-        } catch (com.microsoft.playwright.PlaywrightException e) {
-            Assertions.fail(String.format("Cookie accept button with text '%s' not found", acceptText));
-        }
-    }
 }

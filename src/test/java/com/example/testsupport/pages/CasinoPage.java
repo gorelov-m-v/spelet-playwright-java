@@ -7,6 +7,7 @@ import com.example.testsupport.pages.components.FilterDrawerComponent;
 import com.example.testsupport.pages.components.AuthModalComponent;
 import com.example.testsupport.pages.components.HeaderComponent;
 import com.example.testsupport.pages.components.TabBarComponent;
+import com.example.testsupport.pages.components.CookieBannerComponent;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
@@ -41,8 +42,9 @@ public class CasinoPage extends BasePage<CasinoPage> {
                       ObjectProvider<FilterDrawerComponent> filterDrawerComponentProvider,
                       ObjectProvider<AuthModalComponent> authModalComponentProvider,
                       ObjectProvider<HeaderComponent> headerProvider,
-                      ObjectProvider<TabBarComponent> tabBarProvider) {
-        super(page, ls, config, headerProvider, tabBarProvider);
+                      ObjectProvider<TabBarComponent> tabBarProvider,
+                      ObjectProvider<CookieBannerComponent> cookieBannerProvider) {
+        super(page, ls, config, headerProvider, tabBarProvider, cookieBannerProvider);
         this.filterDrawerComponentProvider = filterDrawerComponentProvider;
         this.authModalComponentProvider = authModalComponentProvider;
         this.mobileFilterButton = page.locator("div.d_block.pos_relative.w768\\:d_none > button");
