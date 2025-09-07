@@ -24,6 +24,7 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.example.testsupport.framework.allure.Suite;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static com.example.testsupport.framework.utils.AllureHelper.step;
 
@@ -96,9 +97,13 @@ class MultilingualNavigationTest extends BaseTest {
         });
 
         step("Сравниваем категории из API и интерфейса", () -> {
-            List<String> apiCategories = ctx.gamblingCategoriesResponse.gameCategories().stream()
-                    .filter(gc -> gc.type() == GameCategoryType.HORIZONTAL)
-                    .map(GameCategory::name)
+            List<String> apiCategories = Stream.concat(
+                            ctx.gamblingCategoriesResponse.gameCategories().stream()
+                                    .filter(gc -> gc.type() == GameCategoryType.ALL_GAMES)
+                                    .map(GameCategory::name),
+                            ctx.gamblingCategoriesResponse.gameCategories().stream()
+                                    .filter(gc -> gc.type() == GameCategoryType.HORIZONTAL)
+                                    .map(GameCategory::name))
                     .toList();
             List<String> uiCategories = ctx.casinoPage.getCategoryTitles();
             System.out.println("API categories: " + apiCategories);

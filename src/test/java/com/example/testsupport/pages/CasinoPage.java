@@ -132,7 +132,7 @@ public class CasinoPage extends BasePage<CasinoPage> {
     public List<String> getCategoryTitles() {
         return step("Получение списка горизонтальных категорий", () -> {
             Locator categories = page.locator("div.react-aria-Tabs[data-orientation='horizontal']").first()
-                    .locator("[role='tab']:not([aria-label='all-games'])");
+                    .locator("[role='tab']");
             return categories.allInnerTexts();
         });
     }
