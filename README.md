@@ -60,7 +60,7 @@ class MultilingualNavigationTest extends BaseTest {
 @Getter
 @Builder
 public class GamblingBrandsParams {
-    private String deviceType;
+    private DeviceType deviceType;
     private Boolean showRestricted;
     private String categoryAlias;
 }
@@ -86,6 +86,18 @@ var params = GamblingBrandsParams.builder()
         .build();
 
 GamblingBrandsResponse response = frontApiClient.getGamblingBrands("lv", params);
+```
+
+### Пример: получение категорий игр
+
+```java
+var params = GamblingCategoriesParams.builder()
+        .deviceType(DeviceType.MOBILE)
+        .categoryAliasArray("ww")
+        .showRestricted(true)
+        .build();
+
+GamblingCategoriesResponse categories = frontApiClient.getGamblingCategories("lv", params);
 ```
 
 *Такой подход использует только стандартный функционал Feign и не требует дополнительных интерцепторов.*
@@ -136,7 +148,7 @@ public record Brand(
 @Getter
 @Builder
 public class GamblingBrandsParams {
-    private String deviceType;
+    private DeviceType deviceType;
     private Boolean showRestricted;
     private String categoryAlias;
 }

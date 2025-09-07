@@ -9,7 +9,10 @@ import org.springframework.beans.factory.ObjectProvider;
 import com.example.testsupport.pages.CasinoPage;
 import com.example.testsupport.framework.api.client.FrontApiClient;
 import com.example.testsupport.framework.api.client.params.GamblingBrandsParams;
+import com.example.testsupport.framework.api.client.params.GamblingCategoriesParams;
+import com.example.testsupport.framework.api.client.params.DeviceType;
 import com.example.testsupport.framework.api.dto.gambling.GamblingBrandsResponse;
+import com.example.testsupport.framework.api.dto.gambling.GamblingCategoriesResponse;
 import io.qameta.allure.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -36,9 +39,20 @@ class MultilingualNavigationTest extends BaseTest {
         final class TestContext {
             MainPage mainPage;
             CasinoPage casinoPage;
+            GamblingCategoriesResponse gamblingCategoriesResponse;
             GamblingBrandsResponse gamblingBrandsResponse;
         }
         final TestContext ctx = new TestContext();
+
+        step("Получаем список категорий игр через API", () -> {
+            var params = GamblingCategoriesParams.builder()
+                    .deviceType(DeviceType.MOBILE)
+                    .categoryAliasArray("ww")
+                    .showRestricted(true)
+                    .build();
+
+            ctx.gamblingCategoriesResponse = frontApiClient.getGamblingCategories(languageCode, params);
+        });
 
         step("Получаем список брендов через API", () -> {
             var params = GamblingBrandsParams.builder()
