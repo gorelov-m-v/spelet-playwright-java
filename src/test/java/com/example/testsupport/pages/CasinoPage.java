@@ -17,6 +17,7 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import java.util.List;
 
 import static com.example.testsupport.framework.utils.AllureHelper.step;
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -142,6 +143,15 @@ public class CasinoPage extends BasePage<CasinoPage> {
      */
     public NavigationPanelComponent navigationPanel() {
         return navigationPanelComponentProvider.getObject();
+    }
+
+    /**
+     * Returns a list of navigation panel category titles displayed on the page.
+     *
+     * @return list of navigation category titles in display order
+     */
+    public List<String> getNavigationCategoryTitles() {
+        return navigationPanel().getTitles();
     }
 
     /**

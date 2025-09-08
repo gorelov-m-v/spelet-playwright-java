@@ -15,8 +15,6 @@ import com.example.testsupport.framework.api.client.params.DeviceType;
 import com.example.testsupport.framework.api.dto.gambling.GamblingBrandsResponse;
 import com.example.testsupport.framework.api.dto.gambling.GamblingCategoriesResponse;
 import com.example.testsupport.framework.api.dto.gambling.GamblingGamesResponse;
-import com.example.testsupport.framework.api.dto.gambling.GameCategory;
-import com.example.testsupport.framework.api.dto.gambling.GameCategoryType;
 import io.qameta.allure.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -24,7 +22,6 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.example.testsupport.framework.allure.Suite;
 import java.util.List;
-import java.util.stream.Stream;
 
 import static com.example.testsupport.framework.utils.AllureHelper.step;
 
@@ -98,12 +95,7 @@ class MultilingualNavigationTest extends BaseTest {
 
         step("Сравниваем категории из API и интерфейса", () -> {
             String lobby = ls.get("casino.navigation.lobby");
-            List<String> apiCategories = Stream.concat(
-                            Stream.of(lobby),
-                            ctx.gamblingCategoriesResponse.gameCategories().stream()
-                                    .filter(gc -> gc.type() == GameCategoryType.HORIZONTAL)
-                                    .map(GameCategory::name))
-                    .toList();
+            List<String> apiCategories = ctx.gamblingCategoriesResponse.horizontalCategoryNamesWithLobby(lobby);
             List<String> uiCategories = ctx.casinoPage.categoryTabs().getTitles();
             System.out.println("API categories: " + apiCategories);
             System.out.println("UI categories: " + uiCategories);
@@ -111,11 +103,8 @@ class MultilingualNavigationTest extends BaseTest {
         });
 
         step("Сравниваем навигационные категории из API и интерфейса", () -> {
-            List<String> apiNavigationCategories = ctx.gamblingCategoriesResponse.gameCategories().stream()
-                    .filter(gc -> gc.type() == GameCategoryType.NAVIGATION_PANEL)
-                    .map(GameCategory::name)
-                    .toList();
-            List<String> uiNavigationCategories = ctx.casinoPage.navigationPanel().getTitles();
+            List<String> apiNavigationCategories = ctx.gamblingCategoriesResponse.navigationCategoryNames();
+            List<String> uiNavigationCategories = ctx.casinoPage.getNavigationCategoryTitles();
             System.out.println("API navigation categories: " + apiNavigationCategories);
             System.out.println("UI navigation categories: " + uiNavigationCategories);
             Assertions.assertIterableEquals(apiNavigationCategories, uiNavigationCategories);
