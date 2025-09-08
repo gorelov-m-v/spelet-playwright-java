@@ -56,8 +56,8 @@ public class FilterDrawerComponent extends BaseComponent {
      */
     public List<String> getProviderNames() {
         return step("Получение списка провайдеров", () ->
-                root().getByRole(AriaRole.ROW).all().stream()
-                        .map(row -> Objects.requireNonNull(row.getAttribute("aria-label")))
+                root().locator(".provider-tag-group__tag").all().stream()
+                        .map(tag -> Objects.requireNonNull(tag.getAttribute("aria-label")))
                         .toList()
         );
     }
