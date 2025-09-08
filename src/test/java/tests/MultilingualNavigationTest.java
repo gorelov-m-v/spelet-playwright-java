@@ -50,9 +50,6 @@ class MultilingualNavigationTest extends BaseTest {
 
         step("Получаем список категорий игр через API", () -> {
             var params = GamblingCategoriesParams.builder()
-                    .deviceType(DeviceType.MOBILE)
-                    .categoryAliasArray("ww")
-                    .showRestricted(true)
                     .build();
 
             ctx.gamblingCategoriesResponse = frontApiClient.getGamblingCategories(languageCode, params);
@@ -60,13 +57,6 @@ class MultilingualNavigationTest extends BaseTest {
 
         step("Получаем список игр через API", () -> {
             var params = GamblingGamesParams.builder()
-                    .brandAliasArray("1")
-                    .categoryAliasArray("2")
-                    .search("123")
-                    .deviceType(DeviceType.MOBILE)
-                    .showRestricted(true)
-                    .page(1)
-                    .perPage(24)
                     .build();
 
             ctx.gamblingGamesResponse = frontApiClient.getGamblingGames(languageCode, params);
@@ -74,7 +64,6 @@ class MultilingualNavigationTest extends BaseTest {
 
         step("Получаем список брендов через API", () -> {
             var params = GamblingBrandsParams.builder()
-                    .categoryAlias("new")
                     .build();
 
             ctx.gamblingBrandsResponse = frontApiClient.getGamblingBrands(languageCode, params);
@@ -96,16 +85,14 @@ class MultilingualNavigationTest extends BaseTest {
         step("Сравниваем категории из API и интерфейса", () -> {
             List<String> apiCategories = ctx.gamblingCategoriesResponse.horizontalCategoryNames(ls);
             List<String> uiCategories = ctx.casinoPage.categoryTabs().getTitles();
-            System.out.println("API categories: " + apiCategories);
-            System.out.println("UI categories: " + uiCategories);
+
             Assertions.assertIterableEquals(apiCategories, uiCategories);
         });
 
         step("Сравниваем навигационные категории из API и интерфейса", () -> {
             List<String> apiNavigationCategories = ctx.gamblingCategoriesResponse.navigationCategoryNames();
             List<String> uiNavigationCategories = ctx.casinoPage.navigationPanel().getTitles();
-            System.out.println("API navigation categories: " + apiNavigationCategories);
-            System.out.println("UI navigation categories: " + uiNavigationCategories);
+
             Assertions.assertIterableEquals(apiNavigationCategories, uiNavigationCategories);
         });
     }
