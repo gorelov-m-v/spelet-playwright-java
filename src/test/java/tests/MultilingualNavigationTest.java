@@ -97,10 +97,13 @@ class MultilingualNavigationTest extends BaseTest {
         });
 
         step("Сравниваем категории из API и интерфейса", () -> {
+            String lobby = switch (languageCode) {
+                case "lv" -> "Lobijs";
+                case "ru" -> "Лобби";
+                default -> "Lobby";
+            };
             List<String> apiCategories = Stream.concat(
-                            ctx.gamblingCategoriesResponse.gameCategories().stream()
-                                    .filter(gc -> gc.type() == GameCategoryType.ALL_GAMES)
-                                    .map(GameCategory::name),
+                            Stream.of(lobby),
                             ctx.gamblingCategoriesResponse.gameCategories().stream()
                                     .filter(gc -> gc.type() == GameCategoryType.HORIZONTAL)
                                     .map(GameCategory::name))
