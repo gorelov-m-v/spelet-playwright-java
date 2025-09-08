@@ -63,6 +63,19 @@ public class FilterDrawerComponent extends BaseComponent {
     }
 
     /**
+     * Returns the list of category names displayed in the drawer.
+     *
+     * @return list of category names
+     */
+    public List<String> getCategoryNames() {
+        return step("Получение списка категорий", () ->
+                root().locator("[aria-labelledby='categories-label']").locator(".tag-group__item").all().stream()
+                        .map(tag -> Objects.requireNonNull(tag.getAttribute("aria-label")))
+                        .toList()
+        );
+    }
+
+    /**
      * Selects a provider within the drawer by its visible name.
      *
      * @param providerName provider label as displayed in UI
