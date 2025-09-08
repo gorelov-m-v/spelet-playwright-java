@@ -146,15 +146,6 @@ public class CasinoPage extends BasePage<CasinoPage> {
     }
 
     /**
-     * Returns a list of navigation panel category titles displayed on the page.
-     *
-     * @return list of navigation category titles in display order
-     */
-    public List<String> getNavigationCategoryTitles() {
-        return navigationPanel().getTitles();
-    }
-
-    /**
      * Types the given query into the casino search field.
      *
      * @param query game name or part of it

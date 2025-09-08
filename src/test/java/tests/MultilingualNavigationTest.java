@@ -104,7 +104,7 @@ class MultilingualNavigationTest extends BaseTest {
 
         step("Сравниваем навигационные категории из API и интерфейса", () -> {
             List<String> apiNavigationCategories = ctx.gamblingCategoriesResponse.navigationCategoryNames();
-            List<String> uiNavigationCategories = ctx.casinoPage.getNavigationCategoryTitles();
+            List<String> uiNavigationCategories = ctx.casinoPage.navigationPanel().getTitles();
             System.out.println("API navigation categories: " + apiNavigationCategories);
             System.out.println("UI navigation categories: " + uiNavigationCategories);
             Assertions.assertIterableEquals(apiNavigationCategories, uiNavigationCategories);
