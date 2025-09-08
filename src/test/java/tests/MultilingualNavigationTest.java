@@ -83,7 +83,7 @@ class MultilingualNavigationTest extends BaseTest {
         });
 
         step("Сравниваем категории из API и интерфейса", () -> {
-            List<String> apiCategories = ctx.gamblingCategoriesResponse.horizontalCategoryNames(ls);
+            List<String> apiCategories = ctx.gamblingCategoriesResponse.horizontalCategoryNamesWithLobby(ls);
             List<String> uiCategories = ctx.casinoPage.categoryTabs().getTitles();
 
             Assertions.assertIterableEquals(apiCategories, uiCategories);
@@ -97,10 +97,7 @@ class MultilingualNavigationTest extends BaseTest {
         });
 
         step("Сравниваем категории из API и фильтров", () -> {
-            List<String> apiFilterCategories = ctx.gamblingCategoriesResponse.horizontalCategoryNames(ls)
-                    .stream()
-                    .skip(1)
-                    .toList();
+            List<String> apiFilterCategories = ctx.gamblingCategoriesResponse.horizontalCategoryNames();
             List<String> uiFilterCategories = ctx.casinoPage.openFilters()
                     .verifyIsLoaded()
                     .getCategoryNames();

@@ -10,18 +10,28 @@ import java.util.stream.Stream;
 public record GamblingCategoriesResponse(List<GameCategory> gameCategories) {
 
     /**
+     * Returns the titles of horizontal categories without the lobby entry.
+     *
+     * @return list of horizontal category titles excluding lobby
+     */
+    public List<String> horizontalCategoryNames() {
+        return gameCategories.stream()
+                .filter(gc -> gc.type() == GameCategoryType.HORIZONTAL)
+                .map(GameCategory::name)
+                .toList();
+    }
+
+    /**
      * Returns the titles of horizontal categories prepended with the localized lobby title.
      *
      * @param ls localization service for resolving the lobby title
      * @return list of horizontal category titles including lobby
      */
-    public List<String> horizontalCategoryNames(LocalizationService ls) {
+    public List<String> horizontalCategoryNamesWithLobby(LocalizationService ls) {
         String lobby = ls.get("casino.navigation.lobby");
         return Stream.concat(
                 Stream.of(lobby),
-                gameCategories.stream()
-                        .filter(gc -> gc.type() == GameCategoryType.HORIZONTAL)
-                        .map(GameCategory::name)
+                horizontalCategoryNames().stream()
         ).toList();
     }
 
