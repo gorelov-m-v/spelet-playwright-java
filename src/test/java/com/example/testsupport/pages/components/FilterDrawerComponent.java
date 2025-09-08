@@ -9,6 +9,8 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import java.util.List;
+import java.util.Objects;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static com.example.testsupport.framework.utils.AllureHelper.step;
@@ -45,6 +47,19 @@ public class FilterDrawerComponent extends BaseComponent {
             assertThat(title).isVisible();
             return this;
         });
+    }
+
+    /**
+     * Returns the list of provider names displayed in the drawer.
+     *
+     * @return list of provider names
+     */
+    public List<String> getProviderNames() {
+        return step("Получение списка провайдеров", () ->
+                root().getByRole(AriaRole.ROW).all().stream()
+                        .map(row -> Objects.requireNonNull(row.getAttribute("aria-label")))
+                        .toList()
+        );
     }
 
     /**

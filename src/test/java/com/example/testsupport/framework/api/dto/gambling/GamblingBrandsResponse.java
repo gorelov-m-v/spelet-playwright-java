@@ -2,5 +2,12 @@ package com.example.testsupport.framework.api.dto.gambling;
 
 import java.util.List;
 
-public record GamblingBrandsResponse(List<Brand> brands) {}
+public record GamblingBrandsResponse(List<Brand> brands) {
+
+    public List<String> brandNames() {
+        return brands.stream()
+                .map(Brand::name)
+                .toList();
+    }
+}
 

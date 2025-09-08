@@ -95,6 +95,15 @@ class MultilingualNavigationTest extends BaseTest {
 
             Assertions.assertIterableEquals(apiNavigationCategories, uiNavigationCategories);
         });
+
+        step("Сравниваем бренды из API и фильтров", () -> {
+            List<String> apiBrands = ctx.gamblingBrandsResponse.brandNames();
+            List<String> uiBrands = ctx.casinoPage.openFilters()
+                    .verifyIsLoaded()
+                    .getProviderNames();
+
+            Assertions.assertIterableEquals(apiBrands, uiBrands);
+        });
     }
 }
 
