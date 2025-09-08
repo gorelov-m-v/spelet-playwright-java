@@ -1,5 +1,6 @@
 package com.example.testsupport.framework.api.dto.gambling;
 
+import com.example.testsupport.framework.localization.LocalizationService;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -11,10 +12,11 @@ public record GamblingCategoriesResponse(List<GameCategory> gameCategories) {
     /**
      * Returns the titles of horizontal categories prepended with the localized lobby title.
      *
-     * @param lobby localized lobby title
+     * @param ls localization service for resolving the lobby title
      * @return list of horizontal category titles including lobby
      */
-    public List<String> horizontalCategoryNamesWithLobby(String lobby) {
+    public List<String> horizontalCategoryNames(LocalizationService ls) {
+        String lobby = ls.get("casino.navigation.lobby");
         return Stream.concat(
                 Stream.of(lobby),
                 gameCategories.stream()

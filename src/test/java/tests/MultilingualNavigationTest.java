@@ -94,8 +94,7 @@ class MultilingualNavigationTest extends BaseTest {
         });
 
         step("Сравниваем категории из API и интерфейса", () -> {
-            String lobby = ls.get("casino.navigation.lobby");
-            List<String> apiCategories = ctx.gamblingCategoriesResponse.horizontalCategoryNamesWithLobby(lobby);
+            List<String> apiCategories = ctx.gamblingCategoriesResponse.horizontalCategoryNames(ls);
             List<String> uiCategories = ctx.casinoPage.categoryTabs().getTitles();
             System.out.println("API categories: " + apiCategories);
             System.out.println("UI categories: " + uiCategories);
