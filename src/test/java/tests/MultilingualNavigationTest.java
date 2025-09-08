@@ -97,7 +97,10 @@ class MultilingualNavigationTest extends BaseTest {
         });
 
         step("Сравниваем категории из API и фильтров", () -> {
-            List<String> apiFilterCategories = ctx.gamblingCategoriesResponse.horizontalCategoryNames();
+            List<String> apiFilterCategories = ctx.gamblingCategoriesResponse.horizontalCategoryNames(ls)
+                    .stream()
+                    .skip(1)
+                    .toList();
             List<String> uiFilterCategories = ctx.casinoPage.openFilters()
                     .verifyIsLoaded()
                     .getCategoryNames();

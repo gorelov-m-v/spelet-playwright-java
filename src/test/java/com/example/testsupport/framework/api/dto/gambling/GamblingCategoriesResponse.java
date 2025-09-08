@@ -26,18 +26,6 @@ public record GamblingCategoriesResponse(List<GameCategory> gameCategories) {
     }
 
     /**
-     * Returns only the titles of horizontal categories without the lobby item.
-     *
-     * @return list of horizontal category titles
-     */
-    public List<String> horizontalCategoryNames() {
-        return gameCategories.stream()
-                .filter(gc -> gc.type() == GameCategoryType.HORIZONTAL)
-                .map(GameCategory::name)
-                .toList();
-    }
-
-    /**
      * Returns the titles of navigation panel categories.
      *
      * @return list of navigation panel category titles
