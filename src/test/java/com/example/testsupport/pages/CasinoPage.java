@@ -8,6 +8,8 @@ import com.example.testsupport.pages.components.AuthModalComponent;
 import com.example.testsupport.pages.components.HeaderComponent;
 import com.example.testsupport.pages.components.TabBarComponent;
 import com.example.testsupport.pages.components.CookieBannerComponent;
+import com.example.testsupport.pages.components.CategoryTabsComponent;
+import com.example.testsupport.pages.components.NavigationPanelComponent;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
@@ -15,6 +17,7 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import java.util.List;
 
 import static com.example.testsupport.framework.utils.AllureHelper.step;
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -35,6 +38,8 @@ public class CasinoPage extends BasePage<CasinoPage> {
     private final Locator gameCards;
     private final ObjectProvider<FilterDrawerComponent> filterDrawerComponentProvider;
     private final ObjectProvider<AuthModalComponent> authModalComponentProvider;
+    private final ObjectProvider<CategoryTabsComponent> categoryTabsComponentProvider;
+    private final ObjectProvider<NavigationPanelComponent> navigationPanelComponentProvider;
 
     public CasinoPage(Page page,
                       EnvironmentConfig config,
@@ -43,10 +48,14 @@ public class CasinoPage extends BasePage<CasinoPage> {
                       ObjectProvider<AuthModalComponent> authModalComponentProvider,
                       ObjectProvider<HeaderComponent> headerProvider,
                       ObjectProvider<TabBarComponent> tabBarProvider,
-                      ObjectProvider<CookieBannerComponent> cookieBannerProvider) {
+                      ObjectProvider<CookieBannerComponent> cookieBannerProvider,
+                      ObjectProvider<CategoryTabsComponent> categoryTabsComponentProvider,
+                      ObjectProvider<NavigationPanelComponent> navigationPanelComponentProvider) {
         super(page, ls, config, headerProvider, tabBarProvider, cookieBannerProvider);
         this.filterDrawerComponentProvider = filterDrawerComponentProvider;
         this.authModalComponentProvider = authModalComponentProvider;
+        this.categoryTabsComponentProvider = categoryTabsComponentProvider;
+        this.navigationPanelComponentProvider = navigationPanelComponentProvider;
         this.mobileFilterButton = page.locator("div.d_block.pos_relative.w768\\:d_none > button");
         String buttonText = ls.get("casino.filters.button");
         this.desktopFilterButton = page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName(buttonText).setExact(true));
@@ -121,6 +130,19 @@ public class CasinoPage extends BasePage<CasinoPage> {
             button.click();
             return filterDrawerComponentProvider.getObject();
         });
+    }
+    /**
+     * Provides access to the horizontal category tabs component.
+     */
+    public CategoryTabsComponent categoryTabs() {
+        return categoryTabsComponentProvider.getObject();
+    }
+
+    /**
+     * Provides access to the navigation panel component.
+     */
+    public NavigationPanelComponent navigationPanel() {
+        return navigationPanelComponentProvider.getObject();
     }
 
     /**
