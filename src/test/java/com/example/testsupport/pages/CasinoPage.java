@@ -8,10 +8,11 @@ import com.example.testsupport.pages.components.AuthModalComponent;
 import com.example.testsupport.pages.components.HeaderComponent;
 import com.example.testsupport.pages.components.TabBarComponent;
 import com.example.testsupport.pages.components.CookieBannerComponent;
+import com.example.testsupport.pages.components.CategoryTabsComponent;
+import com.example.testsupport.pages.components.NavigationPanelComponent;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
-import java.util.List;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
@@ -36,6 +37,8 @@ public class CasinoPage extends BasePage<CasinoPage> {
     private final Locator gameCards;
     private final ObjectProvider<FilterDrawerComponent> filterDrawerComponentProvider;
     private final ObjectProvider<AuthModalComponent> authModalComponentProvider;
+    private final ObjectProvider<CategoryTabsComponent> categoryTabsComponentProvider;
+    private final ObjectProvider<NavigationPanelComponent> navigationPanelComponentProvider;
 
     public CasinoPage(Page page,
                       EnvironmentConfig config,
@@ -44,10 +47,14 @@ public class CasinoPage extends BasePage<CasinoPage> {
                       ObjectProvider<AuthModalComponent> authModalComponentProvider,
                       ObjectProvider<HeaderComponent> headerProvider,
                       ObjectProvider<TabBarComponent> tabBarProvider,
-                      ObjectProvider<CookieBannerComponent> cookieBannerProvider) {
+                      ObjectProvider<CookieBannerComponent> cookieBannerProvider,
+                      ObjectProvider<CategoryTabsComponent> categoryTabsComponentProvider,
+                      ObjectProvider<NavigationPanelComponent> navigationPanelComponentProvider) {
         super(page, ls, config, headerProvider, tabBarProvider, cookieBannerProvider);
         this.filterDrawerComponentProvider = filterDrawerComponentProvider;
         this.authModalComponentProvider = authModalComponentProvider;
+        this.categoryTabsComponentProvider = categoryTabsComponentProvider;
+        this.navigationPanelComponentProvider = navigationPanelComponentProvider;
         this.mobileFilterButton = page.locator("div.d_block.pos_relative.w768\\:d_none > button");
         String buttonText = ls.get("casino.filters.button");
         this.desktopFilterButton = page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName(buttonText).setExact(true));
@@ -123,35 +130,18 @@ public class CasinoPage extends BasePage<CasinoPage> {
             return filterDrawerComponentProvider.getObject();
         });
     }
-
     /**
-     * Returns a list of horizontal category titles displayed on the page.
-     *
-     * @return list of category titles in display order
+     * Provides access to the horizontal category tabs component.
      */
-    public List<String> getCategoryTitles() {
-        return step("Получение списка горизонтальных категорий", () -> {
-            Locator categories = page.locator("div.react-aria-Tabs[data-orientation='horizontal']").first()
-                    .locator("[role='tab']");
-            return categories.allInnerTexts();
-        });
+    public CategoryTabsComponent categoryTabs() {
+        return categoryTabsComponentProvider.getObject();
     }
 
     /**
-     * Returns a list of navigation panel category titles displayed on the page.
-     *
-     * @return list of navigation category titles in display order
+     * Provides access to the navigation panel component.
      */
-    public List<String> getNavigationCategoryTitles() {
-        return step("Получение категорий навигационной панели", () -> {
-            Locator navigationCategories = page.locator("div.d_flex.gap_1.ov-x_auto.pos_relative").first()
-                    .locator("span.navigationTab__text");
-            List<String> titles = navigationCategories.allInnerTexts();
-            String providers = ls.get("casino.navigation.providers");
-            return titles.stream()
-                    .filter(title -> !title.equals(providers))
-                    .toList();
-        });
+    public NavigationPanelComponent navigationPanel() {
+        return navigationPanelComponentProvider.getObject();
     }
 
     /**

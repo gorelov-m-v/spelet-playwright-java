@@ -104,7 +104,7 @@ class MultilingualNavigationTest extends BaseTest {
                                     .filter(gc -> gc.type() == GameCategoryType.HORIZONTAL)
                                     .map(GameCategory::name))
                     .toList();
-            List<String> uiCategories = ctx.casinoPage.getCategoryTitles();
+            List<String> uiCategories = ctx.casinoPage.categoryTabs().getTitles();
             System.out.println("API categories: " + apiCategories);
             System.out.println("UI categories: " + uiCategories);
             Assertions.assertIterableEquals(apiCategories, uiCategories);
@@ -115,7 +115,7 @@ class MultilingualNavigationTest extends BaseTest {
                     .filter(gc -> gc.type() == GameCategoryType.NAVIGATION_PANEL)
                     .map(GameCategory::name)
                     .toList();
-            List<String> uiNavigationCategories = ctx.casinoPage.getNavigationCategoryTitles();
+            List<String> uiNavigationCategories = ctx.casinoPage.navigationPanel().getTitles();
             System.out.println("API navigation categories: " + apiNavigationCategories);
             System.out.println("UI navigation categories: " + uiNavigationCategories);
             Assertions.assertIterableEquals(apiNavigationCategories, uiNavigationCategories);
