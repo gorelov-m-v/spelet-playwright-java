@@ -12,7 +12,6 @@ import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
 import java.util.List;
-import java.util.Set;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
@@ -28,8 +27,6 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class CasinoPage extends BasePage<CasinoPage> {
-
-    private static final Set<String> PROVIDER_TITLES = Set.of("Providers", "Piegādātāji", "Провайдеры");
 
     private final Locator mobileFilterButton;
     private final Locator desktopFilterButton;
@@ -150,8 +147,9 @@ public class CasinoPage extends BasePage<CasinoPage> {
             Locator navigationCategories = page.locator("div.d_flex.gap_1.ov-x_auto.pos_relative").first()
                     .locator("span.navigationTab__text");
             List<String> titles = navigationCategories.allInnerTexts();
+            String providers = ls.get("casino.navigation.providers");
             return titles.stream()
-                    .filter(title -> !PROVIDER_TITLES.contains(title))
+                    .filter(title -> !title.equals(providers))
                     .toList();
         });
     }

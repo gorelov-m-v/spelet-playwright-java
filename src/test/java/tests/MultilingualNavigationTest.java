@@ -97,11 +97,7 @@ class MultilingualNavigationTest extends BaseTest {
         });
 
         step("Сравниваем категории из API и интерфейса", () -> {
-            String lobby = switch (languageCode) {
-                case "lv" -> "Lobijs";
-                case "ru" -> "Лобби";
-                default -> "Lobby";
-            };
+            String lobby = ls.get("casino.navigation.lobby");
             List<String> apiCategories = Stream.concat(
                             Stream.of(lobby),
                             ctx.gamblingCategoriesResponse.gameCategories().stream()
