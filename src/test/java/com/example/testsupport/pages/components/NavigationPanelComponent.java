@@ -22,11 +22,11 @@ public class NavigationPanelComponent extends BaseComponent {
     private final Locator lobbyButton;
 
     public NavigationPanelComponent(Page page, LocalizationService ls) {
-        super(page.locator("div.bg_navigationTab").first());
+        super(page.locator(
+                "div.bg_navigationTab:has(div.navigationTab__root--isIcon_true)"
+        ).first());
         this.ls = ls;
-        this.lobbyButton = root().locator(
-                "div.navigationTab__root--isIcon_true"
-        ).first();
+        this.lobbyButton = root().locator("div.navigationTab__root--isIcon_true").first();
     }
 
     /**
