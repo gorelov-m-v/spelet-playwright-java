@@ -58,8 +58,7 @@ public class CasinoPage extends BasePage<CasinoPage> {
         this.mobileFilterButton = page.locator("div.d_block.pos_relative.w768\\:d_none > button");
         String buttonText = ls.get("casino.filters.button");
         this.desktopFilterButton = page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName(buttonText).setExact(true));
-        String lobbyText = ls.get("casino.navigation.lobby");
-        this.lobbyButton = page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName(lobbyText).setExact(true));
+        this.lobbyButton = page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("Lobby").setExact(true));
         String searchLabel = ls.get("casino.search.input");
         this.searchInput = page.getByRole(AriaRole.SEARCHBOX, new Page.GetByRoleOptions().setName(searchLabel).setExact(true));
         this.gameCards = page.locator(".GameCard__root");
