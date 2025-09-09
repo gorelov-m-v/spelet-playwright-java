@@ -1,7 +1,6 @@
 package com.example.testsupport.pages.components;
 
 import com.example.testsupport.framework.localization.LocalizationService;
-import com.example.testsupport.framework.utils.Breakpoints;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import java.util.List;
@@ -20,20 +19,14 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 public class NavigationPanelComponent extends BaseComponent {
 
     private final LocalizationService ls;
-    private final Page page;
-    private final Locator mobileLobbyButton;
-    private final Locator desktopLobbyButton;
+    private final Locator lobbyButton;
 
     public NavigationPanelComponent(Page page, LocalizationService ls) {
-        super(page.locator("div.d_flex.gap_1.ov-x_auto.pos_relative").first());
-        this.page = page;
+        super(page.locator("div.bg_navigationTab").first());
         this.ls = ls;
-        this.mobileLobbyButton = root().locator(
-                "div.navigationTab__root--size_sm.navigationTab__root--isIcon_true.navigationTab__root--isSelected_true"
-        );
-        this.desktopLobbyButton = root().locator(
-                "div.navigationTab__root--size_md.navigationTab__root--isIcon_true.navigationTab__root--isSelected_true"
-        );
+        this.lobbyButton = root().locator(
+                "div.navigationTab__root--isIcon_true.navigationTab__root--isSelected_true"
+        ).first();
     }
 
     /**
@@ -52,19 +45,12 @@ public class NavigationPanelComponent extends BaseComponent {
     }
 
     /**
-     * Verifies that the lobby button is visible for the current viewport width.
+     * Verifies that the lobby button is visible.
      *
      * @return current component instance
      */
     public NavigationPanelComponent verifyLobbyButton() {
         return step("[NavigationPanelComponent] Проверка кнопки 'Лобби'", () -> {
-            Locator lobbyButton;
-            int width = page.viewportSize() != null ? page.viewportSize().width : Integer.MAX_VALUE;
-            if (width < Breakpoints.TABLET) {
-                lobbyButton = mobileLobbyButton;
-            } else {
-                lobbyButton = desktopLobbyButton;
-            }
             assertThat(lobbyButton).isVisible();
             return this;
         });
