@@ -46,5 +46,17 @@ public record GamblingCategoriesResponse(List<GameCategory> gameCategories) {
                 .map(GameCategory::name)
                 .toList();
     }
+
+    /**
+     * Returns the titles of vertical categories.
+     *
+     * @return list of vertical category titles
+     */
+    public List<String> verticalCategoryNames() {
+        return gameCategories.stream()
+                .filter(gc -> gc.type() == GameCategoryType.VERTICAL)
+                .map(GameCategory::name)
+                .toList();
+    }
 }
 

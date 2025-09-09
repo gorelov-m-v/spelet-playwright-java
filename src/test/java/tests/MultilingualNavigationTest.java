@@ -97,21 +97,28 @@ class MultilingualNavigationTest extends BaseTest {
             Assertions.assertIterableEquals(apiNavigationCategories, uiNavigationCategories);
         });
 
-        step("Сравниваем категории из API и фильтров", () -> {
-            ctx.filterDrawer = ctx.casinoPage.openFilters()
-                    .verifyIsLoaded();
+          step("Сравниваем категории из API и фильтров", () -> {
+              ctx.filterDrawer = ctx.casinoPage.openFilters()
+                      .verifyIsLoaded();
 
-            List<String> apiFilterCategories = ctx.gamblingCategoriesResponse.horizontalCategoryNames();
-            List<String> uiFilterCategories = ctx.filterDrawer.getCategoryNames();
+              List<String> apiFilterCategories = ctx.gamblingCategoriesResponse.horizontalCategoryNames();
+              List<String> uiFilterCategories = ctx.filterDrawer.getCategoryNames();
 
-            Assertions.assertIterableEquals(apiFilterCategories, uiFilterCategories);
-        });
+              Assertions.assertIterableEquals(apiFilterCategories, uiFilterCategories);
+          });
 
-        step("Сравниваем бренды из API и фильтров", () -> {
-            List<String> apiBrands = ctx.gamblingBrandsResponse.brandNames();
-            List<String> uiBrands = ctx.filterDrawer.getProviderNames();
+          step("Сравниваем коллекции из API и фильтров", () -> {
+              List<String> apiCollections = ctx.gamblingCategoriesResponse.verticalCategoryNames();
+              List<String> uiCollections = ctx.filterDrawer.getCollectionNames();
 
-            Assertions.assertIterableEquals(apiBrands, uiBrands);
+              Assertions.assertIterableEquals(apiCollections, uiCollections);
+          });
+
+          step("Сравниваем бренды из API и фильтров", () -> {
+              List<String> apiBrands = ctx.gamblingBrandsResponse.brandNames();
+              List<String> uiBrands = ctx.filterDrawer.getProviderNames();
+
+              Assertions.assertIterableEquals(apiBrands, uiBrands);
         });
     }
 }
