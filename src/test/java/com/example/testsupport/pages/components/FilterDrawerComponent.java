@@ -9,6 +9,8 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import java.util.List;
+import java.util.Objects;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static com.example.testsupport.framework.utils.AllureHelper.step;
@@ -41,10 +43,61 @@ public class FilterDrawerComponent extends BaseComponent {
      * @return current component instance
      */
     public FilterDrawerComponent verifyIsLoaded() {
-        return step("Проверка загрузки дровера фильтров", () -> {
+        return step("[FilterDrawerComponent] Проверка загрузки дровера фильтров", () -> {
             assertThat(title).isVisible();
             return this;
         });
+    }
+
+    /**
+     * Returns the list of provider names displayed in the drawer.
+     *
+     * @return list of provider names
+     */
+    public List<String> getProviderNames() {
+        return step("[FilterDrawerComponent] Получение списка провайдеров", () ->
+                root().locator(".provider-tag-group__tag").all().stream()
+                        .map(tag -> Objects.requireNonNull(tag.getAttribute("aria-label")))
+                        .toList()
+        );
+    }
+
+    /**
+     * Returns the value of the provider count badge.
+     *
+     * @return number of providers shown in the badge
+     */
+    public int getProviderCount() {
+        return step("[FilterDrawerComponent] Получение значения счётчика брендов", () ->
+                Integer.parseInt(Objects.requireNonNull(
+                        root().locator("div:has(> #brands-label) > .badge").textContent()).trim())
+        );
+    }
+
+    /**
+     * Returns the list of category names displayed in the drawer.
+     *
+     * @return list of category names
+     */
+    public List<String> getCategoryNames() {
+        return step("[FilterDrawerComponent] Получение списка категорий", () ->
+                root().locator("[aria-labelledby='categories-label']").locator(".tag-group__item").all().stream()
+                        .map(tag -> Objects.requireNonNull(tag.getAttribute("aria-label")))
+                        .toList()
+        );
+    }
+
+    /**
+     * Returns the list of collection names displayed in the drawer.
+     *
+     * @return list of collection names
+     */
+    public List<String> getCollectionNames() {
+        return step("[FilterDrawerComponent] Получение списка коллекций", () ->
+                root().locator("[aria-labelledby='collections-label']").locator(".tag-group__item").all().stream()
+                        .map(tag -> Objects.requireNonNull(tag.getAttribute("aria-label")))
+                        .toList()
+        );
     }
 
     /**
@@ -54,7 +107,7 @@ public class FilterDrawerComponent extends BaseComponent {
      * @return current component instance
      */
     public FilterDrawerComponent selectProvider(String providerName) {
-        return step(String.format("Выбор провайдера '%s'", providerName), () -> {
+        return step(String.format("[FilterDrawerComponent] Выбор провайдера '%s'", providerName), () -> {
             root().getByRole(AriaRole.ROW, new Locator.GetByRoleOptions()
                     .setName(providerName)
                     .setExact(true))
@@ -67,7 +120,7 @@ public class FilterDrawerComponent extends BaseComponent {
      * Applies the selected filters by clicking the translated "Show" button.
      */
     public CasinoPage clickShow() {
-        return step("Применение фильтров", () -> {
+        return step("[FilterDrawerComponent] Применение фильтров", () -> {
             showButton.click();
             return casinoPageProvider.getObject();
         });

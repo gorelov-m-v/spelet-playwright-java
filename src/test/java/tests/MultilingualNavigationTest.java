@@ -7,11 +7,11 @@ import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.beans.factory.ObjectProvider;
 import com.example.testsupport.pages.CasinoPage;
+import com.example.testsupport.pages.components.FilterDrawerComponent;
 import com.example.testsupport.framework.api.client.FrontApiClient;
 import com.example.testsupport.framework.api.client.params.GamblingBrandsParams;
 import com.example.testsupport.framework.api.client.params.GamblingCategoriesParams;
 import com.example.testsupport.framework.api.client.params.GamblingGamesParams;
-import com.example.testsupport.framework.api.client.params.DeviceType;
 import com.example.testsupport.framework.api.dto.gambling.GamblingBrandsResponse;
 import com.example.testsupport.framework.api.dto.gambling.GamblingCategoriesResponse;
 import com.example.testsupport.framework.api.dto.gambling.GamblingGamesResponse;
@@ -42,6 +42,7 @@ class MultilingualNavigationTest extends BaseTest {
         final class TestContext {
             MainPage mainPage;
             CasinoPage casinoPage;
+            FilterDrawerComponent filterDrawer;
             GamblingCategoriesResponse gamblingCategoriesResponse;
             GamblingGamesResponse gamblingGamesResponse;
             GamblingBrandsResponse gamblingBrandsResponse;
@@ -83,7 +84,7 @@ class MultilingualNavigationTest extends BaseTest {
         });
 
         step("Сравниваем категории из API и интерфейса", () -> {
-            List<String> apiCategories = ctx.gamblingCategoriesResponse.horizontalCategoryNames(ls);
+            List<String> apiCategories = ctx.gamblingCategoriesResponse.horizontalCategoryNamesWithLobby(ls);
             List<String> uiCategories = ctx.casinoPage.categoryTabs().getTitles();
 
             Assertions.assertIterableEquals(apiCategories, uiCategories);
@@ -94,6 +95,37 @@ class MultilingualNavigationTest extends BaseTest {
             List<String> uiNavigationCategories = ctx.casinoPage.navigationPanel().getTitles();
 
             Assertions.assertIterableEquals(apiNavigationCategories, uiNavigationCategories);
+        });
+
+        step("Сравниваем категории из API и фильтров", () -> {
+              ctx.filterDrawer = ctx.casinoPage.openFilters()
+                      .verifyIsLoaded();
+
+              List<String> apiFilterCategories = ctx.gamblingCategoriesResponse.horizontalCategoryNames();
+              List<String> uiFilterCategories = ctx.filterDrawer.getCategoryNames();
+
+              Assertions.assertIterableEquals(apiFilterCategories, uiFilterCategories);
+          });
+
+        step("Сравниваем коллекции из API и фильтров", () -> {
+              List<String> apiCollections = ctx.gamblingCategoriesResponse.verticalCategoryNames();
+              List<String> uiCollections = ctx.filterDrawer.getCollectionNames();
+
+              Assertions.assertIterableEquals(apiCollections, uiCollections);
+          });
+
+        step("Сравниваем бренды из API и фильтров", () -> {
+              List<String> apiBrands = ctx.gamblingBrandsResponse.brandNames();
+              List<String> uiBrands = ctx.filterDrawer.getProviderNames();
+
+              Assertions.assertIterableEquals(apiBrands, uiBrands);
+        });
+
+        step("Проверяем счётчик брендов в фильтрах", () -> {
+            int apiCount = ctx.gamblingBrandsResponse.brandNames().size();
+            int badgeCount = ctx.filterDrawer.getProviderCount();
+
+            Assertions.assertEquals(apiCount, badgeCount);
         });
     }
 }

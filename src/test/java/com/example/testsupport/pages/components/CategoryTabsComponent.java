@@ -25,7 +25,7 @@ public class CategoryTabsComponent extends BaseComponent {
      * @return list of category titles in display order
      */
     public List<String> getTitles() {
-        return step("Получение списка горизонтальных категорий", () ->
+        return step("[CategoryTabsComponent] Получение списка горизонтальных категорий", () ->
             root().locator("[role='tab']").allInnerTexts()
         );
     }

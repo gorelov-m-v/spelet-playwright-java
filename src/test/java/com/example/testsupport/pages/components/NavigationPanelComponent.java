@@ -29,7 +29,7 @@ public class NavigationPanelComponent extends BaseComponent {
      * @return list of navigation category titles in display order
      */
     public List<String> getTitles() {
-        return step("Получение категорий навигационной панели", () -> {
+        return step("[NavigationPanelComponent] Получение категорий навигационной панели", () -> {
             List<String> titles = root().locator("span.navigationTab__text").allInnerTexts();
             String providers = ls.get("casino.navigation.providers");
             return titles.stream()
