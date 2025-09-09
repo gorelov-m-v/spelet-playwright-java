@@ -31,14 +31,14 @@ public class HeaderComponent extends BaseComponent {
      * Clicks the "Casino" link in the header.
      */
     public void clickCasino() {
-        step("Клик по ссылке 'Казино' в хедере", () -> casinoLink.click());
+        step("[HeaderComponent] Клик по ссылке 'Казино' в хедере", () -> casinoLink.click());
     }
 
     /**
      * Verifies that the logo is visible.
      */
     public void verifyLogoVisible() {
-        step("Проверка видимости логотипа", () -> {
+        step("[HeaderComponent] Проверка видимости логотипа", () -> {
             assertThat(logoLink).isVisible();
         });
     }

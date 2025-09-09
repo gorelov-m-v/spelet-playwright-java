@@ -76,7 +76,7 @@ public class CasinoPage extends BasePage<CasinoPage> {
      */
     @Override
     public CasinoPage verifyUrl() {
-        return step("Проверка URL страницы 'Казино'", () -> {
+        return step("[CasinoPage] Проверка URL страницы 'Казино'", () -> {
             verifyUrlContains(getExpectedPath());
             return this;
         });
@@ -86,7 +86,7 @@ public class CasinoPage extends BasePage<CasinoPage> {
      * Verifies that the lobby button is visible for the current viewport width.
      */
     public CasinoPage verifyLobbyButton() {
-        return step("Проверка кнопки 'Лобби'", () -> {
+        return step("[CasinoPage] Проверка кнопки 'Лобби'", () -> {
             Locator lobbyButton;
             int width = page.viewportSize() != null ? page.viewportSize().width : Integer.MAX_VALUE;
             if (width < Breakpoints.TABLET) {
@@ -106,7 +106,7 @@ public class CasinoPage extends BasePage<CasinoPage> {
      */
     @Override
     public CasinoPage verifyIsLoaded() {
-        return step("Проверка загрузки страницы 'Казино'", () -> {
+        return step("[CasinoPage] Проверка загрузки страницы 'Казино'", () -> {
             verifyLobbyButton();
             verifyUrl();
             return this;
@@ -119,7 +119,7 @@ public class CasinoPage extends BasePage<CasinoPage> {
      * @return filter drawer component
      */
     public FilterDrawerComponent openFilters() {
-        return step("Открытие панели фильтров", () -> {
+        return step("[CasinoPage] Открытие панели фильтров", () -> {
             Locator button;
             int width = page.viewportSize() != null ? page.viewportSize().width : Integer.MAX_VALUE;
             if (width < Breakpoints.TABLET) {
@@ -152,7 +152,7 @@ public class CasinoPage extends BasePage<CasinoPage> {
      * @return current page object
      */
     public CasinoPage typeInSearch(String query) {
-        return step(String.format("Вводим в поле поиска '%s'", query), () -> {
+        return step(String.format("[CasinoPage] Вводим в поле поиска '%s'", query), () -> {
             searchInput.fill(query);
             return this;
         });
@@ -165,7 +165,7 @@ public class CasinoPage extends BasePage<CasinoPage> {
      * @return current page object
      */
     public CasinoPage waitForGameVisible(String gameName) {
-        return step(String.format("Ожидаем отображения игры '%s'", gameName), () -> {
+        return step(String.format("[CasinoPage] Ожидаем отображения игры '%s'", gameName), () -> {
             Locator card = gameCards.filter(new Locator.FilterOptions().setHasText(gameName));
             assertThat(card.first()).isVisible();
             return this;
@@ -179,7 +179,7 @@ public class CasinoPage extends BasePage<CasinoPage> {
      * @return authorization modal component
      */
     public AuthModalComponent clickPlay(String gameName) {
-        return step(String.format("Запускаем игру '%s'", gameName), () -> {
+        return step(String.format("[CasinoPage] Запускаем игру '%s'", gameName), () -> {
             Locator card = gameCards.filter(new Locator.FilterOptions().setHasText(gameName)).first();
             card.getByRole(AriaRole.BUTTON).click();
             return authModalComponentProvider.getObject();

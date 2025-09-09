@@ -30,14 +30,14 @@ public class TabBarComponent extends BaseComponent {
      * Clicks the "Casino" tab.
      */
     public void clickCasino() {
-        step("Клик по табу 'Казино'", () -> casinoTab.click());
+        step("[TabBarComponent] Клик по табу 'Казино'", () -> casinoTab.click());
     }
 
     /**
      * Opens the user profile.
      */
     public void openProfile() {
-        step("Открытие профиля пользователя", () -> profileTab.click());
+        step("[TabBarComponent] Открытие профиля пользователя", () -> profileTab.click());
     }
 }
 

@@ -31,7 +31,7 @@ public class CookieBannerComponent extends BaseComponent {
      * Clicks the localized "accept cookies" button, failing if it is not found within two seconds.
      */
     public void acceptIfPresent() {
-        step("Принять куки, если баннер отображается", () -> {
+        step("[CookieBannerComponent] Принять куки, если баннер отображается", () -> {
             String acceptText;
             try {
                 acceptText = ls.get("cookies.accept");

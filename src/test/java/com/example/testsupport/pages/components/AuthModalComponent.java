@@ -32,7 +32,7 @@ public class AuthModalComponent extends BaseComponent {
      * @return current component instance
      */
     public AuthModalComponent verifyIsLoaded() {
-        return step("Проверяем отображение модального окна авторизации", () -> {
+        return step("[AuthModalComponent] Проверяем отображение модального окна авторизации", () -> {
             assertThat(title).isVisible();
             return this;
         });

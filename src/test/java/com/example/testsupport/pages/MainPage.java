@@ -33,7 +33,7 @@ public class MainPage extends BasePage<MainPage> {
 
     @Override
     public MainPage verifyUrl() {
-        return step("Проверка URL главной страницы", () -> {
+        return step("[MainPage] Проверка URL главной страницы", () -> {
             verifyUrlContains(getExpectedPath());
             return this;
         });
@@ -44,7 +44,7 @@ public class MainPage extends BasePage<MainPage> {
      */
     @SuppressWarnings("resource")
     public CasinoPage navigateToCasino() {
-        return step("Навигация на страницу 'Казино'", () -> {
+        return step("[MainPage] Навигация на страницу 'Казино'", () -> {
             int currentWidth = page.viewportSize().width;
             if (currentWidth < MOBILE) {
                 tabBar().clickCasino();
@@ -62,7 +62,7 @@ public class MainPage extends BasePage<MainPage> {
      */
     @Override
     public MainPage verifyIsLoaded() {
-        return step("Проверка загрузки главной страницы", () -> {
+        return step("[MainPage] Проверка загрузки главной страницы", () -> {
             header().verifyLogoVisible();
             verifyUrl();
             return this;
@@ -75,7 +75,7 @@ public class MainPage extends BasePage<MainPage> {
      * @return current page object
      */
     public MainPage open() {
-        return step("Открыть главную страницу", () -> {
+        return step("[MainPage] Открыть главную страницу", () -> {
             super.open();
             cookieBanner().acceptIfPresent();
             return verifyIsLoaded();
