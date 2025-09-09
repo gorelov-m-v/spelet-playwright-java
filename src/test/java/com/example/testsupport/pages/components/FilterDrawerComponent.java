@@ -63,6 +63,18 @@ public class FilterDrawerComponent extends BaseComponent {
     }
 
     /**
+     * Returns the value of the provider count badge.
+     *
+     * @return number of providers shown in the badge
+     */
+    public int getProviderCount() {
+        return step("Получение значения счётчика брендов", () ->
+                Integer.parseInt(Objects.requireNonNull(
+                        root().locator("#brands-label .badge").textContent()).trim())
+        );
+    }
+
+    /**
      * Returns the list of category names displayed in the drawer.
      *
      * @return list of category names

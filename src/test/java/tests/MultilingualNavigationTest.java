@@ -120,6 +120,13 @@ class MultilingualNavigationTest extends BaseTest {
 
               Assertions.assertIterableEquals(apiBrands, uiBrands);
         });
+
+        step("Проверяем счётчик брендов в фильтрах", () -> {
+            int badgeCount = ctx.filterDrawer.getProviderCount();
+            int apiCount = ctx.gamblingBrandsResponse.brandNames().size();
+
+            Assertions.assertEquals(apiCount, badgeCount);
+        });
     }
 }
 
