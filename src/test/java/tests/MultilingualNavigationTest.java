@@ -122,8 +122,8 @@ class MultilingualNavigationTest extends BaseTest {
         });
 
         step("Проверяем счётчик брендов в фильтрах", () -> {
-            int badgeCount = ctx.filterDrawer.getProviderCount();
             int apiCount = ctx.gamblingBrandsResponse.brandNames().size();
+            int badgeCount = ctx.filterDrawer.getProviderCount();
 
             Assertions.assertEquals(apiCount, badgeCount);
         });
