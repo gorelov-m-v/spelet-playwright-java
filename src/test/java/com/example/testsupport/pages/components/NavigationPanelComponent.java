@@ -2,6 +2,7 @@ package com.example.testsupport.pages.components;
 
 import com.example.testsupport.framework.localization.LocalizationService;
 import com.example.testsupport.pages.ProvidersPage;
+import com.example.testsupport.framework.utils.Breakpoints;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Locator;
 import java.util.List;
@@ -21,11 +22,20 @@ public class NavigationPanelComponent extends BaseComponent {
 
     private final LocalizationService ls;
     private final ObjectProvider<ProvidersPage> providersPageProvider;
+    private final Page page;
+    private final Locator desktopProvidersTab;
+    private final Locator mobileProvidersTab;
 
     public NavigationPanelComponent(Page page, LocalizationService ls, ObjectProvider<ProvidersPage> providersPageProvider) {
         super(page.locator("div.d_flex.gap_1.ov-x_auto.pos_relative").first());
+        this.page = page;
         this.ls = ls;
         this.providersPageProvider = providersPageProvider;
+        String providers = ls.get("casino.navigation.providers");
+        this.desktopProvidersTab = root().locator("div.navigationTab__root--size_md")
+                .filter(new Locator.FilterOptions().setHasText(providers));
+        this.mobileProvidersTab = root().locator("div.navigationTab__root--size_sm")
+                .filter(new Locator.FilterOptions().setHasText(providers));
     }
 
     /**
@@ -48,8 +58,8 @@ public class NavigationPanelComponent extends BaseComponent {
      */
     public ProvidersPage clickProviders() {
         return step("[NavigationPanelComponent] Переход на страницу 'Провайдеры'", () -> {
-            String providers = ls.get("casino.navigation.providers");
-            Locator tab = root().getByText(providers, new Locator.GetByTextOptions().setExact(true));
+            int width = page.viewportSize() != null ? page.viewportSize().width : Integer.MAX_VALUE;
+            Locator tab = width < Breakpoints.TABLET ? mobileProvidersTab : desktopProvidersTab;
             tab.click();
             return providersPageProvider.getObject().verifyIsLoaded();
         });
