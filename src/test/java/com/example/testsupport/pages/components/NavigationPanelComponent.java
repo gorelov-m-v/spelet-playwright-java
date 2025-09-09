@@ -42,7 +42,7 @@ public class NavigationPanelComponent extends BaseComponent {
 
     private Pattern providersPattern() {
         if (providersPattern == null) {
-            providersPattern = Pattern.compile(buildProvidersRegex(), Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+            providersPattern = Pattern.compile(buildProvidersRegex(), Pattern.CASE_INSENSITIVE);
         }
         return providersPattern;
     }
