@@ -30,7 +30,7 @@ public class ProvidersPage extends BasePage<ProvidersPage> {
                          ObjectProvider<TabBarComponent> tabBarProvider,
                          ObjectProvider<CookieBannerComponent> cookieBannerProvider) {
         super(page, ls, config, headerProvider, tabBarProvider, cookieBannerProvider);
-        this.providerGrid = page.locator("div[role='grid']");
+        this.providerGrid = page.locator("div[role='grid']").first();
     }
 
     @Override

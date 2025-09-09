@@ -32,15 +32,15 @@ public class NavigationPanelComponent extends BaseComponent {
     private final Pattern providersPattern;
 
     public NavigationPanelComponent(Page page, LocalizationService ls, ObjectProvider<ProvidersPage> providersPageProvider) {
-        super(page.locator("div.d_flex.gap_1.ov-x_auto.pos_relative"));
+        super(page.locator("div.d_flex.gap_1.ov-x_auto.pos_relative").first());
         this.page = page;
         this.ls = ls;
         this.providersPageProvider = providersPageProvider;
         this.providersPattern = Pattern.compile(buildProvidersRegex(), Pattern.CASE_INSENSITIVE);
-        this.desktopProvidersTab = root().locator("div.navigationTab__root--size_md")
-                .filter(new Locator.FilterOptions().setHasText(this.providersPattern));
-        this.mobileProvidersTab = root().locator("div.navigationTab__root--size_sm")
-                .filter(new Locator.FilterOptions().setHasText(this.providersPattern));
+        this.desktopProvidersTab = page.locator("div.navigationTab__root--size_md.navigationTab__root--isSelected_false")
+                .filter(new Locator.FilterOptions().setHasText(this.providersPattern)).first();
+        this.mobileProvidersTab = page.locator("div.navigationTab__root--size_sm.navigationTab__root--isSelected_false")
+                .filter(new Locator.FilterOptions().setHasText(this.providersPattern)).first();
     }
 
     private String buildProvidersRegex() {
