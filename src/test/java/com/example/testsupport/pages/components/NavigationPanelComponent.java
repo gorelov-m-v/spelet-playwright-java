@@ -25,7 +25,7 @@ public class NavigationPanelComponent extends BaseComponent {
         super(page.locator("div.bg_navigationTab").first());
         this.ls = ls;
         this.lobbyButton = root().locator(
-                "div.navigationTab__root--isIcon_true.navigationTab__root--isSelected_true"
+                "div.navigationTab__root--isIcon_true"
         ).first();
     }
 
