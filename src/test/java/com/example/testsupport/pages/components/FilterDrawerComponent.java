@@ -70,7 +70,8 @@ public class FilterDrawerComponent extends BaseComponent {
     public int getProviderCount() {
         return step("Получение значения счётчика брендов", () ->
                 Integer.parseInt(Objects.requireNonNull(
-                        root().locator("#brands-label .badge").textContent()).trim())
+                        root().locator("#brands-label").locator("..")
+                                .locator(".badge").textContent()).trim())
         );
     }
 
