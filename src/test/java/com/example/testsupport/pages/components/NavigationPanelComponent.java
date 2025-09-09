@@ -6,6 +6,10 @@ import com.example.testsupport.framework.utils.Breakpoints;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Locator;
 import java.util.List;
+import java.util.Objects;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
@@ -25,17 +29,30 @@ public class NavigationPanelComponent extends BaseComponent {
     private final Page page;
     private final Locator desktopProvidersTab;
     private final Locator mobileProvidersTab;
+    private final Pattern providersPattern;
 
     public NavigationPanelComponent(Page page, LocalizationService ls, ObjectProvider<ProvidersPage> providersPageProvider) {
-        super(page.locator("div.d_flex.gap_1.ov-x_auto.pos_relative").first());
+        super(page.locator("div.d_flex.gap_1.ov-x_auto.pos_relative"));
         this.page = page;
         this.ls = ls;
         this.providersPageProvider = providersPageProvider;
-        String providers = ls.get("casino.navigation.providers");
+        this.providersPattern = Pattern.compile(buildProvidersRegex(), Pattern.CASE_INSENSITIVE);
         this.desktopProvidersTab = root().locator("div.navigationTab__root--size_md")
-                .filter(new Locator.FilterOptions().setHasText(providers));
+                .filter(new Locator.FilterOptions().setHasText(this.providersPattern));
         this.mobileProvidersTab = root().locator("div.navigationTab__root--size_sm")
-                .filter(new Locator.FilterOptions().setHasText(providers));
+                .filter(new Locator.FilterOptions().setHasText(this.providersPattern));
+    }
+
+    private String buildProvidersRegex() {
+        return Stream.of(
+                        ls.get("casino.navigation.providers"),
+                        "Providers",
+                        "Провайдеры",
+                        "Piegādātāji")
+                .filter(Objects::nonNull)
+                .distinct()
+                .map(Pattern::quote)
+                .collect(Collectors.joining("|"));
     }
 
     /**
@@ -46,9 +63,8 @@ public class NavigationPanelComponent extends BaseComponent {
     public List<String> getTitles() {
         return step("[NavigationPanelComponent] Получение категорий навигационной панели", () -> {
             List<String> titles = root().locator("span.navigationTab__text").allInnerTexts();
-            String providers = ls.get("casino.navigation.providers");
             return titles.stream()
-                    .filter(title -> !title.equals(providers))
+                    .filter(title -> !providersPattern.matcher(title).matches())
                     .toList();
         });
     }
