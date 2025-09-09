@@ -25,23 +25,37 @@ public class NavigationPanelComponent extends BaseComponent {
 
     private final LocalizationService ls;
     private final ObjectProvider<ProvidersPage> providersPageProvider;
-    private final Locator providersTab;
-    private final Pattern providersPattern;
+    private Pattern providersPattern;
 
     public NavigationPanelComponent(Page page, LocalizationService ls, ObjectProvider<ProvidersPage> providersPageProvider) {
         super(page.locator("div.d_flex.gap_1.ov-x_auto.pos_relative").first());
         this.ls = ls;
         this.providersPageProvider = providersPageProvider;
-        this.providersPattern = Pattern.compile(buildProvidersRegex(), Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-        this.providersTab = page.locator("span.navigationTab__text")
-                .filter(new Locator.FilterOptions().setHasText(this.providersPattern))
+    }
+
+    private Locator providersTab() {
+        return root().locator("span.navigationTab__text")
+                .filter(new Locator.FilterOptions().setHasText(providersPattern()))
                 .first()
                 .locator("..");
     }
 
+    private Pattern providersPattern() {
+        if (providersPattern == null) {
+            providersPattern = Pattern.compile(buildProvidersRegex(), Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+        }
+        return providersPattern;
+    }
+
     private String buildProvidersRegex() {
+        String localized;
+        try {
+            localized = ls.get("casino.navigation.providers");
+        } catch (IllegalStateException e) {
+            localized = null;
+        }
         return Stream.of(
-                        ls.get("casino.navigation.providers"),
+                        localized,
                         "Providers",
                         "Провайдеры",
                         "Piegādātāji")
@@ -60,7 +74,7 @@ public class NavigationPanelComponent extends BaseComponent {
         return step("[NavigationPanelComponent] Получение категорий навигационной панели", () -> {
             List<String> titles = root().locator("span.navigationTab__text").allInnerTexts();
             return titles.stream()
-                    .filter(title -> !providersPattern.matcher(title).matches())
+                    .filter(title -> !providersPattern().matcher(title).matches())
                     .toList();
         });
     }
@@ -70,7 +84,7 @@ public class NavigationPanelComponent extends BaseComponent {
      */
     public ProvidersPage clickProviders() {
         return step("[NavigationPanelComponent] Переход на страницу 'Провайдеры'", () -> {
-            providersTab.click();
+            providersTab().click();
             return providersPageProvider.getObject().verifyIsLoaded();
         });
     }
