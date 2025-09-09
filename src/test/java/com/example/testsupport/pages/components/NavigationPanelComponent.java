@@ -2,9 +2,8 @@ package com.example.testsupport.pages.components;
 
 import com.example.testsupport.framework.localization.LocalizationService;
 import com.example.testsupport.pages.ProvidersPage;
-import com.example.testsupport.framework.utils.Breakpoints;
-import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Locator;
+import com.microsoft.playwright.Page;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -26,21 +25,18 @@ public class NavigationPanelComponent extends BaseComponent {
 
     private final LocalizationService ls;
     private final ObjectProvider<ProvidersPage> providersPageProvider;
-    private final Page page;
-    private final Locator desktopProvidersTab;
-    private final Locator mobileProvidersTab;
+    private final Locator providersTab;
     private final Pattern providersPattern;
 
     public NavigationPanelComponent(Page page, LocalizationService ls, ObjectProvider<ProvidersPage> providersPageProvider) {
         super(page.locator("div.d_flex.gap_1.ov-x_auto.pos_relative").first());
-        this.page = page;
         this.ls = ls;
         this.providersPageProvider = providersPageProvider;
-        this.providersPattern = Pattern.compile(buildProvidersRegex(), Pattern.CASE_INSENSITIVE);
-        this.desktopProvidersTab = page.locator("div.navigationTab__root--size_md.navigationTab__root--isSelected_false")
-                .filter(new Locator.FilterOptions().setHasText(this.providersPattern)).first();
-        this.mobileProvidersTab = page.locator("div.navigationTab__root--size_sm.navigationTab__root--isSelected_false")
-                .filter(new Locator.FilterOptions().setHasText(this.providersPattern)).first();
+        this.providersPattern = Pattern.compile(buildProvidersRegex(), Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+        this.providersTab = page.locator("span.navigationTab__text")
+                .filter(new Locator.FilterOptions().setHasText(this.providersPattern))
+                .first()
+                .locator("..");
     }
 
     private String buildProvidersRegex() {
@@ -74,9 +70,7 @@ public class NavigationPanelComponent extends BaseComponent {
      */
     public ProvidersPage clickProviders() {
         return step("[NavigationPanelComponent] Переход на страницу 'Провайдеры'", () -> {
-            int width = page.viewportSize() != null ? page.viewportSize().width : Integer.MAX_VALUE;
-            Locator tab = width < Breakpoints.TABLET ? mobileProvidersTab : desktopProvidersTab;
-            tab.click();
+            providersTab.click();
             return providersPageProvider.getObject().verifyIsLoaded();
         });
     }
